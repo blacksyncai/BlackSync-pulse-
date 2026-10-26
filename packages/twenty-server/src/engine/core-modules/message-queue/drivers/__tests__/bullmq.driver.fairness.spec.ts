@@ -634,7 +634,7 @@ describe('BullMQDriver fairness scenarios', () => {
     });
   });
 
-  describe('S7: application P weighs 2, application Q weighs 1, each enqueues 4 jobs keyed by application only', () => {
+  describe('S7: application P weighs 2, application Q weighs 1, WP enqueues 4 jobs of P and WQ 4 jobs of Q, keyed by workspace and application', () => {
     const enqueue = async (harness: Harness) => {
       await harness.setWeight({
         groupKey: buildApplicationGroupKey('P'),
@@ -643,12 +643,18 @@ describe('BullMQDriver fairness scenarios', () => {
       await harness.enqueueMany({
         labels: buildLabels({ prefix: 'P', count: 4 }),
         workspaceId: 'WP',
-        groupKeys: [buildApplicationGroupKey('P')],
+        groupKeys: [
+          buildWorkspaceGroupKey('WP'),
+          buildApplicationGroupKey('P'),
+        ],
       });
       await harness.enqueueMany({
         labels: buildLabels({ prefix: 'Q', count: 4 }),
         workspaceId: 'WQ',
-        groupKeys: [buildApplicationGroupKey('Q')],
+        groupKeys: [
+          buildWorkspaceGroupKey('WQ'),
+          buildApplicationGroupKey('Q'),
+        ],
       });
     };
 
@@ -663,7 +669,7 @@ describe('BullMQDriver fairness scenarios', () => {
       ]);
     });
 
-    it('flag on: P gets two slots for each slot of Q', async () => {
+    it('flag on: P gets two slots for each slot of Q, the unweighted workspace key does not dilute the weight', async () => {
       const harness = await createHarness({ isFairnessEnabled: true });
 
       await enqueue(harness);

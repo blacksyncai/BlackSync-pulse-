@@ -11,13 +11,17 @@ for i = 4, #KEYS do
   end
 end
 
+local weight = 1
+
 for i = 4, #KEYS do
-  local weight = tonumber(redis.call('HGET', KEYS[3], ARGV[i - 1]) or '1')
+  local keyWeight = tonumber(redis.call('HGET', KEYS[3], ARGV[i - 1]) or '1')
 
-  if weight <= 0 then
-    weight = 1
+  if keyWeight > 0 then
+    weight = weight * keyWeight
   end
+end
 
+for i = 4, #KEYS do
   redis.call('SET', KEYS[i], epoch .. ':' .. (tag + tonumber(ARGV[1]) / weight), 'PX', ARGV[2])
 end
 
