@@ -37,7 +37,7 @@ export class AgentHistoryTransactionService {
                 (await transactionScope.executeRawQuery(
                   sql,
                   parameters,
-                )) as unknown as TRecord[],
+                )) as TRecord[],
               afterCommit: transactionScope.afterCommit,
               insert: async (name, values) => {
                 await getRepository(name).insert(values);

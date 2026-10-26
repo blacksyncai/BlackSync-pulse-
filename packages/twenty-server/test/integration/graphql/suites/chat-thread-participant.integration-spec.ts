@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { EventEmitter, once } from 'node:events';
 
 import { parse } from 'graphql';
 import {
@@ -1377,14 +1378,9 @@ describe('Chat thread participant state through the authenticated API', () => {
 
     await addParticipants(threadId, [WORKSPACE_MEMBER_DATA_SEED_IDS.JONY]);
 
-    let finishResponse: () => void = () => undefined;
-    let responseStarted: () => void = () => undefined;
-    const responseStartedPromise = new Promise<void>((resolve) => {
-      responseStarted = resolve;
-    });
-    const responseFinishedPromise = new Promise<void>((resolve) => {
-      finishResponse = resolve;
-    });
+    const responseEvents = new EventEmitter();
+    const responseStarted = once(responseEvents, 'started');
+    const responseFinished = once(responseEvents, 'finished');
     const participantService =
       getAppProviderByClassName<AgentChatThreadParticipantService>(
         'AgentChatThreadParticipantService',
@@ -1397,16 +1393,16 @@ describe('Chat thread participant state through the authenticated API', () => {
     const response = participantService.resolveMention({
       ...memberArgs,
       writeResponse: async () => {
-        responseStarted();
-        await responseFinishedPromise;
+        responseEvents.emit('started');
+        await responseFinished;
       },
     });
 
-    await responseStartedPromise;
+    await responseStarted;
 
     const laterMention = participantService.markAsMentioned(memberArgs);
 
-    finishResponse();
+    responseEvents.emit('finished');
     await Promise.all([response, laterMention]);
 
     const participant = await findMyParticipant(
