@@ -8,6 +8,8 @@ export type AgentChatThreadVisit = {
   lastReadAt: string | null;
   // Marked unread while on screen, so the open view does not read it again
   isKeptUnread: boolean;
+  // So a read that failed is not sent again until new activity
+  readRequestedForActivityAt?: string;
 };
 
 // The thread on screen in a visible tab

@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import { Provider as JotaiProvider } from 'jotai';
 
 import { AgentChatThreadMarkAsReadEffect } from '@/ai/components/AgentChatThreadMarkAsReadEffect';
@@ -16,7 +16,7 @@ import {
 } from '@/ui/utilities/state/jotai/jotaiStore';
 import { type AgentChatThreadParticipantFieldsFragment } from '~/generated-metadata/graphql';
 
-const updateAgentChatThreadInboxState = jest.fn();
+const updateAgentChatThreadInboxState = jest.fn().mockResolvedValue(undefined);
 
 jest.mock('@/ai/hooks/useUpdateAgentChatThreadInboxState', () => ({
   useUpdateAgentChatThreadInboxState: () => ({
@@ -54,22 +54,25 @@ const renderChatView = () =>
     </JotaiProvider>,
   );
 
+const setLastActivityAt = (lastActivityAt: string) =>
+  setAgentChatThreadList(jotaiStore, [
+    {
+      __typename: 'AgentChatThread',
+      id: THREAD_ID,
+      deletedAt: null,
+      lastActivityAt,
+      lastMessageSenderWorkspaceMemberId: null,
+      workspaceMemberId: WORKSPACE_MEMBER_ID,
+      assigneeId: null,
+      pendingQuestionMessageId: null,
+    } as never,
+  ]);
+
 describe('AgentChatThreadMarkAsReadEffect', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     resetJotaiStore();
-    setAgentChatThreadList(jotaiStore, [
-      {
-        __typename: 'AgentChatThread',
-        id: THREAD_ID,
-        deletedAt: null,
-        lastActivityAt: LAST_ACTIVITY_AT,
-        lastMessageSenderWorkspaceMemberId: null,
-        workspaceMemberId: WORKSPACE_MEMBER_ID,
-        assigneeId: null,
-        pendingQuestionMessageId: null,
-      } as never,
-    ]);
+    setLastActivityAt(LAST_ACTIVITY_AT);
     jotaiStore.set(currentWorkspaceMemberState.atom, CURRENT_WORKSPACE_MEMBER);
     jotaiStore.set(agentChatThreadParticipantsState.atom, {
       [THREAD_ID]: PARTICIPANT,
@@ -89,7 +92,24 @@ describe('AgentChatThreadMarkAsReadEffect', () => {
       isUnread: true,
       lastReadAt: '2026-10-01T09:00:00.000Z',
       isKeptUnread: false,
+      readRequestedForActivityAt: LAST_ACTIVITY_AT,
     });
+  });
+
+  it('does not send a read that failed again until there is new activity', () => {
+    renderChatView();
+
+    act(() =>
+      jotaiStore.set(agentChatThreadParticipantsState.atom, {
+        [THREAD_ID]: { ...PARTICIPANT },
+      }),
+    );
+
+    expect(updateAgentChatThreadInboxState).toHaveBeenCalledTimes(1);
+
+    act(() => setLastActivityAt('2026-10-01T11:00:00.000Z'));
+
+    expect(updateAgentChatThreadInboxState).toHaveBeenCalledTimes(2);
   });
 
   it('starts tracking a thread the member opens without participating in it', () => {
@@ -107,6 +127,7 @@ describe('AgentChatThreadMarkAsReadEffect', () => {
       isUnread: false,
       lastReadAt: null,
       isKeptUnread: false,
+      readRequestedForActivityAt: LAST_ACTIVITY_AT,
     });
   });
 
@@ -167,6 +188,18 @@ describe('AgentChatThreadMarkAsReadEffect', () => {
 
       expect(updateAgentChatThreadInboxState).not.toHaveBeenCalledWith(
         expect.objectContaining({ action: 'ARCHIVE_IF_SETTLED' }),
+      );
+    });
+
+    it('files a chat whose read is saved after the member left', async () => {
+      renderChatView().unmount();
+      setReadUpTo(LAST_ACTIVITY_AT);
+
+      await waitFor(() =>
+        expect(updateAgentChatThreadInboxState).toHaveBeenCalledWith({
+          threadIds: [THREAD_ID],
+          action: 'ARCHIVE_IF_SETTLED',
+        }),
       );
     });
   });
