@@ -8,7 +8,6 @@ import { DatabaseEventAction } from 'src/engine/api/graphql/graphql-query-runner
 import { isUserAuthContext } from 'src/engine/core-modules/auth/guards/is-user-auth-context.guard';
 import { type WorkspaceAuthContext } from 'src/engine/core-modules/auth/types/workspace-auth-context.type';
 import { AGENT_CHAT_THREAD_ACTIVITY_COLUMNS } from 'src/engine/metadata-modules/ai/ai-chat/constants/agent-chat-thread-activity-columns.constant';
-import { AgentChatInboxAction } from 'src/engine/metadata-modules/ai/ai-chat/enums/agent-chat-inbox-action.enum';
 import { AgentMessageRole } from 'src/engine/metadata-modules/ai/ai-history/enums/agent-message-role.enum';
 import { AgentChatChannelAccessService } from 'src/engine/metadata-modules/ai/ai-chat/services/agent-chat-channel-access.service';
 import { AgentChatChannelGrantService } from 'src/engine/metadata-modules/ai/ai-chat/services/agent-chat-channel-grant.service';
@@ -375,26 +374,20 @@ export class AgentChatThreadService {
       ),
     );
 
-    for (const participantMemberId of participantMemberIds) {
-      const participantArgs = {
-        workspaceId: args.workspaceId,
-        workspaceMemberId: participantMemberId,
-      };
-
-      if (isMention) {
+    if (isMention) {
+      for (const participantMemberId of participantMemberIds) {
         await this.participantService.markAsMentioned({
-          ...participantArgs,
+          workspaceId: args.workspaceId,
+          workspaceMemberId: participantMemberId,
           threadId: args.threadId,
         });
-
-        continue;
       }
+    }
 
-      await this.participantService.updateInboxState({
-        ...participantArgs,
-        threadIds: [args.threadId],
-        action: AgentChatInboxAction.MOVE_TO_INBOX,
-        snoozedUntil: null,
+    if (!isMention) {
+      await this.participantService.moveMembersToInbox({
+        ...args,
+        participantWorkspaceMemberIds: participantMemberIds,
       });
     }
 
@@ -417,13 +410,15 @@ export class AgentChatThreadService {
       args.workspaceId,
       ({ manager, table }) =>
         manager.query<{ id: string }[]>(
-          doNotTranslate(`UPDATE ${table('agentChatThread')}
+          doNotTranslate(`WITH updated_thread AS (
+           UPDATE ${table('agentChatThread')}
            SET "isAssistantParticipant" = $2, "updatedAt" = now()
            WHERE id = $1 AND NOT EXISTS (
              SELECT 1 FROM ${table('agentMessage')}
              WHERE "threadId" = $1 AND role <> $3
            )
-           RETURNING id`),
+           RETURNING id
+           ) SELECT id FROM updated_thread`),
           [args.threadId, isAssistantParticipant, AgentMessageRole.SYSTEM],
         ),
     );
