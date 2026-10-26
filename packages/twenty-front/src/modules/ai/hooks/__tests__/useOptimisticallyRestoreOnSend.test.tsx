@@ -21,7 +21,7 @@ const ARCHIVED_PARTICIPANT = {
 };
 
 describe('useOptimisticallyRestoreOnSend', () => {
-  it('resolves the mention and restores the inbox on send, and undoes both if sending fails', () => {
+  it('resolves the mention and restores the inbox on send, and undoes both if sending fails', async () => {
     const store = createStore();
 
     store.set(recordStoreFamilyState.atomFamily(THREAD_ID), {
@@ -39,14 +39,12 @@ describe('useOptimisticallyRestoreOnSend', () => {
       ),
     });
     const sentAt = '2026-10-01T12:00:00.000Z';
-    let rollback: () => void = () => undefined;
-
-    act(() => {
-      rollback = result.current.applyOptimisticRestore({
+    const rollback = await act(() =>
+      result.current.applyOptimisticRestore({
         threadId: THREAD_ID,
         optimisticUpdatedAt: sentAt,
-      });
-    });
+      }),
+    );
 
     expect(
       store.get(recordStoreFamilyState.atomFamily(THREAD_ID)),
@@ -75,7 +73,7 @@ describe('useOptimisticallyRestoreOnSend', () => {
     ).toEqual(ARCHIVED_PARTICIPANT);
   });
 
-  it('preserves a newer participant event when sending fails', () => {
+  it('preserves a newer participant event when sending fails', async () => {
     const store = createStore();
 
     store.set(agentChatThreadParticipantsState.atom, {
@@ -87,14 +85,12 @@ describe('useOptimisticallyRestoreOnSend', () => {
         <Provider store={store}>{children}</Provider>
       ),
     });
-    let rollback: () => void = () => undefined;
-
-    act(() => {
-      rollback = result.current.applyOptimisticRestore({
+    const rollback = await act(() =>
+      result.current.applyOptimisticRestore({
         threadId: THREAD_ID,
         optimisticUpdatedAt: '2026-10-01T12:00:00.000Z',
-      });
-    });
+      }),
+    );
 
     const mentionedAgainParticipant = {
       ...ARCHIVED_PARTICIPANT,
