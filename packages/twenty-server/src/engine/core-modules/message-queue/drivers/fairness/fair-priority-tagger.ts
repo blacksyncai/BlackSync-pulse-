@@ -7,6 +7,8 @@ import { RESET_FAIR_EPOCH_SCRIPT } from 'src/engine/core-modules/message-queue/d
 import { type MessageQueue } from 'src/engine/core-modules/message-queue/message-queue.constants';
 
 const FAIR_CLOCK_TTL_MS = 24 * 60 * 60 * 1000;
+
+export type FairTagReservation = { tag: number; weight: number };
 const VIRTUAL_TIME_MEMBER = 'v';
 
 export class FairPriorityTagger {
@@ -27,7 +29,7 @@ export class FairPriorityTagger {
     queueName: MessageQueue;
     groupKeys: string[];
     batchSize: number;
-  }): Promise<number | undefined> {
+  }): Promise<FairTagReservation | undefined> {
     try {
       const client = await this.getClient(queueName);
       const keys = [
@@ -39,7 +41,7 @@ export class FairPriorityTagger {
         ),
       ];
 
-      const rawTag: unknown = await client.runCommand('eval', [
+      const reply: unknown = await client.runCommand('eval', [
         FAIR_TAG_SCRIPT,
         keys.length,
         ...keys,
@@ -47,15 +49,17 @@ export class FairPriorityTagger {
         FAIR_CLOCK_TTL_MS,
         ...groupKeys,
       ]);
+      const [rawTag, rawWeight] = Array.isArray(reply) ? reply : [];
       const tag = Number(rawTag);
+      const weight = Number(rawWeight);
 
-      if (!Number.isFinite(tag)) {
-        this.warn({ queueName, action: 'parse the fair tag', error: rawTag });
+      if (!Number.isFinite(tag) || !Number.isFinite(weight) || weight <= 0) {
+        this.warn({ queueName, action: 'parse the fair tag', error: reply });
 
         return undefined;
       }
 
-      return tag;
+      return { tag, weight };
     } catch (error) {
       this.warn({ queueName, action: 'compute the fair tag', error });
 

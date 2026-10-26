@@ -468,13 +468,13 @@ export class BullMQDriver
 
     await Promise.all(
       [...jobIndexesByGroupKeys.values()].map(async (jobIndexes) => {
-        const baseTag = await this.fairPriorityTagger.tag({
+        const reservation = await this.fairPriorityTagger.tag({
           queueName,
           groupKeys: groupKeysByJobIndex[jobIndexes[0]],
           batchSize: jobIndexes.length,
         });
 
-        if (!isDefined(baseTag)) {
+        if (!isDefined(reservation)) {
           void this.metricsService.incrementCounterForEvent({
             key: MetricsKeys.JobFairTagFallback,
             attributes: { queue: queueName },
@@ -485,7 +485,7 @@ export class BullMQDriver
         }
 
         jobIndexes.forEach((jobIndex, position) => {
-          fairTags[jobIndex] = baseTag + position;
+          fairTags[jobIndex] = reservation.tag + position / reservation.weight;
         });
       }),
     );

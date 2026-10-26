@@ -25,5 +25,5 @@ for i = 4, #KEYS do
   redis.call('SET', KEYS[i], epoch .. ':' .. (tag + tonumber(ARGV[1]) / weight), 'PX', ARGV[2])
 end
 
-return tostring(tag)
+return {tostring(tag), tostring(weight)}
 `;

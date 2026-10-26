@@ -258,14 +258,17 @@ const createHarness = async ({
     enqueueBulk: async ({
       labels,
       workspaceId,
+      groupKeys,
     }: {
       labels: string[];
       workspaceId: string;
+      groupKeys?: string[];
     }) => {
       await driver.bulkAdd<ScenarioJobData>(
         QUEUE,
         JOB_NAME,
         labels.map((label) => ({ data: { label, workspaceId } })),
+        isDefined(groupKeys) ? { groupKeys } : undefined,
       );
     },
     processNext: async (count: number) => {
@@ -683,6 +686,63 @@ describe('BullMQDriver fairness scenarios', () => {
         'Q2',
         'Q3',
         'Q4',
+      ]);
+    });
+  });
+
+  describe('S7b: application P weighs 2; WP bulk-enqueues 4 jobs of P, then WP enqueues 1 more job of P and WQ enqueues 1 job of Q', () => {
+    const groupKeysOfP = [
+      buildWorkspaceGroupKey('WP'),
+      buildApplicationGroupKey('P'),
+    ];
+    const enqueue = async (harness: Harness) => {
+      await harness.setWeight({
+        groupKey: buildApplicationGroupKey('P'),
+        weight: 2,
+      });
+      await harness.enqueueBulk({
+        labels: buildLabels({ prefix: 'P', count: 4 }),
+        workspaceId: 'WP',
+        groupKeys: groupKeysOfP,
+      });
+      await harness.enqueue({
+        label: 'P5',
+        workspaceId: 'WP',
+        groupKeys: groupKeysOfP,
+      });
+      await harness.enqueue({
+        label: 'Q1',
+        workspaceId: 'WQ',
+        groupKeys: [
+          buildWorkspaceGroupKey('WQ'),
+          buildApplicationGroupKey('Q'),
+        ],
+      });
+    };
+
+    it('flag off: FIFO', async () => {
+      const harness = await createHarness({ isFairnessEnabled: false });
+
+      await enqueue(harness);
+
+      expect(await harness.processAll()).toEqual([
+        ...buildLabels({ prefix: 'P', count: 5 }),
+        'Q1',
+      ]);
+    });
+
+    it('flag on: the bulk is spaced like single jobs of the same weight, P keeps its order and its two slots per slot of Q', async () => {
+      const harness = await createHarness({ isFairnessEnabled: true });
+
+      await enqueue(harness);
+
+      expect(await harness.processAll()).toEqual([
+        'P1',
+        'P2',
+        'Q1',
+        'P3',
+        'P4',
+        'P5',
       ]);
     });
   });
