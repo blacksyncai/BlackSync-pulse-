@@ -1,13 +1,21 @@
 export const FAIR_TAG_SCRIPT = `
 local epoch = redis.call('GET', KEYS[1]) or '0'
-local tag = tonumber(redis.call('ZSCORE', KEYS[2], 'v') or '0')
+local vtime = tonumber(redis.call('ZSCORE', KEYS[2], 'v') or '0')
+local tag = vtime
+local clocks = {}
 
 for i = 4, #KEYS do
   local raw = redis.call('GET', KEYS[i]) or ''
   local clockEpoch, clock = string.match(raw, '^(%d+):(.+)$')
 
-  if clockEpoch == epoch and tonumber(clock) > tag then
-    tag = tonumber(clock)
+  clocks[i] = vtime
+
+  if clockEpoch == epoch and tonumber(clock) > vtime then
+    clocks[i] = tonumber(clock)
+  end
+
+  if clocks[i] > tag then
+    tag = clocks[i]
   end
 end
 
@@ -22,7 +30,7 @@ for i = 4, #KEYS do
 end
 
 for i = 4, #KEYS do
-  redis.call('SET', KEYS[i], epoch .. ':' .. (tag + tonumber(ARGV[1]) / weight), 'PX', ARGV[2])
+  redis.call('SET', KEYS[i], epoch .. ':' .. (clocks[i] + tonumber(ARGV[1]) / weight), 'PX', ARGV[2])
 end
 
 return {tostring(tag), tostring(weight)}

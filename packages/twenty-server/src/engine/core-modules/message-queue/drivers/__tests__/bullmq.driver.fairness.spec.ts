@@ -304,6 +304,8 @@ const createHarness = async ({
     }) => {
       await redis.hset(`${KEY_PREFIX}:${QUEUE}:fair:weights`, groupKey, weight);
     },
+    readFairTag: ({ label }: { label: string }) =>
+      mockBullMQ.jobs.find((job) => job.data.label === label)?.options.fairTag,
     breakRedis: () => {
       const runCommand = jest
         .fn()
@@ -743,6 +745,119 @@ describe('BullMQDriver fairness scenarios', () => {
         'P3',
         'P4',
         'P5',
+      ]);
+    });
+  });
+
+  describe('S7c: application H has 100 jobs waiting from workspaces X1 to X10, then workspace W enqueues 1 job of H and 1 job of application Q', () => {
+    const herdLabels = buildLabels({ prefix: 'H', count: 100 });
+    const enqueue = async (harness: Harness) => {
+      for (const [index, label] of herdLabels.entries()) {
+        const workspaceId = `X${(index % 10) + 1}`;
+
+        await harness.enqueue({
+          label,
+          workspaceId,
+          groupKeys: [
+            buildWorkspaceGroupKey(workspaceId),
+            buildApplicationGroupKey('H'),
+          ],
+        });
+      }
+      await harness.enqueue({
+        label: 'W_H',
+        workspaceId: 'W',
+        groupKeys: [buildWorkspaceGroupKey('W'), buildApplicationGroupKey('H')],
+      });
+      await harness.enqueue({
+        label: 'W_Q',
+        workspaceId: 'W',
+        groupKeys: [buildWorkspaceGroupKey('W'), buildApplicationGroupKey('Q')],
+      });
+    };
+
+    it('flag off: W waits behind the whole backlog of H', async () => {
+      const harness = await createHarness({ isFairnessEnabled: false });
+
+      await enqueue(harness);
+
+      expect(await harness.processAll()).toEqual([...herdLabels, 'W_H', 'W_Q']);
+    });
+
+    it('flag on: the job of H takes its turn in the backlog of H, the job of Q runs right away because W is only charged for its own jobs', async () => {
+      const harness = await createHarness({ isFairnessEnabled: true });
+
+      await enqueue(harness);
+
+      expect(harness.readFairTag({ label: 'W_H' })).toBe(100);
+      expect(harness.readFairTag({ label: 'W_Q' })).toBe(1);
+      expect(await harness.processNext(3)).toEqual(['H1', 'H2', 'W_Q']);
+      expect(await harness.processAll()).toEqual([
+        ...herdLabels.slice(2),
+        'W_H',
+      ]);
+    });
+  });
+
+  describe('S7d: application P weighs 2; X enqueues 6 jobs of P, W bulk-enqueues 4 jobs of P then 1 job of application Q, X enqueues 1 more job of P', () => {
+    const groupKeysOfP = (workspaceId: string) => [
+      buildWorkspaceGroupKey(workspaceId),
+      buildApplicationGroupKey('P'),
+    ];
+    const enqueue = async (harness: Harness) => {
+      await harness.setWeight({
+        groupKey: buildApplicationGroupKey('P'),
+        weight: 2,
+      });
+      await harness.enqueueMany({
+        labels: buildLabels({ prefix: 'P', count: 6 }),
+        workspaceId: 'X',
+        groupKeys: groupKeysOfP('X'),
+      });
+      await harness.enqueueBulk({
+        labels: buildLabels({ prefix: 'B', count: 4 }),
+        workspaceId: 'W',
+        groupKeys: groupKeysOfP('W'),
+      });
+      await harness.enqueue({
+        label: 'Q1',
+        workspaceId: 'W',
+        groupKeys: [buildWorkspaceGroupKey('W'), buildApplicationGroupKey('Q')],
+      });
+      await harness.enqueue({
+        label: 'P7',
+        workspaceId: 'X',
+        groupKeys: groupKeysOfP('X'),
+      });
+    };
+
+    it('flag off: FIFO', async () => {
+      const harness = await createHarness({ isFairnessEnabled: false });
+
+      await enqueue(harness);
+
+      expect(await harness.processAll()).toEqual([
+        ...buildLabels({ prefix: 'P', count: 6 }),
+        ...buildLabels({ prefix: 'B', count: 4 }),
+        'Q1',
+        'P7',
+      ]);
+    });
+
+    it('flag on: the bulk fills the half-slots it reserved on P, W is charged those half-slots only, so its job of Q (tag 2, floored like P6) overtakes its bulk and the next job of P follows the bulk', async () => {
+      const harness = await createHarness({ isFairnessEnabled: true });
+
+      await enqueue(harness);
+
+      expect(harness.readFairTag({ label: 'B1' })).toBe(3);
+      expect(harness.readFairTag({ label: 'B4' })).toBe(4.5);
+      expect(harness.readFairTag({ label: 'Q1' })).toBe(2);
+      expect(harness.readFairTag({ label: 'P7' })).toBe(5);
+      expect(await harness.processAll()).toEqual([
+        ...buildLabels({ prefix: 'P', count: 6 }),
+        'Q1',
+        ...buildLabels({ prefix: 'B', count: 4 }),
+        'P7',
       ]);
     });
   });
