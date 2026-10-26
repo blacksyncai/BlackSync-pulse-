@@ -71,9 +71,7 @@ export class AgentChatSharingService {
     return hasAgentChatThreadChannelField({ flatFieldMetadataMaps });
   }
 
-  // TODO(@bosiraphael): remove once 2.52 leaves the cross-upgrade window. Until
-  // the 2.52 mention resolution command reaches a workspace, its chat
-  // participants have no lastResolvedMentionAt column
+  // TODO(@bosiraphael): remove once 2.52 leaves the cross-upgrade window
   async assertHasMentionResolution(workspaceId: string): Promise<void> {
     const { flatFieldMetadataMaps } =
       await this.workspaceCacheService.getOrRecompute(workspaceId, [
