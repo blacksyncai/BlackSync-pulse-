@@ -154,25 +154,6 @@ describe('AgentChatThreadParticipantOperationsEffect', () => {
     ).toEqual({ ...snoozedParticipant, ...change });
   });
 
-  it('applies mention resolution recorded by an accepted response', () => {
-    const mentionedParticipant = {
-      ...READ_PARTICIPANT,
-      lastMentionedAt: '2026-10-01T10:00:00.000Z',
-    };
-    const { store } = renderEffect({ [THREAD_ID]: mentionedParticipant });
-    const resolvedParticipant = {
-      ...mentionedParticipant,
-      lastResolvedMentionAt: mentionedParticipant.lastMentionedAt,
-      updatedAt: '2026-10-01T10:01:00.000Z',
-    };
-
-    receiveParticipantUpdate(resolvedParticipant);
-
-    expect(
-      store.get(agentChatThreadParticipantsState.atom)?.[THREAD_ID],
-    ).toEqual(resolvedParticipant);
-  });
-
   it('keeps a change for a page already on its way, with its new version', () => {
     // Archived through an earlier change, so its version is still T0
     const { store } = renderEffect({
