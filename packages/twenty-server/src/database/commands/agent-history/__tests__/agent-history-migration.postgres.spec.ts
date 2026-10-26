@@ -38,13 +38,15 @@ import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.ent
 import { WorkspaceDataSource } from 'src/engine/twenty-orm/datasource/workspace-data-source';
 import { WorkspaceSchemaTableManagerService } from 'src/engine/twenty-orm/workspace-schema-manager/services/workspace-schema-table-manager.service';
 import { generateColumnDefinitions } from 'src/engine/workspace-manager/workspace-migration/workspace-migration-runner/utils/generate-column-definitions.util';
+import { type FlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/types/flat-field-metadata.type';
+import { type FlatObjectMetadata } from 'src/engine/metadata-modules/flat-object-metadata/types/flat-object-metadata.type';
 import { computeTwentyStandardApplicationAllFlatEntityMaps } from 'src/engine/workspace-manager/twenty-standard-application/utils/twenty-standard-application-all-flat-entity-maps.constant';
 import { buildObjectIdByNameMaps } from 'src/engine/metadata-modules/flat-object-metadata/utils/build-object-id-by-name-maps.util';
 import { createEmptyFlatEntityMaps } from 'src/engine/metadata-modules/flat-entity/constant/create-empty-flat-entity-maps.constant';
 import { buildSystemAuthContext } from 'src/engine/twenty-orm/utils/build-system-auth-context.util';
 import { AgentHistoryRepository } from 'src/engine/metadata-modules/ai/ai-history/repositories/agent-history-repository';
 import { AgentChatThreadWorkspaceEntity } from 'src/engine/metadata-modules/ai/ai-history/standard-objects/agent-chat-thread.workspace-entity';
-import { DataSource, IsNull, type Repository } from 'typeorm';
+import { DataSource, IsNull, type QueryRunner, type Repository } from 'typeorm';
 import { Pool } from 'pg';
 import { type FeatureFlagKey } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
@@ -66,6 +68,46 @@ const TURN_ID = '20202020-4444-4444-8444-444444444444';
 const MESSAGE_ID = '20202020-5555-4555-8555-555555555555';
 const MEMBER_ID = '20202020-7777-4777-8777-777777777777';
 const SCHEMA = getWorkspaceSchemaName(WORKSPACE_ID);
+
+const createWorkspaceObjectTable = async ({
+  queryRunner,
+  flatObjectMetadata,
+  flatFieldMetadatas,
+}: {
+  queryRunner: QueryRunner;
+  flatObjectMetadata: FlatObjectMetadata;
+  flatFieldMetadatas: FlatFieldMetadata[];
+}) => {
+  for (const enumOperation of collectEnumOperationsForObject({
+    flatFieldMetadatas,
+    tableName: flatObjectMetadata.nameSingular,
+    operation: EnumOperation.CREATE,
+  })) {
+    if (enumOperation.operation !== EnumOperation.CREATE) {
+      continue;
+    }
+
+    await new WorkspaceSchemaEnumManagerService().createEnum({
+      queryRunner,
+      schemaName: SCHEMA,
+      enumName: enumOperation.enumName,
+      values: enumOperation.values,
+    });
+  }
+
+  await new WorkspaceSchemaTableManagerService().createTable({
+    queryRunner,
+    schemaName: SCHEMA,
+    tableName: flatObjectMetadata.nameSingular,
+    columnDefinitions: flatFieldMetadatas.flatMap((flatFieldMetadata) =>
+      generateColumnDefinitions({
+        flatFieldMetadata,
+        flatObjectMetadata,
+        workspaceId: WORKSPACE_ID,
+      }),
+    ),
+  });
+};
 
 (DATABASE_URL ? describe : describe.skip)(
   'agent history migration on PostgreSQL',
@@ -364,34 +406,11 @@ const SCHEMA = getWorkspaceSchemaName(WORKSPACE_ID);
             ).filter(isDefined),
             ...legacyFields,
           ].filter((field) => field.objectMetadataId === object.id);
-          for (const enumOperation of collectEnumOperationsForObject({
-            flatFieldMetadatas: fields,
-            tableName: table.name,
-            operation: EnumOperation.CREATE,
-          })) {
-            if (enumOperation.operation !== EnumOperation.CREATE) {
-              continue;
-            }
 
-            await new WorkspaceSchemaEnumManagerService().createEnum({
-              queryRunner: runner,
-              schemaName: SCHEMA,
-              enumName: enumOperation.enumName,
-              values: enumOperation.values,
-            });
-          }
-
-          await new WorkspaceSchemaTableManagerService().createTable({
+          await createWorkspaceObjectTable({
             queryRunner: runner,
-            schemaName: SCHEMA,
-            tableName: table.name,
-            columnDefinitions: fields.flatMap((field) =>
-              generateColumnDefinitions({
-                flatFieldMetadata: field,
-                flatObjectMetadata: object,
-                workspaceId: WORKSPACE_ID,
-              }),
-            ),
+            flatObjectMetadata: object,
+            flatFieldMetadatas: fields,
           });
         }
         for (const index of Object.values(
@@ -1464,34 +1483,10 @@ const SCHEMA = getWorkspaceSchemaName(WORKSPACE_ID);
         await runner.connect();
 
         try {
-          for (const enumOperation of collectEnumOperationsForObject({
-            flatFieldMetadatas: participantFields,
-            tableName: participantObject.nameSingular,
-            operation: EnumOperation.CREATE,
-          })) {
-            if (enumOperation.operation !== EnumOperation.CREATE) {
-              continue;
-            }
-
-            await new WorkspaceSchemaEnumManagerService().createEnum({
-              queryRunner: runner,
-              schemaName: SCHEMA,
-              enumName: enumOperation.enumName,
-              values: enumOperation.values,
-            });
-          }
-
-          await new WorkspaceSchemaTableManagerService().createTable({
+          await createWorkspaceObjectTable({
             queryRunner: runner,
-            schemaName: SCHEMA,
-            tableName: participantObject.nameSingular,
-            columnDefinitions: participantFields.flatMap((field) =>
-              generateColumnDefinitions({
-                flatFieldMetadata: field,
-                flatObjectMetadata: participantObject,
-                workspaceId: WORKSPACE_ID,
-              }),
-            ),
+            flatObjectMetadata: participantObject,
+            flatFieldMetadatas: participantFields,
           });
         } finally {
           await runner.release();
