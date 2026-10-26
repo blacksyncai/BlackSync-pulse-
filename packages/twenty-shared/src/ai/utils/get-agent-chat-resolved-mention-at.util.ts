@@ -1,4 +1,4 @@
-import { isDefined } from '@/utils/validation/isDefined';
+import { isAgentChatMentionUnresolved } from '@/ai/utils/is-agent-chat-mention-unresolved.util';
 
 export const getAgentChatResolvedMentionAt = ({
   lastMentionedAt,
@@ -6,9 +6,12 @@ export const getAgentChatResolvedMentionAt = ({
 }: {
   lastMentionedAt?: string | null;
   lastResolvedMentionAt?: string | null;
-}): string | null =>
-  isDefined(lastMentionedAt) &&
-  (!isDefined(lastResolvedMentionAt) ||
-    new Date(lastMentionedAt) > new Date(lastResolvedMentionAt))
-    ? lastMentionedAt
-    : (lastResolvedMentionAt ?? null);
+}): string | null => {
+  if (
+    isAgentChatMentionUnresolved({ lastMentionedAt, lastResolvedMentionAt })
+  ) {
+    return lastMentionedAt ?? null;
+  }
+
+  return lastResolvedMentionAt ?? null;
+};

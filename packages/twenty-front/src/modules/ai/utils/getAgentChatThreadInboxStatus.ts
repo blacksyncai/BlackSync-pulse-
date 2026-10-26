@@ -1,4 +1,5 @@
 import { isAfter } from 'date-fns';
+import { isAgentChatMentionUnresolved } from 'twenty-shared/ai';
 import { isDefined } from 'twenty-shared/utils';
 
 import { type AgentChatThreadInboxStatus } from '@/ai/types/AgentChatThreadInboxStatus';
@@ -25,10 +26,10 @@ export const getAgentChatThreadInboxStatus = ({
     (!isDefined(participant.lastReadAt) ||
       isAfter(lastActivityAt, participant.lastReadAt));
   const isSubscribed = participant?.isSubscribed ?? false;
-  const isMentioned =
-    isDefined(participant?.lastMentionedAt) &&
-    (!isDefined(participant.lastResolvedMentionAt) ||
-      isAfter(participant.lastMentionedAt, participant.lastResolvedMentionAt));
+  const isMentioned = isAgentChatMentionUnresolved({
+    lastMentionedAt: participant?.lastMentionedAt,
+    lastResolvedMentionAt: participant?.lastResolvedMentionAt,
+  });
   const archivedAt = participant?.archivedAt;
   const snoozedUntil = participant?.snoozedUntil;
 
