@@ -342,15 +342,18 @@ export class AgentChatThreadParticipantService {
   async resolveMentionByQueuedMessageInTransaction({
     scope,
     messageId,
+    writeQueuedMessage,
     ...args
   }: AgentChatThreadAccessArgs & {
     scope: Pick<AgentHistoryTransactionScope, 'executeRawQuery'>;
     messageId: string;
+    writeQueuedMessage: () => Promise<void>;
   }): Promise<void> {
     await this.sharingService.assertHasMentionResolutionOrThrow(
       args.workspaceId,
     );
     await this.lockInTransaction({ scope, ...args });
+    await writeQueuedMessage();
     await scope.executeRawQuery({
       sql: `UPDATE ${getAgentChatThreadParticipantTable(args.workspaceId)} AS participant
         SET "lastResolvedMentionAt" = GREATEST(participant."lastMentionedAt", message."createdAt"),

@@ -104,19 +104,18 @@ export class AgentChatQueueService {
 
     await this.conversationWriterService.runInTransaction(
       workspaceId,
-      async (scope) => {
-        await scope.insert('agentMessage', messageValues);
-        await scope.insert('agentMessagePart', parts);
-        await this.participantService.resolveMentionByQueuedMessageInTransaction(
-          {
-            workspaceId,
-            workspaceMemberId,
-            threadId,
-            messageId: savedMessageId,
-            scope,
+      (scope) =>
+        this.participantService.resolveMentionByQueuedMessageInTransaction({
+          workspaceId,
+          workspaceMemberId,
+          threadId,
+          messageId: savedMessageId,
+          scope,
+          writeQueuedMessage: async () => {
+            await scope.insert('agentMessage', messageValues);
+            await scope.insert('agentMessagePart', parts);
           },
-        );
-      },
+        }),
     );
 
     await this.threadService.notifyThreadActivityUpdated({

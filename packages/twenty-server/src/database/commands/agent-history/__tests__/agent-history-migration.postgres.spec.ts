@@ -303,7 +303,13 @@ const createWorkspaceObjectTable = async ({
     const createQueueService = ({
       messageRepository,
       participantService = {
-        resolveMentionByQueuedMessageInTransaction: jest.fn(),
+        resolveMentionByQueuedMessageInTransaction: jest.fn(
+          ({
+            writeQueuedMessage,
+          }: {
+            writeQueuedMessage: () => Promise<void>;
+          }) => writeQueuedMessage(),
+        ),
         reopenMentionOfDeletedQueuedMessageInTransaction: jest.fn(),
       } as never,
     }: {

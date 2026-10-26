@@ -16,6 +16,7 @@ import { findManyOperationFactory } from 'test/integration/graphql/utils/find-ma
 import { makeGraphqlApiRequest } from 'test/integration/graphql/utils/make-graphql-api-request.util';
 import { makeMetadataApiRequest } from 'test/integration/metadata/suites/utils/make-metadata-api-request.util';
 import { destroyAgentChatThread } from 'test/integration/utils/destroy-agent-chat-thread.util';
+import { expectEventually } from 'test/integration/utils/expect-eventually.util';
 import { getAppProviderByClassName } from 'test/integration/utils/get-app-provider-by-class-name.util';
 import { setManualRecordShare } from 'test/integration/utils/set-manual-record-share.util';
 
@@ -1349,6 +1350,15 @@ describe('Chat thread participant state through the authenticated API', () => {
         messageId,
       });
 
+    const waitForBlockedParticipantWrite = () =>
+      expectEventually(async () => {
+        const blockedLocks = await global.testDataSource.query(
+          `SELECT 1 FROM pg_locks WHERE locktype = 'advisory' AND NOT granted`,
+        );
+
+        expect(blockedLocks).not.toHaveLength(0);
+      });
+
     it('reopens the mention when the reply is deleted before it is sent', async () => {
       const threadId = await createTestThread();
 
@@ -1395,6 +1405,44 @@ describe('Chat thread participant state through the authenticated API', () => {
       ).toMatchObject({
         lastResolvedMentionAt: filedParticipant!.lastResolvedMentionAt,
       });
+    });
+
+    it('queues a reply while another write of the member locks the chat', async () => {
+      const threadId = await createTestThread();
+
+      await addParticipants(threadId, [WORKSPACE_MEMBER_DATA_SEED_IDS.JONY]);
+
+      const writeEvents = new EventEmitter();
+      const writeStarted = once(writeEvents, 'started');
+      const writeResumed = once(writeEvents, 'resumed');
+      const write =
+        getAppProviderByClassName<AgentChatThreadParticipantService>(
+          'AgentChatThreadParticipantService',
+        ).resolveMention({
+          workspaceId: SEED_APPLE_WORKSPACE_ID,
+          workspaceMemberId: WORKSPACE_MEMBER_DATA_SEED_IDS.JONY,
+          threadId,
+          writeResponse: async ({ manager, table }) => {
+            writeEvents.emit('started');
+            await writeResumed;
+            await manager.query(
+              `SELECT id FROM ${table('agentChatThread')} WHERE id = $1 FOR UPDATE`,
+              [threadId],
+            );
+          },
+        });
+
+      await writeStarted;
+
+      const reply = queueReply(threadId);
+
+      await waitForBlockedParticipantWrite();
+      writeEvents.emit('resumed');
+
+      await expect(Promise.all([write, reply])).resolves.toEqual([
+        undefined,
+        expect.objectContaining({ threadId }),
+      ]);
     });
   });
 
