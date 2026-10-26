@@ -27,12 +27,19 @@ const buildResolver = () => {
     delete: jest.fn(),
   };
   const messages = {
+    existsBy: jest.fn().mockResolvedValue(true),
     findOne: jest.fn().mockResolvedValue({ id: 'queued', threadId: THREAD_ID }),
     find: jest.fn(),
     delete: jest.fn(),
     query: jest.fn().mockResolvedValue([]),
   };
   const sharing = {
+    assertAssistantParticipationAvailable: jest
+      .fn()
+      .mockResolvedValue(undefined),
+    findEligibleParticipantWorkspaceMemberIds: jest
+      .fn()
+      .mockImplementation(async ({ memberIds }) => memberIds),
     createThread: jest.fn().mockResolvedValue({ id: THREAD_ID }),
     getAuthContext: jest.fn().mockResolvedValue({ userWorkspaceId: 'owner' }),
     getReadableThread: jest
@@ -50,6 +57,7 @@ const buildResolver = () => {
           id: THREAD_ID,
           workspaceMemberId: 'owner',
           workspaceId: WORKSPACE_ID,
+          isAssistantParticipant: true,
         };
       }),
     restoreThreadWithAccess: jest
@@ -76,6 +84,9 @@ const buildResolver = () => {
     {} as never,
     {} as never,
   );
+  jest
+    .spyOn(threadService, 'setInitialAssistantParticipation')
+    .mockResolvedValue(undefined);
   const chatService = new AgentChatService(
     threadRepository as never,
     { find: jest.fn().mockResolvedValue([]) } as never,
@@ -116,6 +127,14 @@ const buildResolver = () => {
   const messageReactions = {
     findReactionsByMessageId: jest.fn().mockResolvedValue(new Map()),
   };
+  const replyPolicy = {
+    shouldReply: jest.fn().mockResolvedValue(true),
+  };
+  const participation = {
+    runWithMessageLock: jest.fn().mockImplementation(({ work }) => work()),
+    completeMessage: jest.fn().mockResolvedValue([]),
+    recoverMessage: jest.fn().mockResolvedValue(undefined),
+  };
   const queueService = new AgentChatQueueService(
     {} as never,
     messages as never,
@@ -153,6 +172,8 @@ const buildResolver = () => {
     } as never,
     featureFlags as never,
     messageReactions as never,
+    replyPolicy as never,
+    participation as never,
   );
   return {
     resolver,
@@ -166,8 +187,228 @@ const buildResolver = () => {
     events,
     redis,
     recordEvents,
+    replyPolicy,
+    participation,
   };
 };
+
+const sendWithParticipation = ({
+  resolver,
+  isAssistantParticipant = true,
+  isAssistantMentioned = false,
+  mentionedWorkspaceMemberIds = [],
+  recipientWorkspaceMemberIds = [],
+}: {
+  resolver: AgentChatResolver;
+  isAssistantParticipant?: boolean;
+  isAssistantMentioned?: boolean;
+  mentionedWorkspaceMemberIds?: string[];
+  recipientWorkspaceMemberIds?: string[];
+}) =>
+  resolver.sendChatMessage(
+    THREAD_ID,
+    'Can you help?',
+    'message',
+    null,
+    undefined,
+    null,
+    mentionedWorkspaceMemberIds,
+    null,
+    'owner-user',
+    'owner',
+    workspace,
+    true,
+    isAssistantParticipant,
+    isAssistantMentioned,
+    recipientWorkspaceMemberIds,
+  );
+
+describe('AgentChatResolver assistant participation', () => {
+  it('uses current draft choices when a previous first send left an empty thread', async () => {
+    const context = buildResolver();
+    context.messages.existsBy.mockResolvedValue(false);
+    context.replyPolicy.shouldReply.mockResolvedValue(false);
+
+    await sendWithParticipation({
+      resolver: context.resolver,
+      isAssistantParticipant: false,
+    });
+
+    expect(context.replyPolicy.shouldReply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        thread: expect.objectContaining({ isAssistantParticipant: false }),
+      }),
+    );
+    expect(context.streaming.saveMessageWithoutReply).toHaveBeenCalled();
+    expect(
+      context.threadService.setInitialAssistantParticipation,
+    ).toHaveBeenCalledWith({
+      threadId: THREAD_ID,
+      workspaceId: WORKSPACE_ID,
+      workspaceMemberId: 'owner',
+      isAssistantParticipant: false,
+    });
+  });
+
+  it('counts only validated mentions and initial recipients for reply selection', async () => {
+    const context = buildResolver();
+    context.messages.existsBy.mockResolvedValue(false);
+    context.sharing.findEligibleParticipantWorkspaceMemberIds.mockResolvedValue(
+      ['eligible-recipient'],
+    );
+
+    await sendWithParticipation({
+      resolver: context.resolver,
+      mentionedWorkspaceMemberIds: ['foreign-member'],
+      recipientWorkspaceMemberIds: ['eligible-recipient'],
+    });
+
+    expect(context.replyPolicy.shouldReply).toHaveBeenCalledWith(
+      expect.objectContaining({
+        additionalWorkspaceMemberIds: ['eligible-recipient'],
+        workspaceMemberId: 'owner',
+      }),
+    );
+  });
+
+  it('completes participant delivery after the message is accepted', async () => {
+    const context = buildResolver();
+    context.participation.completeMessage.mockResolvedValue(['recipient']);
+    context.streaming.streamAgentChat.mockImplementation(async () => {
+      expect(context.participation.completeMessage).not.toHaveBeenCalled();
+
+      return { queued: false, messageId: 'message' };
+    });
+
+    const result = await sendWithParticipation({
+      resolver: context.resolver,
+      recipientWorkspaceMemberIds: ['recipient'],
+    });
+
+    expect(result.recipientParticipantWorkspaceMemberIds).toEqual([
+      'recipient',
+    ]);
+    expect(context.participation.completeMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ recipientWorkspaceMemberIds: ['recipient'] }),
+    );
+  });
+
+  it('preserves the send failure and recovers any message already accepted', async () => {
+    const context = buildResolver();
+    const sendError = new Error('queue publication failed');
+    context.streaming.streamAgentChat.mockRejectedValue(sendError);
+
+    await expect(
+      sendWithParticipation({ resolver: context.resolver }),
+    ).rejects.toBe(sendError);
+
+    expect(context.participation.recoverMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ messageId: 'message' }),
+    );
+    expect(context.participation.completeMessage).not.toHaveBeenCalled();
+  });
+
+  it('allows a changed first-message Ada selection after a failed send', async () => {
+    const context = buildResolver();
+    context.messages.existsBy.mockResolvedValue(false);
+    context.replyPolicy.shouldReply
+      .mockResolvedValueOnce(false)
+      .mockResolvedValue(true);
+    context.streaming.saveMessageWithoutReply.mockRejectedValueOnce(
+      new Error('message storage failed'),
+    );
+
+    await expect(
+      sendWithParticipation({
+        resolver: context.resolver,
+        isAssistantParticipant: false,
+      }),
+    ).rejects.toThrow('message storage failed');
+
+    await sendWithParticipation({
+      resolver: context.resolver,
+      isAssistantParticipant: true,
+    });
+
+    expect(context.replyPolicy.shouldReply).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        thread: expect.objectContaining({ isAssistantParticipant: true }),
+      }),
+    );
+    expect(context.streaming.streamAgentChat).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves legacy reply dispatch when the explicit mention signal is absent', async () => {
+    const context = buildResolver();
+    context.replyPolicy.shouldReply.mockResolvedValue(false);
+
+    await context.resolver.sendChatMessage(
+      THREAD_ID,
+      '@Ada can you help?',
+      'message',
+      null,
+      undefined,
+      null,
+      [],
+      null,
+      'owner-user',
+      'owner',
+      workspace,
+      true,
+    );
+
+    expect(context.replyPolicy.shouldReply).not.toHaveBeenCalled();
+    expect(context.streaming.streamAgentChat).toHaveBeenCalled();
+  });
+
+  it('uses server reply selection when the client explicitly reports no Ada mention', async () => {
+    const context = buildResolver();
+    context.replyPolicy.shouldReply.mockResolvedValue(false);
+
+    await sendWithParticipation({ resolver: context.resolver });
+
+    expect(context.replyPolicy.shouldReply).toHaveBeenCalled();
+    expect(context.streaming.streamAgentChat).not.toHaveBeenCalled();
+    expect(context.streaming.saveMessageWithoutReply).toHaveBeenCalled();
+  });
+
+  it.each([
+    { hasMessages: true, initialSelection: true },
+    { hasMessages: false, initialSelection: false },
+  ])(
+    'keeps Ada excluded for a cached client when hasMessages is $hasMessages',
+    async ({ hasMessages, initialSelection }) => {
+      const context = buildResolver();
+      context.messages.existsBy.mockResolvedValue(hasMessages);
+      context.sharing.getThreadWithAccess.mockResolvedValue({
+        id: THREAD_ID,
+        workspaceMemberId: 'owner',
+        workspaceId: WORKSPACE_ID,
+        isAssistantParticipant: false,
+      });
+
+      await context.resolver.sendChatMessage(
+        THREAD_ID,
+        'Can another person take this?',
+        'message',
+        null,
+        undefined,
+        null,
+        [],
+        null,
+        'owner-user',
+        'owner',
+        workspace,
+        true,
+        initialSelection,
+      );
+
+      expect(context.replyPolicy.shouldReply).not.toHaveBeenCalled();
+      expect(context.streaming.streamAgentChat).not.toHaveBeenCalled();
+      expect(context.streaming.saveMessageWithoutReply).toHaveBeenCalled();
+    },
+  );
+});
 
 describe('Shared conversation API boundaries', () => {
   it('does not announce a restore when the transaction rolls back', async () => {
@@ -198,6 +439,7 @@ describe('Shared conversation API boundaries', () => {
       id: THREAD_ID,
       workspaceMemberId: 'owner',
       workspaceId: WORKSPACE_ID,
+      isAssistantParticipant: true,
       deletedAt: '2026-09-01T00:00:00.000Z',
     };
     sharing.getThreadWithAccess.mockResolvedValue(deletedThread);
@@ -350,6 +592,7 @@ describe('Shared conversation API boundaries', () => {
       id: THREAD_ID,
       workspaceMemberId: 'owner',
       workspaceId: WORKSPACE_ID,
+      isAssistantParticipant: true,
     });
     await resolver.sendChatMessage(
       THREAD_ID,

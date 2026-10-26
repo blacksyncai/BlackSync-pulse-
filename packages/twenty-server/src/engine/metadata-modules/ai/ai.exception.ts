@@ -22,6 +22,7 @@ export enum AiExceptionCode {
   CHAT_THREAD_CANNOT_LEAVE_CHANNEL = 'CHAT_THREAD_CANNOT_LEAVE_CHANNEL',
   CHAT_CHANNEL_NOT_FOUND = 'CHAT_CHANNEL_NOT_FOUND',
   CHAT_CHANNELS_UNAVAILABLE = 'CHAT_CHANNELS_UNAVAILABLE',
+  CHAT_PARTICIPATION_UNAVAILABLE = 'CHAT_PARTICIPATION_UNAVAILABLE',
   CHAT_CHANNEL_NOT_EMPTY = 'CHAT_CHANNEL_NOT_EMPTY',
   CHAT_CHANNEL_BUSY = 'CHAT_CHANNEL_BUSY',
   CHAT_CHANNEL_IS_STANDARD = 'CHAT_CHANNEL_IS_STANDARD',
@@ -84,6 +85,8 @@ const getAiExceptionUserFriendlyMessage = (code: AiExceptionCode) => {
       return msg`Channel not found.`;
     case AiExceptionCode.CHAT_CHANNELS_UNAVAILABLE:
       return msg`Channels are not available yet. Try again in a few minutes.`;
+    case AiExceptionCode.CHAT_PARTICIPATION_UNAVAILABLE:
+      return msg`Chat participants are not available yet. Try again in a few minutes.`;
     case AiExceptionCode.CHAT_CHANNEL_NOT_EMPTY:
       return msg`Move this channel's chats to another channel before deleting it.`;
     case AiExceptionCode.CHAT_CHANNEL_BUSY:

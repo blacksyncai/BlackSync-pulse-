@@ -147,8 +147,12 @@ const buildContext = ({
     {} as never,
     workspaceOrmManager as never,
     {} as never,
+    {} as never,
   );
 
+  jest
+    .spyOn(sharingService, 'assertAssistantParticipationAvailable')
+    .mockResolvedValue(undefined);
   jest
     .spyOn(sharingService, 'getParticipantObjectMetadataId')
     .mockResolvedValue(PARTICIPANT_OBJECT_METADATA_ID);
