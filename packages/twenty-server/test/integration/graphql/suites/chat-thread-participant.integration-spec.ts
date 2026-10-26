@@ -76,7 +76,7 @@ const addParticipants = (
 ) =>
   getAppProviderByClassName<AgentChatThreadService>(
     'AgentChatThreadService',
-  ).addParticipants({
+  ).mentionParticipants({
     workspaceId: SEED_APPLE_WORKSPACE_ID,
     workspaceMemberId,
     threadId,
@@ -1319,10 +1319,9 @@ describe('Chat thread participant state through the authenticated API', () => {
       workspaceMemberId: WORKSPACE_MEMBER_DATA_SEED_IDS.JANE,
       threadId,
       participantWorkspaceMemberIds: [WORKSPACE_MEMBER_DATA_SEED_IDS.JONY],
-      reason: 'delivery' as const,
     };
 
-    await threadService.addParticipants(delivery);
+    await threadService.deliverToParticipants(delivery);
 
     expect(
       await findMyParticipant(threadId, APPLE_JONY_MEMBER_ACCESS_TOKEN),
@@ -1340,7 +1339,7 @@ describe('Chat thread participant state through the authenticated API', () => {
       APPLE_JONY_MEMBER_ACCESS_TOKEN,
     );
 
-    await threadService.addParticipants(delivery);
+    await threadService.deliverToParticipants(delivery);
 
     expect(
       await findMyParticipant(threadId, APPLE_JONY_MEMBER_ACCESS_TOKEN),

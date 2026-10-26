@@ -284,7 +284,7 @@ describe('Answering a chat tool call', () => {
 
   it('resolves only the answering member while another request remains pending', async () => {
     await pauseOnQuestions('mention-first-answer', 'mention-pending-answer');
-    await getAgentChatThreadService().addParticipants({
+    await getAgentChatThreadService().mentionParticipants({
       workspaceId,
       workspaceMemberId,
       threadId,

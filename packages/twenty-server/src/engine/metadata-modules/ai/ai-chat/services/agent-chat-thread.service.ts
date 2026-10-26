@@ -211,6 +211,9 @@ export class AgentChatThreadService {
       return;
     }
 
+    const participantObjectMetadataId =
+      await this.sharingService.getParticipantObjectMetadataId(workspaceId);
+
     const { generatedMaps: assignedThreads } =
       await this.threadRepository.update(
         workspaceId,
@@ -226,8 +229,6 @@ export class AgentChatThreadService {
     }
 
     const assignedThreadIds = assignedThreads.map(({ id }) => id);
-    const participantObjectMetadataId =
-      await this.sharingService.getParticipantObjectMetadataId(workspaceId);
 
     const setUpThreads = await this.threadRepository.query(
       workspaceId,
@@ -323,14 +324,42 @@ export class AgentChatThreadService {
 
   // A mentioned member follows the chat like one who wrote in it, and finds
   // it unread in their inbox even if they had read or archived it
-  async addParticipants({
+  async mentionParticipants(
+    args: AgentChatThreadAccessArgs & {
+      participantWorkspaceMemberIds: string[];
+    },
+  ): Promise<string[]> {
+    return this.addParticipants({
+      ...args,
+      writeParticipant: (participantArgs) =>
+        this.participantService.markAsMentioned(participantArgs),
+    });
+  }
+
+  async deliverToParticipants(
+    args: AgentChatThreadAccessArgs & {
+      participantWorkspaceMemberIds: string[];
+    },
+  ): Promise<string[]> {
+    return this.addParticipants({
+      ...args,
+      writeParticipant: (participantArgs) =>
+        this.participantService.deliverToInbox(participantArgs),
+    });
+  }
+
+  private async addParticipants({
     participantWorkspaceMemberIds,
-    reason = 'mention',
+    writeParticipant,
     ...args
   }: AgentChatThreadAccessArgs & {
     participantWorkspaceMemberIds: string[];
-    reason?: 'mention' | 'delivery';
+    writeParticipant: (
+      participantArgs: AgentChatThreadAccessArgs,
+    ) => Promise<void>;
   }): Promise<string[]> {
+    await this.sharingService.assertHasMentionResolution(args.workspaceId);
+
     const thread = await this.getWritableThread(args);
     const candidateMemberIds = [
       ...new Set(participantWorkspaceMemberIds),
@@ -365,18 +394,11 @@ export class AgentChatThreadService {
     );
 
     for (const participantMemberId of participantMemberIds) {
-      const participantArgs = {
+      await writeParticipant({
         workspaceId: args.workspaceId,
         threadId: args.threadId,
         workspaceMemberId: participantMemberId,
-      };
-
-      if (reason === 'mention') {
-        await this.participantService.markAsMentioned(participantArgs);
-        continue;
-      }
-
-      await this.participantService.deliverToInbox(participantArgs);
+      });
     }
 
     await this.threadRecordEventService.emitThreadUpdated({
@@ -556,7 +578,7 @@ export class AgentChatThreadService {
     }
 
     try {
-      return await this.addParticipants({
+      return await this.mentionParticipants({
         ...args,
         participantWorkspaceMemberIds: mentionedWorkspaceMemberIds,
       });
