@@ -10,5 +10,4 @@ export const agentChatNewThreadRecipientsFamilyState = createAtomFamilyState<
     isAssistantParticipant: true,
     recipientWorkspaceMemberIds: [],
   },
-  useLocalStorage: true,
 });
