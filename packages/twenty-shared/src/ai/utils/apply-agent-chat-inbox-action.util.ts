@@ -14,9 +14,9 @@ const DEFAULT_AGENT_CHAT_INBOX_STATE: AgentChatInboxState = {
   lastResolvedMentionAt: null,
 };
 
-// The server writes each action as one SQL upsert stamped by the database
-// clock (AgentChatThreadParticipantService); this is the same change, for
-// the optimistic copy apps show before the server answers
+// The server writes each action stamped by the database clock
+// (AgentChatThreadParticipantService); this is the same change, for the
+// optimistic copy apps show, except ARCHIVE_IF_SETTLED, decided by the server
 export const applyAgentChatInboxAction = ({
   participant,
   action,

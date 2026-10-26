@@ -66,8 +66,8 @@ const buildSnoozeQuery: BuildParticipantWriteQuery = ({ participantTable }) =>
    RETURNING *`;
 
 // The member's change for each action, written by the database so its
-// timestamps order against thread activity; applyAgentChatInboxAction makes
-// the same change for the copy apps show before the server answers
+// timestamps order against thread activity; applyAgentChatInboxAction mirrors
+// it for the copy apps show, except ARCHIVE_IF_SETTLED, decided by the server
 const INBOX_ACTION_QUERIES: Record<
   AgentChatInboxAction,
   BuildParticipantWriteQuery
