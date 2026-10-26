@@ -326,7 +326,9 @@ export class AgentChatThreadParticipantService {
   }: AgentChatThreadAccessArgs & {
     scope: Pick<AgentHistoryTransactionScope, 'executeRawQuery'>;
   }): Promise<void> {
-    await this.sharingService.assertHasMentionResolution(args.workspaceId);
+    await this.sharingService.assertHasMentionResolutionOrThrow(
+      args.workspaceId,
+    );
     await this.lockInTransaction({ scope, ...args });
     await scope.executeRawQuery({
       sql: buildMentionResolutionQuery({
@@ -345,7 +347,9 @@ export class AgentChatThreadParticipantService {
     scope: Pick<AgentHistoryTransactionScope, 'executeRawQuery'>;
     messageId: string;
   }): Promise<void> {
-    await this.sharingService.assertHasMentionResolution(args.workspaceId);
+    await this.sharingService.assertHasMentionResolutionOrThrow(
+      args.workspaceId,
+    );
     await this.lockInTransaction({ scope, ...args });
     await scope.executeRawQuery({
       sql: `UPDATE ${getAgentChatThreadParticipantTable(args.workspaceId)} AS participant
@@ -371,7 +375,9 @@ export class AgentChatThreadParticipantService {
     >;
     messageCreatedAt: string;
   }): Promise<void> {
-    await this.sharingService.assertHasMentionResolution(args.workspaceId);
+    await this.sharingService.assertHasMentionResolutionOrThrow(
+      args.workspaceId,
+    );
     await this.lockInTransaction({ scope, ...args });
 
     const participantTable = getAgentChatThreadParticipantTable(
@@ -502,7 +508,9 @@ export class AgentChatThreadParticipantService {
   }
 
   async isFollowing(args: AgentChatThreadAccessArgs): Promise<boolean> {
-    await this.sharingService.assertHasMentionResolution(args.workspaceId);
+    await this.sharingService.assertHasMentionResolutionOrThrow(
+      args.workspaceId,
+    );
 
     const participant = await this.threadRepository.query(
       args.workspaceId,
@@ -514,7 +522,9 @@ export class AgentChatThreadParticipantService {
 
   // For the row written along with a new thread
   async emitParticipantCreated(args: AgentChatThreadAccessArgs): Promise<void> {
-    await this.sharingService.assertHasMentionResolution(args.workspaceId);
+    await this.sharingService.assertHasMentionResolutionOrThrow(
+      args.workspaceId,
+    );
 
     const participant = await this.threadRepository.query(
       args.workspaceId,
@@ -646,7 +656,7 @@ export class AgentChatThreadParticipantService {
     AgentChatThreadAccessArgs,
     'threadId'
   >): Promise<AgentChatOpenThreadsSummaryDTO> {
-    await this.sharingService.assertHasMentionResolution(workspaceId);
+    await this.sharingService.assertHasMentionResolutionOrThrow(workspaceId);
 
     const authContext = await this.sharingService.getAuthContext({
       workspaceId,

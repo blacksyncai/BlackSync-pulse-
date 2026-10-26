@@ -72,7 +72,7 @@ export class AgentChatSharingService {
   }
 
   // TODO(@bosiraphael): remove once 2.52 leaves the cross-upgrade window
-  async assertHasMentionResolution(workspaceId: string): Promise<void> {
+  async assertHasMentionResolutionOrThrow(workspaceId: string): Promise<void> {
     const { flatFieldMetadataMaps } =
       await this.workspaceCacheService.getOrRecompute(workspaceId, [
         'flatFieldMetadataMaps',
@@ -91,7 +91,7 @@ export class AgentChatSharingService {
   }
 
   async getParticipantObjectMetadataId(workspaceId: string): Promise<string> {
-    await this.assertHasMentionResolution(workspaceId);
+    await this.assertHasMentionResolutionOrThrow(workspaceId);
 
     const { flatObjectMetadataMaps } =
       await this.workspaceCacheService.getOrRecompute(workspaceId, [

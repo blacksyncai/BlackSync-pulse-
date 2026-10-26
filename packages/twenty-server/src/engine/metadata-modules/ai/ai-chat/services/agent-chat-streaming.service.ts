@@ -113,7 +113,7 @@ export class AgentChatStreamingService {
     const threadId = thread.id;
     const workspaceId = workspace.id;
 
-    await this.sharingService.assertHasMentionResolution(workspaceId);
+    await this.sharingService.assertHasMentionResolutionOrThrow(workspaceId);
 
     const [conversationWait, hasQueuedBacklog] = await Promise.all([
       this.agentRunSuspensionService.findConversationWait({

@@ -1514,7 +1514,9 @@ const createWorkspaceObjectTable = async ({
         const participantService = new AgentChatThreadParticipantService(
           threads,
           {
-            assertHasMentionResolution: jest.fn().mockResolvedValue(undefined),
+            assertHasMentionResolutionOrThrow: jest
+              .fn()
+              .mockResolvedValue(undefined),
             getParticipantObjectMetadataId: jest
               .fn()
               .mockResolvedValue(participantObject.id),

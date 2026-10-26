@@ -358,7 +358,9 @@ export class AgentChatThreadService {
       participantArgs: AgentChatThreadAccessArgs,
     ) => Promise<void>;
   }): Promise<string[]> {
-    await this.sharingService.assertHasMentionResolution(args.workspaceId);
+    await this.sharingService.assertHasMentionResolutionOrThrow(
+      args.workspaceId,
+    );
 
     const thread = await this.getWritableThread(args);
     const candidateMemberIds = [
