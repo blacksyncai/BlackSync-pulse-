@@ -40,6 +40,7 @@ import { agentChatNewThreadChannelIdState } from '@/ai/states/agentChatNewThread
 import { agentChatNewThreadRecipientsFamilyState } from '@/ai/states/agentChatNewThreadRecipientsFamilyState';
 import { newAiChatThreadIdState } from '@/ai/states/newAiChatThreadIdState';
 import { getConversationTargetsFromSerializedDocument } from '@/ai/utils/getConversationTargetsFromSerializedDocument';
+import { getAgentChatInitialRecipients } from '@/ai/utils/getAgentChatInitialRecipients';
 import { getParticipantMentionsFromSerializedDocument } from '@/ai/utils/getParticipantMentionsFromSerializedDocument';
 import { isAgentChatAssistantMentionedInSerializedDocument } from '@/ai/utils/isAgentChatAssistantMentionedInSerializedDocument';
 import { isAiChatCreditsExhaustedError } from '@/ai/utils/isAiChatCreditsExhaustedError';
@@ -219,18 +220,12 @@ export const useAgentChat = () => {
     ).filter(
       ({ workspaceMemberId }) => workspaceMemberId !== currentWorkspaceMemberId,
     );
-    const initialRecipients =
-      isNewChat && isAiChatInboxEnabled
-        ? store
-            .get(currentWorkspaceMembersState.atom)
-            .filter(({ id }) =>
-              newThreadRecipients.recipientWorkspaceMemberIds.includes(id),
-            )
-            .map(({ id, name }) => ({
-              workspaceMemberId: id,
-              label: `${name.firstName} ${name.lastName}`.trim(),
-            }))
-        : [];
+    const initialRecipients = getAgentChatInitialRecipients({
+      shouldIncludeInitialRecipients: isNewChat && isAiChatInboxEnabled,
+      recipientWorkspaceMemberIds:
+        newThreadRecipients.recipientWorkspaceMemberIds,
+      workspaceMembers: store.get(currentWorkspaceMembersState.atom),
+    });
     const requestedParticipants = [
       ...new Map(
         [...participantMentions, ...initialRecipients].map((participant) => [
