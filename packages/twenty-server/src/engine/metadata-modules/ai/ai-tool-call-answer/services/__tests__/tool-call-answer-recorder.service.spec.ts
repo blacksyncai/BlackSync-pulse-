@@ -160,7 +160,7 @@ describe('ToolCallAnswerRecorderService approval acceptance', () => {
 
     messagePartRepository.writePart.mockResolvedValueOnce([{ id: 'part-id' }]);
 
-    await service.claimToolCallAnswer(approvalArguments);
+    await service.claimToolCallAnswerOrThrow(approvalArguments);
 
     expect(participantService.resolveMention).toHaveBeenCalledWith({
       threadId: 'thread-id',
@@ -177,7 +177,7 @@ describe('ToolCallAnswerRecorderService approval acceptance', () => {
     messagePartRepository.writePart.mockResolvedValueOnce([]);
 
     await expect(
-      service.claimToolCallAnswer(approvalArguments),
+      service.claimToolCallAnswerOrThrow(approvalArguments),
     ).rejects.toMatchObject({ code: 'TOOL_CALL_NOT_PENDING' });
   });
 

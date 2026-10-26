@@ -220,7 +220,7 @@ export class ToolCallAnswerService {
       );
 
       if (isDefined(runningToolResult)) {
-        await this.toolCallAnswerRecorderService.claimToolCallAnswer({
+        await this.toolCallAnswerRecorderService.claimToolCallAnswerOrThrow({
           threadId,
           partId: toolPart.id,
           toolOutput: runningToolResult,

@@ -37,7 +37,7 @@ const buildService = ({ isApproval = false } = {}) => {
   const recorderService = {
     findAwaitingToolParts: jest.fn().mockResolvedValue([toolPart]),
     recordToolCallAnswer: jest.fn().mockResolvedValue(undefined),
-    claimToolCallAnswer: jest.fn().mockResolvedValue(undefined),
+    claimToolCallAnswerOrThrow: jest.fn().mockResolvedValue(undefined),
   };
   const streamRecoveryService = {
     reapDeadStream: jest.fn().mockResolvedValue(undefined),
@@ -182,7 +182,7 @@ describe('ToolCallAnswerService approval acceptance', () => {
 
     await answerApproval(service);
 
-    expect(recorderService.claimToolCallAnswer).toHaveBeenCalledWith(
+    expect(recorderService.claimToolCallAnswerOrThrow).toHaveBeenCalledWith(
       expect.objectContaining({
         threadId: 'thread-id',
         workspaceMemberId: 'answering-member-id',
@@ -192,7 +192,7 @@ describe('ToolCallAnswerService approval acceptance', () => {
       }),
     );
     expect(
-      recorderService.claimToolCallAnswer.mock.invocationCallOrder[0],
+      recorderService.claimToolCallAnswerOrThrow.mock.invocationCallOrder[0],
     ).toBeLessThan(
       toolRegistryService.resolveAndExecute.mock.invocationCallOrder[0],
     );
@@ -215,7 +215,7 @@ describe('ToolCallAnswerService approval acceptance', () => {
 
     await answerApproval(service);
 
-    expect(recorderService.claimToolCallAnswer).toHaveBeenCalledTimes(1);
+    expect(recorderService.claimToolCallAnswerOrThrow).toHaveBeenCalledTimes(1);
     expect(recorderService.recordToolCallAnswer).toHaveBeenCalledWith(
       expect.objectContaining({
         shouldResolveMention: false,
@@ -232,7 +232,9 @@ describe('ToolCallAnswerService approval acceptance', () => {
     });
     const claimError = new Error('Approval is no longer pending');
 
-    recorderService.claimToolCallAnswer.mockRejectedValueOnce(claimError);
+    recorderService.claimToolCallAnswerOrThrow.mockRejectedValueOnce(
+      claimError,
+    );
 
     await expect(answerApproval(service)).rejects.toThrow(claimError);
 

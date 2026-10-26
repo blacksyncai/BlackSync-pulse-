@@ -43,7 +43,7 @@ export class ToolCallAnswerRecorderService {
   }
 
   // only a still-pending call is claimed, so two answers never both run it
-  async claimToolCallAnswer({
+  async claimToolCallAnswerOrThrow({
     threadId,
     partId,
     toolOutput,
