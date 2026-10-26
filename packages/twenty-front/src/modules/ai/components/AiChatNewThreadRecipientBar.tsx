@@ -27,6 +27,7 @@ import { useAtomFamilyStateValue } from '@/ui/utilities/state/jotai/hooks/useAto
 import { useAtomState } from '@/ui/utilities/state/jotai/hooks/useAtomState';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
+import { getWorkspaceMemberNameOrEmail } from '@/workspace-member/utils/getWorkspaceMemberNameOrEmail';
 import { FeatureFlagKey } from '~/generated-metadata/graphql';
 import { getAbsoluteImageUrl } from '~/utils/image/getAbsoluteImageUrl';
 
@@ -87,8 +88,7 @@ export const AiChatNewThreadRecipientBar = () => {
         />
       )}
       {recipientWorkspaceMembers.map((workspaceMember) => {
-        const label =
-          `${workspaceMember.name.firstName} ${workspaceMember.name.lastName}`.trim();
+        const label = getWorkspaceMemberNameOrEmail(workspaceMember);
 
         return (
           <AiChatNewThreadRecipientChip

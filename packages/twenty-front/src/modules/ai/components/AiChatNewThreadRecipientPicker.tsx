@@ -18,6 +18,7 @@ import { useAtomFamilyState } from '@/ui/utilities/state/jotai/hooks/useAtomFami
 import { useAtomFamilyStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomFamilyStateValue';
 import { useAtomState } from '@/ui/utilities/state/jotai/hooks/useAtomState';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
+import { getWorkspaceMemberNameOrEmail } from '@/workspace-member/utils/getWorkspaceMemberNameOrEmail';
 import { getAbsoluteImageUrl } from '~/utils/image/getAbsoluteImageUrl';
 
 export const AiChatNewThreadRecipientPicker = () => {
@@ -45,9 +46,9 @@ export const AiChatNewThreadRecipientPicker = () => {
   const shouldShowAssistant =
     AGENT_CHAT_ASSISTANT_NAME.toLowerCase().includes(normalizedSearch);
   const matchingWorkspaceMembers = currentWorkspaceMembers.filter(
-    ({ id, name, userEmail }) =>
-      id !== currentWorkspaceMember?.id &&
-      `${name.firstName} ${name.lastName} ${userEmail}`
+    (workspaceMember) =>
+      workspaceMember.id !== currentWorkspaceMember?.id &&
+      `${getWorkspaceMemberNameOrEmail(workspaceMember)} ${workspaceMember.userEmail}`
         .toLowerCase()
         .includes(normalizedSearch),
   );
@@ -99,8 +100,7 @@ export const AiChatNewThreadRecipientPicker = () => {
           </Dropdown.OptionItem>
         )}
         {matchingWorkspaceMembers.map((workspaceMember) => {
-          const label =
-            `${workspaceMember.name.firstName} ${workspaceMember.name.lastName}`.trim();
+          const label = getWorkspaceMemberNameOrEmail(workspaceMember);
 
           return (
             <Dropdown.OptionItem
