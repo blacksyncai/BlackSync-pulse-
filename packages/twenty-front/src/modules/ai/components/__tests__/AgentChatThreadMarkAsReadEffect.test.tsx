@@ -59,13 +59,16 @@ const setLastActivityAt = (lastActivityAt: string) =>
     {
       __typename: 'AgentChatThread',
       id: THREAD_ID,
+      title: null,
+      createdAt: LAST_ACTIVITY_AT,
+      updatedAt: lastActivityAt,
       deletedAt: null,
       lastActivityAt,
       lastMessageSenderWorkspaceMemberId: null,
       workspaceMemberId: WORKSPACE_MEMBER_ID,
       assigneeId: null,
       pendingQuestionMessageId: null,
-    } as never,
+    },
   ]);
 
 describe('AgentChatThreadMarkAsReadEffect', () => {
