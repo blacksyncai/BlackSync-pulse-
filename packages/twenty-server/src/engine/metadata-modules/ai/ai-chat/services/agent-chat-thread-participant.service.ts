@@ -92,6 +92,7 @@ const INBOX_ACTION_QUERIES: Record<
        "lastResolvedMentionAt" = GREATEST(participant."lastResolvedMentionAt", participant."lastMentionedAt"),
        "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
      RETURNING *`,
+  // Filed at the settled activity, so activity that waited on the thread lock still comes after
   [AgentChatInboxAction.ARCHIVE_IF_SETTLED]: ({
     participantTable,
     threadTable,
@@ -100,7 +101,7 @@ const INBOX_ACTION_QUERIES: Record<
        SELECT * FROM ${threadTable} WHERE id = $1 FOR UPDATE
      )
      UPDATE ${participantTable} AS participant
-     SET "archivedAt" = clock_timestamp(),
+     SET "archivedAt" = thread."lastActivityAt" + interval '1 microsecond',
        "snoozedUntil" = NULL,
        "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
      FROM locked_thread thread
