@@ -14,9 +14,7 @@ const DEFAULT_AGENT_CHAT_INBOX_STATE: AgentChatInboxState = {
   lastResolvedMentionAt: null,
 };
 
-// The server writes each action stamped by the database clock
-// (AgentChatThreadParticipantService); this is the same change, for the
-// optimistic copy apps show, except ARCHIVE_IF_SETTLED, decided by the server
+// Optimistic copy of AgentChatThreadParticipantService's write, except ARCHIVE_IF_SETTLED
 export const applyAgentChatInboxAction = ({
   participant,
   action,

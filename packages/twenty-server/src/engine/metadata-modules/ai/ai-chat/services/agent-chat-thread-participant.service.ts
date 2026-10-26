@@ -52,9 +52,7 @@ const NEXT_PARTICIPANT_UPDATED_AT = `GREATEST(clock_timestamp(), participant."up
 const PARTICIPANT_LOCK_QUERY =
   'SELECT pg_advisory_xact_lock(hashtextextended($1, 0))';
 
-// A snooze whose end is already due, which its queued end may have checked
-// before this write, is saved as ended. A snoozed thread is followed, so new
-// activity or the snooze's end brings it back
+// Saved as ended when already due, since its queued end may have run before this write
 const buildSnoozeQuery: BuildParticipantWriteQuery = ({ participantTable }) =>
   `INSERT INTO ${participantTable} AS participant ("threadId", "workspaceMemberId", "archivedAt", "snoozedUntil", "isSubscribed")
    VALUES ($1, $2, CASE WHEN $3::timestamptz <= clock_timestamp() THEN NULL ELSE clock_timestamp() END, $3, true)
@@ -65,9 +63,7 @@ const buildSnoozeQuery: BuildParticipantWriteQuery = ({ participantTable }) =>
      "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
    RETURNING *`;
 
-// The member's change for each action, written by the database so its
-// timestamps order against thread activity; applyAgentChatInboxAction mirrors
-// it for the copy apps show, except ARCHIVE_IF_SETTLED, decided by the server
+// Mirrored by applyAgentChatInboxAction for the optimistic copy, except ARCHIVE_IF_SETTLED
 const INBOX_ACTION_QUERIES: Record<
   AgentChatInboxAction,
   BuildParticipantWriteQuery
@@ -322,7 +318,6 @@ export class AgentChatThreadParticipantService {
     );
   }
 
-  // Sent along with the activity recordMemberActivity records for the message
   async resolveMentionInTransaction({
     scope,
     ...args
@@ -363,7 +358,6 @@ export class AgentChatThreadParticipantService {
     });
   }
 
-  // Only the mention this message resolved, if no other reply or filing by the member followed
   async reopenMentionOfDeletedQueuedMessageInTransaction({
     scope,
     messageCreatedAt,
