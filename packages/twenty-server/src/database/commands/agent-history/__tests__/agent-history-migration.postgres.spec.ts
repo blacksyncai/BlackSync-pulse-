@@ -1510,6 +1510,7 @@ const SCHEMA = getWorkspaceSchemaName(WORKSPACE_ID);
         const participantService = new AgentChatThreadParticipantService(
           threads,
           {
+            assertHasMentionResolution: jest.fn().mockResolvedValue(undefined),
             getParticipantObjectMetadataId: jest
               .fn()
               .mockResolvedValue(participantObject.id),
