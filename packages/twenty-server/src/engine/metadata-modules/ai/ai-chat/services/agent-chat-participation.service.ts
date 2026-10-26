@@ -10,6 +10,8 @@ import { type AgentChatThreadAccessArgs } from 'src/engine/metadata-modules/ai/a
 import { formatErrorWithCause } from 'src/engine/metadata-modules/ai/ai-chat/utils/format-error-with-cause.util';
 
 const AGENT_CHAT_MESSAGE_LOCK_KEY_PREFIX = 'agent-chat-message:';
+const AGENT_CHAT_MESSAGE_LOCK_WAIT_MS = 30_000;
+const AGENT_CHAT_MESSAGE_LOCK_RETRY_INTERVAL_MS = 100;
 
 @Injectable()
 export class AgentChatParticipationService {
@@ -33,6 +35,13 @@ export class AgentChatParticipationService {
     return this.cacheLockService.withLock(
       work,
       `${AGENT_CHAT_MESSAGE_LOCK_KEY_PREFIX}${workspaceId}:${threadId}`,
+      {
+        ms: AGENT_CHAT_MESSAGE_LOCK_RETRY_INTERVAL_MS,
+        maxRetries: Math.ceil(
+          AGENT_CHAT_MESSAGE_LOCK_WAIT_MS /
+            AGENT_CHAT_MESSAGE_LOCK_RETRY_INTERVAL_MS,
+        ),
+      },
     );
   }
 
@@ -44,7 +53,7 @@ export class AgentChatParticipationService {
     } catch (error) {
       this.logger.warn(
         doNotTranslate(
-          `Could not recover participants for chat message ${args.messageId}: ${formatErrorWithCause(error)}`,
+          `Could not recover participants for chat message ${args.messageId} in thread ${args.threadId} of workspace ${args.workspaceId}: ${formatErrorWithCause(error)}`,
         ),
       );
     }
@@ -93,7 +102,7 @@ export class AgentChatParticipationService {
     } catch (error) {
       this.logger.warn(
         doNotTranslate(
-          `Could not add recipients to chat ${args.threadId}: ${formatErrorWithCause(error)}`,
+          `Could not add recipients for message ${messageId} in thread ${args.threadId} of workspace ${args.workspaceId}: ${formatErrorWithCause(error)}`,
         ),
       );
 

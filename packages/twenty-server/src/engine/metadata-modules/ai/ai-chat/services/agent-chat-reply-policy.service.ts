@@ -6,7 +6,6 @@ import { doNotTranslate } from 'twenty-shared/i18n';
 import { UsageOperationType } from 'src/engine/core-modules/usage/enums/usage-operation-type.enum';
 import { AgentChatThreadParticipantService } from 'src/engine/metadata-modules/ai/ai-chat/services/agent-chat-thread-participant.service';
 import { formatErrorWithCause } from 'src/engine/metadata-modules/ai/ai-chat/utils/format-error-with-cause.util';
-import { findLastMessageText } from 'src/engine/metadata-modules/ai/ai-chat/utils/find-last-message-text.util';
 import { AiEvaluationService } from 'src/engine/metadata-modules/ai/ai-evaluation/services/ai-evaluation.service';
 import { AgentConversationReaderService } from 'src/engine/metadata-modules/ai/ai-history/services/agent-conversation-reader.service';
 import { type AgentChatThreadWorkspaceEntity } from 'src/engine/metadata-modules/ai/ai-history/standard-objects/agent-chat-thread.workspace-entity';
@@ -64,24 +63,19 @@ export class AgentChatReplyPolicyService {
     }
 
     try {
-      const messages = await this.conversationReaderService.loadMessages({
-        workspaceId,
-        threadId: thread.id,
-        actor: { type: 'user', workspaceMemberId },
-      });
+      const conversation =
+        await this.conversationReaderService.loadRecentMessageTexts({
+          workspaceId,
+          threadId: thread.id,
+          limit: ASSISTANT_REPLY_HISTORY_MESSAGE_LIMIT,
+        });
       const { answers } = await this.aiEvaluationService.evaluate({
         workspaceId,
         userWorkspaceId,
         operationType: UsageOperationType.AI_CHAT_TOKEN,
         abortSignal: AbortSignal.timeout(ASSISTANT_REPLY_EVALUATION_TIMEOUT_MS),
         state: {
-          conversation: messages
-            .filter(({ role }) => role === 'user' || role === 'assistant')
-            .slice(-ASSISTANT_REPLY_HISTORY_MESSAGE_LIMIT)
-            .map(({ role, parts }) => ({
-              role,
-              text: findLastMessageText(parts) ?? '',
-            })),
+          conversation,
           message: { text, isAssistantMentioned },
         },
         questions: {
@@ -103,7 +97,7 @@ export class AgentChatReplyPolicyService {
     } catch (error) {
       this.logger.warn(
         doNotTranslate(
-          `Could not evaluate assistant reply for thread ${thread.id}: ${formatErrorWithCause(error)}`,
+          `Could not evaluate assistant reply for thread ${thread.id} of workspace ${workspaceId}: ${formatErrorWithCause(error)}`,
         ),
       );
 
