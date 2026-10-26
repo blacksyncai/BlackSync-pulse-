@@ -7,6 +7,7 @@ import { getAppProviderByClassName } from 'test/integration/utils/get-app-provid
 
 import { type AddChatMentionResolutionCommand } from 'src/database/commands/upgrade-version-command/2-52/2-52-workspace-command-1792768675515-add-chat-mention-resolution.command';
 import { type AgentChatSharingService } from 'src/engine/metadata-modules/ai/ai-chat/services/agent-chat-sharing.service';
+import { AiExceptionCode } from 'src/engine/metadata-modules/ai/ai.exception';
 import { type WorkspaceCacheService } from 'src/engine/workspace-cache/services/workspace-cache.service';
 import { getWorkspaceSchemaName } from 'src/engine/workspace-datasource/utils/get-workspace-schema-name.util';
 import { SEED_APPLE_WORKSPACE_ID } from 'src/engine/workspace-manager/dev-seeder/core/constants/seeder-workspaces.constant';
@@ -191,7 +192,7 @@ describe('2-52 workspace command - add chat mention resolution (integration)', (
     });
     await expect(
       sharingService.getParticipantObjectMetadataId(SEED_APPLE_WORKSPACE_ID),
-    ).rejects.toMatchObject({ code: 'WORKSPACE_UPGRADE_REQUIRED' });
+    ).rejects.toMatchObject({ code: AiExceptionCode.CHAT_UPGRADE_IN_PROGRESS });
   });
 
   it('leaves the field absent on a dry run', async () => {

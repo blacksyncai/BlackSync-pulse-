@@ -321,7 +321,7 @@ export class AgentChatThreadParticipantService {
       'executeRawQuery' | 'afterCommit'
     >;
   }): Promise<void> {
-    await this.sharingService.getParticipantObjectMetadataId(args.workspaceId);
+    await this.sharingService.assertHasMentionResolution(args.workspaceId);
     await scope.executeRawQuery({
       sql: 'SELECT pg_advisory_xact_lock(hashtextextended($1, 0))',
       parameters: [
@@ -443,6 +443,8 @@ export class AgentChatThreadParticipantService {
   }
 
   async isFollowing(args: AgentChatThreadAccessArgs): Promise<boolean> {
+    await this.sharingService.assertHasMentionResolution(args.workspaceId);
+
     const participant = await this.threadRepository.query(
       args.workspaceId,
       ({ manager }) => this.findOne({ manager, ...args }),
@@ -453,6 +455,8 @@ export class AgentChatThreadParticipantService {
 
   // For the row written along with a new thread
   async emitParticipantCreated(args: AgentChatThreadAccessArgs): Promise<void> {
+    await this.sharingService.assertHasMentionResolution(args.workspaceId);
+
     const participant = await this.threadRepository.query(
       args.workspaceId,
       ({ manager }) => this.findOne({ manager, ...args }),
@@ -583,7 +587,7 @@ export class AgentChatThreadParticipantService {
     AgentChatThreadAccessArgs,
     'threadId'
   >): Promise<AgentChatOpenThreadsSummaryDTO> {
-    await this.sharingService.getParticipantObjectMetadataId(workspaceId);
+    await this.sharingService.assertHasMentionResolution(workspaceId);
 
     const authContext = await this.sharingService.getAuthContext({
       workspaceId,
@@ -674,8 +678,6 @@ export class AgentChatThreadParticipantService {
     manager: EntityManager;
     lock?: boolean;
   }): Promise<AgentChatThreadParticipantRow | null> {
-    await this.sharingService.getParticipantObjectMetadataId(workspaceId);
-
     // Also taken when the row does not exist yet, so two first writes cannot
     // both send it as created
     if (lock) {

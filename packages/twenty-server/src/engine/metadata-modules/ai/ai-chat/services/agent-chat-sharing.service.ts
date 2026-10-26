@@ -1,5 +1,5 @@
 import { STANDARD_OBJECTS } from 'twenty-shared/metadata';
-import { AgentHistoryStorageException } from 'src/engine/metadata-modules/ai/ai-history/exceptions/agent-history-storage.exception';
+import { throwAgentChatUpgradeInProgress } from 'src/engine/metadata-modules/ai/ai-chat/utils/throw-agent-chat-upgrade-in-progress.util';
 import { AgentChatChannelGrantService } from 'src/engine/metadata-modules/ai/ai-chat/services/agent-chat-channel-grant.service';
 import { AuthException } from 'src/engine/core-modules/auth/auth.exception';
 import { randomUUID } from 'node:crypto';
@@ -71,10 +71,12 @@ export class AgentChatSharingService {
     return hasAgentChatThreadChannelField({ flatFieldMetadataMaps });
   }
 
-  async getParticipantObjectMetadataId(workspaceId: string): Promise<string> {
-    const { flatObjectMetadataMaps, flatFieldMetadataMaps } =
+  // TODO(@bosiraphael): remove once 2.52 leaves the cross-upgrade window. Until
+  // the 2.52 mention resolution command reaches a workspace, its chat
+  // participants have no lastResolvedMentionAt column
+  async assertHasMentionResolution(workspaceId: string): Promise<void> {
+    const { flatFieldMetadataMaps } =
       await this.workspaceCacheService.getOrRecompute(workspaceId, [
-        'flatObjectMetadataMaps',
         'flatFieldMetadataMaps',
       ]);
 
@@ -86,11 +88,17 @@ export class AgentChatSharingService {
         ],
       )
     ) {
-      throw new AgentHistoryStorageException(
-        'WORKSPACE_UPGRADE_REQUIRED',
-        'Chat mention resolution requires the workspace upgrade',
-      );
+      throwAgentChatUpgradeInProgress();
     }
+  }
+
+  async getParticipantObjectMetadataId(workspaceId: string): Promise<string> {
+    await this.assertHasMentionResolution(workspaceId);
+
+    const { flatObjectMetadataMaps } =
+      await this.workspaceCacheService.getOrRecompute(workspaceId, [
+        'flatObjectMetadataMaps',
+      ]);
 
     return (
       findAgentChatFlatObjectMetadata(
