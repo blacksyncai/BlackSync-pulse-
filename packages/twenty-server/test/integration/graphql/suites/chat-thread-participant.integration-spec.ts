@@ -20,6 +20,7 @@ import { getAppProviderByClassName } from 'test/integration/utils/get-app-provid
 import { setManualRecordShare } from 'test/integration/utils/set-manual-record-share.util';
 
 import { AgentChatInboxAction } from 'src/engine/metadata-modules/ai/ai-chat/enums/agent-chat-inbox-action.enum';
+import { type AgentChatQueueService } from 'src/engine/metadata-modules/ai/ai-chat/services/agent-chat-queue.service';
 import { type AgentChatThreadParticipantService } from 'src/engine/metadata-modules/ai/ai-chat/services/agent-chat-thread-participant.service';
 import { type AgentChatService } from 'src/engine/metadata-modules/ai/ai-chat/services/agent-chat.service';
 import { AgentMessageRole } from 'src/engine/metadata-modules/ai/ai-history/enums/agent-message-role.enum';
@@ -1307,6 +1308,94 @@ describe('Chat thread participant state through the authenticated API', () => {
     ).toBeGreaterThan(
       new Date(mentionedAgain!.lastResolvedMentionAt!).getTime(),
     );
+  });
+
+  it('resolves a mention when the member unsubscribes', async () => {
+    const threadId = await createTestThread();
+
+    await addParticipants(threadId, [WORKSPACE_MEMBER_DATA_SEED_IDS.JONY]);
+    await runInboxAction('UNSUBSCRIBE', threadId, {
+      token: APPLE_JONY_MEMBER_ACCESS_TOKEN,
+    });
+
+    const unsubscribedParticipant = await findMyParticipant(
+      threadId,
+      APPLE_JONY_MEMBER_ACCESS_TOKEN,
+    );
+
+    expect(unsubscribedParticipant).toMatchObject({
+      isSubscribed: false,
+      lastResolvedMentionAt: unsubscribedParticipant!.lastMentionedAt,
+    });
+  });
+
+  describe('queued replies to a mention', () => {
+    const queueReply = (threadId: string) =>
+      getAppProviderByClassName<AgentChatQueueService>(
+        'AgentChatQueueService',
+      ).queueMessage({
+        workspaceId: SEED_APPLE_WORKSPACE_ID,
+        workspaceMemberId: WORKSPACE_MEMBER_DATA_SEED_IDS.JONY,
+        userWorkspaceId: USER_WORKSPACE_DATA_SEED_IDS.JONY,
+        threadId,
+        text: 'On it',
+      });
+
+    const deleteQueuedReply = (messageId: string) =>
+      getAppProviderByClassName<AgentChatQueueService>(
+        'AgentChatQueueService',
+      ).deleteQueuedMessage({
+        workspaceId: SEED_APPLE_WORKSPACE_ID,
+        messageId,
+      });
+
+    it('reopens the mention when the reply is deleted before it is sent', async () => {
+      const threadId = await createTestThread();
+
+      await addParticipants(threadId, [WORKSPACE_MEMBER_DATA_SEED_IDS.JONY]);
+
+      const reply = await queueReply(threadId);
+      const repliedParticipant = await findMyParticipant(
+        threadId,
+        APPLE_JONY_MEMBER_ACCESS_TOKEN,
+      );
+
+      expect(repliedParticipant!.lastResolvedMentionAt).not.toBeNull();
+
+      await deleteQueuedReply(reply.id);
+
+      expect(
+        await findMyParticipant(threadId, APPLE_JONY_MEMBER_ACCESS_TOKEN),
+      ).toMatchObject({
+        lastMentionedAt: repliedParticipant!.lastMentionedAt,
+        lastResolvedMentionAt: null,
+      });
+    });
+
+    it('keeps the mention resolved when the member filed the chat after replying', async () => {
+      const threadId = await createTestThread();
+
+      await addParticipants(threadId, [WORKSPACE_MEMBER_DATA_SEED_IDS.JONY]);
+
+      const reply = await queueReply(threadId);
+
+      await runInboxAction('ARCHIVE', threadId, {
+        token: APPLE_JONY_MEMBER_ACCESS_TOKEN,
+      });
+
+      const filedParticipant = await findMyParticipant(
+        threadId,
+        APPLE_JONY_MEMBER_ACCESS_TOKEN,
+      );
+
+      await deleteQueuedReply(reply.id);
+
+      expect(
+        await findMyParticipant(threadId, APPLE_JONY_MEMBER_ACCESS_TOKEN),
+      ).toMatchObject({
+        lastResolvedMentionAt: filedParticipant!.lastResolvedMentionAt,
+      });
+    });
   });
 
   it('delivers app recipients without creating or clearing an explicit mention', async () => {

@@ -23,7 +23,10 @@ import { type AgentChatThreadParticipantRow } from 'src/engine/metadata-modules/
 import { type AgentChatThreadActivity } from 'src/engine/metadata-modules/ai/ai-chat/types/agent-chat-thread-activity.type';
 import { buildAgentChatThreadParticipantOwnerShareInsert } from 'src/engine/metadata-modules/ai/ai-chat/utils/build-agent-chat-thread-participant-owner-share-insert.util';
 import { buildAgentChatThreadActivitySetClause } from 'src/engine/metadata-modules/ai/ai-chat/utils/build-agent-chat-thread-activity-set-clause.util';
+import { buildAgentChatThreadParticipantLockKey } from 'src/engine/metadata-modules/ai/ai-chat/utils/build-agent-chat-thread-participant-lock-key.util';
 import { getAgentChatThreadParticipantTable } from 'src/engine/metadata-modules/ai/ai-chat/utils/get-agent-chat-thread-participant-table.util';
+import { getAgentMessageTable } from 'src/engine/metadata-modules/ai/ai-chat/utils/get-agent-message-table.util';
+import { AgentMessageRole } from 'src/engine/metadata-modules/ai/ai-history/enums/agent-message-role.enum';
 import { throwAgentChatThreadNotFound } from 'src/engine/metadata-modules/ai/ai-chat/utils/throw-agent-chat-thread-not-found.util';
 import { findAgentChatSnoozeRemainingDelay } from 'src/engine/metadata-modules/ai/ai-chat/utils/find-agent-chat-snooze-remaining-delay.util';
 import { AgentHistoryRepository } from 'src/engine/metadata-modules/ai/ai-history/repositories/agent-history-repository';
@@ -46,9 +49,12 @@ type BuildParticipantWriteQuery = (tables: {
 
 const NEXT_PARTICIPANT_UPDATED_AT = `GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')`;
 
+const PARTICIPANT_LOCK_QUERY =
+  'SELECT pg_advisory_xact_lock(hashtextextended($1, 0))';
+
 // A snooze whose end is already due, which its queued end may have checked
-// before this write, is saved as ended. Filing a thread, done or snoozed,
-// follows it, so new activity or the snooze's end brings it back
+// before this write, is saved as ended. A snoozed thread is followed, so new
+// activity or the snooze's end brings it back
 const buildSnoozeQuery: BuildParticipantWriteQuery = ({ participantTable }) =>
   `INSERT INTO ${participantTable} AS participant ("threadId", "workspaceMemberId", "archivedAt", "snoozedUntil", "isSubscribed")
    VALUES ($1, $2, CASE WHEN $3::timestamptz <= clock_timestamp() THEN NULL ELSE clock_timestamp() END, $3, true)
@@ -316,37 +322,90 @@ export class AgentChatThreadParticipantService {
     );
   }
 
+  // Sent along with the activity recordMemberActivity records for the message
   async resolveMentionInTransaction({
     scope,
+    ...args
+  }: AgentChatThreadAccessArgs & {
+    scope: Pick<AgentHistoryTransactionScope, 'executeRawQuery'>;
+  }): Promise<void> {
+    await this.sharingService.assertHasMentionResolution(args.workspaceId);
+    await this.lockInTransaction({ scope, ...args });
+    await scope.executeRawQuery({
+      sql: buildMentionResolutionQuery({
+        participantTable: getAgentChatThreadParticipantTable(args.workspaceId),
+      }),
+      parameters: [args.threadId, args.workspaceMemberId],
+    });
+  }
+
+  // Stamped with the queued message's time, so deleting it unsent can reopen the mention
+  async resolveMentionByQueuedMessageInTransaction({
+    scope,
+    messageId,
+    ...args
+  }: AgentChatThreadAccessArgs & {
+    scope: Pick<AgentHistoryTransactionScope, 'executeRawQuery'>;
+    messageId: string;
+  }): Promise<void> {
+    await this.sharingService.assertHasMentionResolution(args.workspaceId);
+    await this.lockInTransaction({ scope, ...args });
+    await scope.executeRawQuery({
+      sql: `UPDATE ${getAgentChatThreadParticipantTable(args.workspaceId)} AS participant
+        SET "lastResolvedMentionAt" = GREATEST(participant."lastMentionedAt", message."createdAt"),
+          "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
+        FROM ${getAgentMessageTable(args.workspaceId)} message
+        WHERE message.id = $3
+          AND participant."threadId" = $1 AND participant."workspaceMemberId" = $2
+          AND participant."lastMentionedAt" IS NOT NULL
+          AND (participant."lastResolvedMentionAt" IS NULL OR participant."lastMentionedAt" > participant."lastResolvedMentionAt")`,
+      parameters: [args.threadId, args.workspaceMemberId, messageId],
+    });
+  }
+
+  // Only the mention this message resolved, if no other reply or filing by the member followed
+  async reopenMentionOfDeletedQueuedMessageInTransaction({
+    scope,
+    messageCreatedAt,
     ...args
   }: AgentChatThreadAccessArgs & {
     scope: Pick<
       AgentHistoryTransactionScope,
       'executeRawQuery' | 'afterCommit'
     >;
+    messageCreatedAt: string;
   }): Promise<void> {
     await this.sharingService.assertHasMentionResolution(args.workspaceId);
-    await scope.executeRawQuery({
-      sql: 'SELECT pg_advisory_xact_lock(hashtextextended($1, 0))',
-      parameters: [
-        `agent-chat-thread-participant:${args.workspaceId}:${args.threadId}:${args.workspaceMemberId}`,
-      ],
-    });
+    await this.lockInTransaction({ scope, ...args });
 
-    const parameters = [args.threadId, args.workspaceMemberId];
     const participantTable = getAgentChatThreadParticipantTable(
       args.workspaceId,
     );
+    const parameters = [args.threadId, args.workspaceMemberId];
     const [before] = await scope.executeRawQuery<AgentChatThreadParticipantRow>(
       {
         sql: `SELECT ${PARTICIPANT_COLUMNS} FROM ${participantTable}
-       WHERE "threadId" = $1 AND "workspaceMemberId" = $2`,
+          WHERE "threadId" = $1 AND "workspaceMemberId" = $2`,
         parameters,
       },
     );
     const [after] = await scope.executeRawQuery<AgentChatThreadParticipantRow>({
-      sql: buildMentionResolutionQuery({ participantTable }),
-      parameters,
+      sql: `UPDATE ${participantTable} AS participant
+        SET "lastResolvedMentionAt" = NULL, "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
+        WHERE participant."threadId" = $1 AND participant."workspaceMemberId" = $2
+          AND participant."lastResolvedMentionAt" = $3::timestamptz
+          AND participant."lastMentionedAt" <= participant."lastResolvedMentionAt"
+          AND (participant."archivedAt" IS NULL OR participant."archivedAt" <= $3::timestamptz OR participant."snoozedUntil" IS NOT NULL)
+          AND NOT EXISTS (
+            SELECT 1 FROM ${getAgentMessageTable(args.workspaceId)} message
+            WHERE message."threadId" = participant."threadId"
+              AND message."senderWorkspaceMemberId" = participant."workspaceMemberId"
+              AND message.role = $4
+              AND message."deletedAt" IS NULL
+              AND message."createdAt" > participant."lastMentionedAt"
+          )
+        RETURNING ${PARTICIPANT_COLUMNS}`,
+      parameters: [...parameters, messageCreatedAt, AgentMessageRole.USER],
     });
 
     if (!isDefined(after)) {
@@ -685,12 +744,13 @@ export class AgentChatThreadParticipantService {
     // Also taken when the row does not exist yet, so two first writes cannot
     // both send it as created
     if (lock) {
-      await manager.query(
-        'SELECT pg_advisory_xact_lock(hashtextextended($1, 0))',
-        [
-          `agent-chat-thread-participant:${workspaceId}:${threadId}:${workspaceMemberId}`,
-        ],
-      );
+      await manager.query(PARTICIPANT_LOCK_QUERY, [
+        buildAgentChatThreadParticipantLockKey({
+          workspaceId,
+          threadId,
+          workspaceMemberId,
+        }),
+      ]);
     }
 
     const [participant] = await manager.query<AgentChatThreadParticipantRow[]>(
@@ -701,6 +761,19 @@ export class AgentChatThreadParticipantService {
     );
 
     return participant ?? null;
+  }
+
+  // Taken by the writes on the other pool too, so before and after stay this write's
+  private async lockInTransaction({
+    scope,
+    ...args
+  }: AgentChatThreadAccessArgs & {
+    scope: Pick<AgentHistoryTransactionScope, 'executeRawQuery'>;
+  }): Promise<void> {
+    await scope.executeRawQuery({
+      sql: PARTICIPANT_LOCK_QUERY,
+      parameters: [buildAgentChatThreadParticipantLockKey(args)],
+    });
   }
 
   private async assertCanWriteInboxState({

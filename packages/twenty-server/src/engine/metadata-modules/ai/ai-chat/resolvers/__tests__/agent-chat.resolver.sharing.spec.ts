@@ -14,7 +14,7 @@ import {
   TwentyOrmExceptionCode,
 } from 'src/engine/twenty-orm/exceptions/twenty-orm.exception';
 
-const WORKSPACE_ID = 'workspace';
+const WORKSPACE_ID = '20202020-1c25-4d02-bf25-6aeccf7ea419';
 const THREAD_ID = 'thread';
 const VIEWER_ID = 'viewer';
 const workspace = { id: WORKSPACE_ID } as never;
@@ -117,12 +117,24 @@ const buildResolver = () => {
   const messageReactions = {
     findReactionsByMessageId: jest.fn().mockResolvedValue(new Map()),
   };
+  const queuedMessageDeletion = jest.fn().mockResolvedValue([
+    {
+      threadId: THREAD_ID,
+      senderWorkspaceMemberId: null,
+      createdAt: '2026-10-01 10:00:00+00',
+    },
+  ]);
   const queueService = new AgentChatQueueService(
     {} as never,
     messages as never,
     {} as never,
     {} as never,
-    {} as never,
+    {
+      runInTransaction: (
+        _workspaceId: string,
+        work: (scope: { executeRawQuery: jest.Mock }) => Promise<unknown>,
+      ) => work({ executeRawQuery: queuedMessageDeletion }),
+    } as never,
     threadService,
     {} as never,
   );
@@ -163,6 +175,7 @@ const buildResolver = () => {
     threadRepository,
     featureFlags,
     messages,
+    queuedMessageDeletion,
     sharing,
     streaming,
     events,
@@ -474,13 +487,12 @@ describe('Shared conversation API boundaries', () => {
   });
 
   it('allows an editor to remove a queued message after update authorization', async () => {
-    const { resolver, sharing, messages } = buildResolver();
+    const { resolver, sharing, queuedMessageDeletion } = buildResolver();
     sharing.getThreadWithAccess.mockResolvedValue({
       id: THREAD_ID,
       workspaceMemberId: 'owner',
       workspaceId: WORKSPACE_ID,
     });
-    messages.delete.mockResolvedValue({ affected: 1 });
     await resolver.deleteQueuedChatMessage('queued', VIEWER_ID, workspace);
     expect(sharing.getThreadWithAccess).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -488,7 +500,7 @@ describe('Shared conversation API boundaries', () => {
         operationType: 'update',
       }),
     );
-    expect(messages.delete).toHaveBeenCalled();
+    expect(queuedMessageDeletion).toHaveBeenCalled();
   });
 
   it('does not let ownership bypass a revoked update permission', async () => {

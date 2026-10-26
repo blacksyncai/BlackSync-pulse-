@@ -300,7 +300,16 @@ const createWorkspaceObjectTable = async ({
         participantService,
       );
 
-    const createQueueService = (messageRepository: typeof messages) =>
+    const createQueueService = ({
+      messageRepository,
+      participantService = {
+        resolveMentionByQueuedMessageInTransaction: jest.fn(),
+        reopenMentionOfDeletedQueuedMessageInTransaction: jest.fn(),
+      } as never,
+    }: {
+      messageRepository: typeof messages;
+      participantService?: AgentChatThreadParticipantService;
+    }) =>
       new AgentChatQueueService(
         turns,
         messageRepository,
@@ -308,7 +317,7 @@ const createWorkspaceObjectTable = async ({
         {} as never,
         conversationWriter,
         chatThreadService,
-        { resolveMentionInTransaction: jest.fn() } as never,
+        participantService,
       );
 
     const createActorService = (messageRepository: typeof messages) =>
@@ -857,7 +866,7 @@ const createWorkspaceObjectTable = async ({
         target: 'workspace',
       });
       const chat = createChatService({ messageRepository: messages });
-      const queue = createQueueService(messages);
+      const queue = createQueueService({ messageRepository: messages });
       const actors = createActorService(messages);
       const thread = await threads.insertAndReturnOne(WORKSPACE_ID, {
         workspaceMemberId: MEMBER_ID,
@@ -1664,6 +1673,140 @@ const createWorkspaceObjectTable = async ({
         expect(await readParticipant()).toMatchObject({
           lastResolvedMentionAt: before.lastMentionedAt,
           snoozedUntil: null,
+        });
+      });
+
+      it('resolves the mention when the member unsubscribes', async () => {
+        const { participantService, memberArgs, readParticipant } =
+          await setUpMentionState();
+        const before = await readParticipant();
+
+        await participantService.updateInboxState({
+          ...memberArgs,
+          threadIds: [memberArgs.threadId],
+          action: AgentChatInboxAction.UNSUBSCRIBE,
+          snoozedUntil: null,
+        });
+
+        expect(await readParticipant()).toMatchObject({
+          isSubscribed: false,
+          lastResolvedMentionAt: before.lastMentionedAt,
+        });
+      });
+
+      describe('queued replies', () => {
+        const setUpQueuedReply = async () => {
+          const mentionState = await setUpMentionState();
+          const queue = createQueueService({
+            messageRepository: messages,
+            participantService: mentionState.participantService,
+          });
+          const queueReply = () =>
+            queue.queueMessage({
+              ...mentionState.memberArgs,
+              text: 'On it',
+              userWorkspaceId: OWNER_ID,
+            });
+
+          return { ...mentionState, queue, queueReply };
+        };
+
+        it('reopens the mention when the reply is deleted before it is sent', async () => {
+          const { queue, queueReply, readParticipant } =
+            await setUpQueuedReply();
+          const mentioned = await readParticipant();
+          const reply = await queueReply();
+
+          expect(
+            (await readParticipant()).lastResolvedMentionAt,
+          ).not.toBeNull();
+
+          await queue.deleteQueuedMessage({
+            workspaceId: WORKSPACE_ID,
+            messageId: reply.id,
+          });
+
+          expect(await readParticipant()).toMatchObject({
+            lastMentionedAt: mentioned.lastMentionedAt,
+            lastResolvedMentionAt: null,
+          });
+        });
+
+        it('keeps the mention resolved when the member filed the chat after replying', async () => {
+          const {
+            participantService,
+            memberArgs,
+            queue,
+            queueReply,
+            readParticipant,
+          } = await setUpQueuedReply();
+          const reply = await queueReply();
+
+          await participantService.updateInboxState({
+            ...memberArgs,
+            threadIds: [memberArgs.threadId],
+            action: AgentChatInboxAction.ARCHIVE,
+            snoozedUntil: null,
+          });
+
+          const filed = await readParticipant();
+
+          await queue.deleteQueuedMessage({
+            workspaceId: WORKSPACE_ID,
+            messageId: reply.id,
+          });
+
+          expect(await readParticipant()).toMatchObject({
+            lastResolvedMentionAt: filed.lastResolvedMentionAt,
+          });
+        });
+
+        it('keeps the mention resolved while another reply of the member is kept', async () => {
+          const { queue, queueReply, readParticipant } =
+            await setUpQueuedReply();
+          const firstReply = await queueReply();
+
+          await queueReply();
+
+          const replied = await readParticipant();
+
+          await queue.deleteQueuedMessage({
+            workspaceId: WORKSPACE_ID,
+            messageId: firstReply.id,
+          });
+
+          expect(await readParticipant()).toMatchObject({
+            lastResolvedMentionAt: replied.lastResolvedMentionAt,
+          });
+        });
+
+        it('keeps a mention resolved before the reply was queued', async () => {
+          const {
+            participantService,
+            memberArgs,
+            queue,
+            queueReply,
+            readParticipant,
+          } = await setUpQueuedReply();
+
+          await participantService.updateInboxState({
+            ...memberArgs,
+            threadIds: [memberArgs.threadId],
+            action: AgentChatInboxAction.ARCHIVE,
+            snoozedUntil: null,
+          });
+
+          const filed = await readParticipant();
+          const reply = await queueReply();
+
+          await queue.deleteQueuedMessage({
+            workspaceId: WORKSPACE_ID,
+            messageId: reply.id,
+          });
+
+          expect(await readParticipant()).toMatchObject({
+            lastResolvedMentionAt: filed.lastResolvedMentionAt,
+          });
         });
       });
 
