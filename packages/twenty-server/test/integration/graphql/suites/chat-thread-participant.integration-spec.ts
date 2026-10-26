@@ -1473,13 +1473,13 @@ describe('Chat thread participant state through the authenticated API', () => {
       getAppProviderByClassName<AgentChatThreadParticipantService>(
         'AgentChatThreadParticipantService',
       );
-    const memberArgs = {
+    const memberThreadAccess = {
       workspaceId: SEED_APPLE_WORKSPACE_ID,
       workspaceMemberId: WORKSPACE_MEMBER_DATA_SEED_IDS.JONY,
       threadId,
     };
     const response = participantService.resolveMention({
-      ...memberArgs,
+      ...memberThreadAccess,
       writeResponse: async () => {
         responseEvents.emit('started');
         await responseFinished;
@@ -1488,7 +1488,7 @@ describe('Chat thread participant state through the authenticated API', () => {
 
     await responseStarted;
 
-    const laterMention = participantService.markAsMentioned(memberArgs);
+    const laterMention = participantService.markAsMentioned(memberThreadAccess);
 
     responseEvents.emit('finished');
     await Promise.all([response, laterMention]);
