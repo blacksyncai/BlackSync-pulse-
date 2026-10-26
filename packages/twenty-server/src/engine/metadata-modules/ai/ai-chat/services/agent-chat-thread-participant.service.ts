@@ -49,6 +49,8 @@ type BuildParticipantWriteQuery = (tables: {
 
 const NEXT_PARTICIPANT_UPDATED_AT = `GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')`;
 
+const ALL_MENTIONS_RESOLVED_AT = `GREATEST(participant."lastResolvedMentionAt", participant."lastMentionedAt")`;
+
 const PARTICIPANT_LOCK_QUERY =
   'SELECT pg_advisory_xact_lock(hashtextextended($1, 0))';
 
@@ -91,7 +93,7 @@ const INBOX_ACTION_QUERIES: Record<
        "archivedAt" = EXCLUDED."archivedAt",
        "snoozedUntil" = NULL,
        "isSubscribed" = true,
-       "lastResolvedMentionAt" = GREATEST(participant."lastResolvedMentionAt", participant."lastMentionedAt"),
+       "lastResolvedMentionAt" = ${ALL_MENTIONS_RESOLVED_AT},
        "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
      RETURNING *`,
   // Filed at the settled activity, so activity that waited on the thread lock still comes after
@@ -146,7 +148,7 @@ const INBOX_ACTION_QUERIES: Record<
        "isSubscribed" = false,
        "archivedAt" = EXCLUDED."archivedAt",
        "snoozedUntil" = NULL,
-       "lastResolvedMentionAt" = GREATEST(participant."lastResolvedMentionAt", participant."lastMentionedAt"),
+       "lastResolvedMentionAt" = ${ALL_MENTIONS_RESOLVED_AT},
        "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
      RETURNING *`,
 };
