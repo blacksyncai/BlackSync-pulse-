@@ -1854,7 +1854,7 @@ export const ALL_ENTITY_PROPERTIES_CONFIGURATION_BY_METADATA_NAME = {
     },
     value: {
       toCompare: false,
-      toStringify: true,
+      toStringify: false,
       universalProperty: undefined,
     },
     description: {
@@ -1868,7 +1868,7 @@ export const ALL_ENTITY_PROPERTIES_CONFIGURATION_BY_METADATA_NAME = {
       universalProperty: undefined,
     },
     isSecret: {
-      toCompare: true,
+      toCompare: false,
       toStringify: false,
       universalProperty: undefined,
     },
