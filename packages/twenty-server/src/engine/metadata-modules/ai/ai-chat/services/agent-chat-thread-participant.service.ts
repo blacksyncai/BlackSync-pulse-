@@ -44,6 +44,8 @@ type BuildParticipantWriteQuery = (tables: {
   threadTable: string;
 }) => string;
 
+const NEXT_PARTICIPANT_UPDATED_AT = `GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')`;
+
 // A snooze whose end is already due, which its queued end may have checked
 // before this write, is saved as ended. Filing a thread, done or snoozed,
 // follows it, so new activity or the snooze's end brings it back
@@ -54,7 +56,7 @@ const buildSnoozeQuery: BuildParticipantWriteQuery = ({ participantTable }) =>
      "archivedAt" = EXCLUDED."archivedAt",
      "snoozedUntil" = EXCLUDED."snoozedUntil",
      "isSubscribed" = true,
-     "updatedAt" = GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')
+     "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
    RETURNING *`;
 
 // The member's change for each action, written by the database so its
@@ -71,14 +73,14 @@ const INBOX_ACTION_QUERIES: Record<
      SELECT thread.id, $2, thread."lastActivityAt", false FROM ${threadTable} thread WHERE thread.id = $1
      ON CONFLICT ("threadId", "workspaceMemberId") DO UPDATE SET
        "lastReadAt" = GREATEST(participant."lastReadAt", EXCLUDED."lastReadAt"),
-       "updatedAt" = GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')
+       "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
      RETURNING *`,
   [AgentChatInboxAction.UNREAD]: ({ participantTable }) =>
     `INSERT INTO ${participantTable} AS participant ("threadId", "workspaceMemberId", "lastReadAt", "isSubscribed")
      VALUES ($1, $2, NULL, false)
      ON CONFLICT ("threadId", "workspaceMemberId") DO UPDATE SET
        "lastReadAt" = NULL,
-       "updatedAt" = GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')
+       "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
      RETURNING *`,
   [AgentChatInboxAction.ARCHIVE]: ({ participantTable }) =>
     `INSERT INTO ${participantTable} AS participant ("threadId", "workspaceMemberId", "archivedAt", "isSubscribed")
@@ -88,7 +90,7 @@ const INBOX_ACTION_QUERIES: Record<
        "snoozedUntil" = NULL,
        "isSubscribed" = true,
        "lastResolvedMentionAt" = GREATEST(participant."lastResolvedMentionAt", participant."lastMentionedAt"),
-       "updatedAt" = GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')
+       "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
      RETURNING *`,
   [AgentChatInboxAction.ARCHIVE_IF_SETTLED]: ({
     participantTable,
@@ -100,7 +102,7 @@ const INBOX_ACTION_QUERIES: Record<
      UPDATE ${participantTable} AS participant
      SET "archivedAt" = clock_timestamp(),
        "snoozedUntil" = NULL,
-       "updatedAt" = GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')
+       "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
      FROM locked_thread thread
      WHERE participant."threadId" = thread.id
        AND participant."workspaceMemberId" = $2
@@ -123,14 +125,14 @@ const INBOX_ACTION_QUERIES: Record<
        "archivedAt" = NULL,
        "snoozedUntil" = NULL,
        "isSubscribed" = true,
-       "updatedAt" = GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')
+       "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
      RETURNING *`,
   [AgentChatInboxAction.SUBSCRIBE]: ({ participantTable }) =>
     `INSERT INTO ${participantTable} AS participant ("threadId", "workspaceMemberId")
      VALUES ($1, $2)
      ON CONFLICT ("threadId", "workspaceMemberId") DO UPDATE SET
        "isSubscribed" = true,
-       "updatedAt" = GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')
+       "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
      RETURNING *`,
   // Files the chat under done and keeps it there whatever happens in it,
   // until the member is mentioned or writes in it again
@@ -141,7 +143,7 @@ const INBOX_ACTION_QUERIES: Record<
        "isSubscribed" = false,
        "archivedAt" = EXCLUDED."archivedAt",
        "snoozedUntil" = NULL,
-       "updatedAt" = GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')
+       "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
      RETURNING *`,
 };
 
@@ -160,12 +162,12 @@ const buildMentionResolutionQuery = ({
 }: {
   participantTable: string;
 }) =>
-  `UPDATE ${participantTable}
-   SET "lastResolvedMentionAt" = "lastMentionedAt", "updatedAt" = GREATEST(clock_timestamp(), "updatedAt" + interval '1 millisecond')
+  `UPDATE ${participantTable} AS participant
+   SET "lastResolvedMentionAt" = "lastMentionedAt", "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
    WHERE "threadId" = $1 AND "workspaceMemberId" = $2
      AND "lastMentionedAt" IS NOT NULL
      AND ("lastResolvedMentionAt" IS NULL OR "lastMentionedAt" > "lastResolvedMentionAt")
-   RETURNING *`;
+   RETURNING ${PARTICIPANT_COLUMNS}`;
 
 // Timestamps compared against thread.lastActivityAt are stamped by Postgres
 // (clock_timestamp), so ordering follows the database rather than app servers.
@@ -277,7 +279,7 @@ export class AgentChatThreadParticipantService {
              participant."lastMentionedAt" + interval '1 millisecond',
              participant."lastResolvedMentionAt" + interval '1 millisecond'
            ),
-           "updatedAt" = GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')
+           "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
          RETURNING *`,
     );
   }
@@ -293,7 +295,7 @@ export class AgentChatThreadParticipantService {
            "archivedAt" = NULL,
            "snoozedUntil" = NULL,
            "isSubscribed" = true,
-           "updatedAt" = GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')
+           "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
          RETURNING *`,
     );
   }
@@ -382,7 +384,7 @@ export class AgentChatThreadParticipantService {
            "archivedAt" = NULL,
            "snoozedUntil" = NULL,
            "isSubscribed" = true,
-           "updatedAt" = GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')
+           "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
          RETURNING *`,
       [isSelfAssigned],
       writeAssignment,
@@ -433,8 +435,8 @@ export class AgentChatThreadParticipantService {
         threadIds: [args.threadId],
       },
       ({ participantTable }) =>
-        `UPDATE ${participantTable}
-         SET "archivedAt" = NULL, "updatedAt" = GREATEST(clock_timestamp(), "updatedAt" + interval '1 millisecond')
+        `UPDATE ${participantTable} AS participant
+         SET "archivedAt" = NULL, "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
          WHERE "threadId" = $1 AND "workspaceMemberId" = $2
            AND "snoozedUntil" = $3 AND "archivedAt" IS NOT NULL
          RETURNING *`,
@@ -517,7 +519,7 @@ export class AgentChatThreadParticipantService {
                "archivedAt" = NULL,
                "snoozedUntil" = NULL,
                "isSubscribed" = true,
-               "updatedAt" = GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')
+               "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
              RETURNING id, "workspaceMemberId"
            ), owner_share AS (
              ${buildAgentChatThreadParticipantOwnerShareInsert({ workspaceId, participantSource: 'participant', objectMetadataIdParameter: '$4' })}
