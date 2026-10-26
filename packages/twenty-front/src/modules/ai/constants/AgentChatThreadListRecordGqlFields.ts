@@ -10,7 +10,6 @@ export const AGENT_CHAT_THREAD_LIST_RECORD_GQL_FIELDS = {
   lastMessageText: true,
   lastMessageSenderWorkspaceMemberId: true,
   writerWorkspaceMemberIds: true,
-  isAssistantParticipant: true,
   workspaceMemberId: true,
   assigneeId: true,
   channelId: true,
