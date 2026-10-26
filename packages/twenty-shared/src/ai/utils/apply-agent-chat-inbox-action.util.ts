@@ -82,6 +82,7 @@ export const applyAgentChatInboxAction = ({
     case 'UNSUBSCRIBE':
       return {
         ...state,
+        lastResolvedMentionAt: getAgentChatResolvedMentionAt(state),
         isSubscribed: false,
         archivedAt: now.toISOString(),
         snoozedUntil: null,

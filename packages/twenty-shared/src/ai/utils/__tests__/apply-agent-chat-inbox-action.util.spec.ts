@@ -96,18 +96,21 @@ describe('applyAgentChatInboxAction', () => {
     ).toEqual(expected);
   });
 
-  it('resolves the recorded mention when marking done', () => {
-    expect(
-      applyAgentChatInboxAction({
-        participant: { ...READ, lastMentionedAt: EARLIER },
-        action: 'ARCHIVE',
-        now: NOW,
-      }),
-    ).toMatchObject({
-      lastMentionedAt: EARLIER,
-      lastResolvedMentionAt: EARLIER,
-    });
-  });
+  it.each<AgentChatInboxAction>(['ARCHIVE', 'UNSUBSCRIBE'])(
+    'resolves the recorded mention on %s',
+    (action) => {
+      expect(
+        applyAgentChatInboxAction({
+          participant: { ...READ, lastMentionedAt: EARLIER },
+          action,
+          now: NOW,
+        }),
+      ).toMatchObject({
+        lastMentionedAt: EARLIER,
+        lastResolvedMentionAt: EARLIER,
+      });
+    },
+  );
 
   it('keeps a later mention resolution when marking done', () => {
     expect(
@@ -129,7 +132,6 @@ describe('applyAgentChatInboxAction', () => {
     'SNOOZE',
     'MOVE_TO_INBOX',
     'SUBSCRIBE',
-    'UNSUBSCRIBE',
     'ARCHIVE_IF_SETTLED',
   ])('preserves unresolved mentions on %s', (action) => {
     expect(

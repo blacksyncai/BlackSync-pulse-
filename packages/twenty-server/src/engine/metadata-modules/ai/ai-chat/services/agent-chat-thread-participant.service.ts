@@ -143,6 +143,7 @@ const INBOX_ACTION_QUERIES: Record<
        "isSubscribed" = false,
        "archivedAt" = EXCLUDED."archivedAt",
        "snoozedUntil" = NULL,
+       "lastResolvedMentionAt" = GREATEST(participant."lastResolvedMentionAt", participant."lastMentionedAt"),
        "updatedAt" = ${NEXT_PARTICIPANT_UPDATED_AT}
      RETURNING *`,
 };
