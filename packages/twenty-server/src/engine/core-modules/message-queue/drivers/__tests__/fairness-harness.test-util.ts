@@ -87,7 +87,6 @@ const mockBullMQ: BullMQDouble = {
 
     return { id: job.id };
   },
-  // Lowest priority first, insertion order on ties, a promoted job joins the end of its level
   takeNext: () => {
     const eligibleJobs = mockBullMQ.jobs.filter(
       (job) => job.timestamp + (job.options.delay ?? 0) <= mockBullMQ.now,
