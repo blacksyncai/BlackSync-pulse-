@@ -1,6 +1,6 @@
 import { STANDARD_OBJECTS } from 'twenty-shared/metadata';
 
-import { AddChatMentionResolutionCommand } from 'src/database/commands/upgrade-version-command/2-52/2-52-workspace-command-1792768675515-add-chat-mention-resolution.command';
+import { AddChatMentionResolutionCommand } from 'src/database/commands/upgrade-version-command/2-52/2-52-workspace-command-1793023802653-add-chat-mention-resolution.command';
 
 jest.mock(
   'src/database/commands/upgrade-version-command/2-10/utils/get-standard-flat-entities-to-create-or-throw.util',
