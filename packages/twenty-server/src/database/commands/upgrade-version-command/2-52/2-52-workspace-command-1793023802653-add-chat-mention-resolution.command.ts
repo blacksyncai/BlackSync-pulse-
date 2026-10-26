@@ -157,10 +157,11 @@ export class AddChatMentionResolutionCommand extends ProvisionedWorkspaceCommand
     workspaceId: string,
   ): Promise<void> {
     const schema = escapeIdentifier(getWorkspaceSchemaName(workspaceId));
-    let candidateCount: number;
 
-    do {
-      const [batch] = await this.dataSource.query<{ candidateCount: number }[]>(
+    while (true) {
+      const [{ candidateCount }] = await this.dataSource.query<
+        { candidateCount: number }[]
+      >(
         `WITH answered_mentions AS (
            SELECT participant.id, participant."lastMentionedAt"
            FROM ${schema}."agentChatThreadParticipant" participant
@@ -196,8 +197,10 @@ export class AddChatMentionResolutionCommand extends ProvisionedWorkspaceCommand
          SELECT COUNT(*)::int AS "candidateCount" FROM answered_mentions`,
       );
 
-      candidateCount = batch.candidateCount;
-    } while (candidateCount === PARTICIPANT_BATCH_SIZE);
+      if (candidateCount < PARTICIPANT_BATCH_SIZE) {
+        return;
+      }
+    }
   }
 
   // Snooze ends that fired before the field existed failed every retry
