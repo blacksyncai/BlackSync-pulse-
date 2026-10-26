@@ -28,7 +28,7 @@ const PARTICIPANT_BATCH_SIZE = 1000;
 @Command({
   name: 'upgrade:2-52:add-chat-mention-resolution',
   description:
-    'Track resolved chat mentions and recover proven historical replies',
+    'Track resolved chat mentions, recover proven historical replies and end due snoozes',
 })
 export class AddChatMentionResolutionCommand extends ProvisionedWorkspaceCommandRunner {
   constructor(
@@ -95,6 +95,7 @@ export class AddChatMentionResolutionCommand extends ProvisionedWorkspaceCommand
     }
 
     await this.resolveProvenHistoricalReplies(workspaceId);
+    await this.endDueSnoozes(workspaceId);
   }
 
   async down({ workspaceId, options }: RunOnWorkspaceArgs): Promise<void> {
@@ -197,5 +198,18 @@ export class AddChatMentionResolutionCommand extends ProvisionedWorkspaceCommand
 
       candidateCount = batch.candidateCount;
     } while (candidateCount === PARTICIPANT_BATCH_SIZE);
+  }
+
+  // Snooze ends that fired before the field existed failed every retry
+  private async endDueSnoozes(workspaceId: string): Promise<void> {
+    const schema = escapeIdentifier(getWorkspaceSchemaName(workspaceId));
+
+    await this.dataSource.query(
+      `UPDATE ${schema}."agentChatThreadParticipant" participant
+       SET "archivedAt" = NULL, "updatedAt" = GREATEST(clock_timestamp(), participant."updatedAt" + interval '1 millisecond')
+       WHERE participant."deletedAt" IS NULL
+         AND participant."archivedAt" IS NOT NULL
+         AND participant."snoozedUntil" <= clock_timestamp()`,
+    );
   }
 }

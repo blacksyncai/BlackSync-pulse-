@@ -132,6 +132,36 @@ describe('2-52 workspace command - add chat mention resolution (integration)', (
     return participantId;
   };
 
+  const createSnoozedParticipant = async (
+    snoozedUntil: string,
+  ): Promise<string> => {
+    const threadId = randomUUID();
+    const participantId = randomUUID();
+
+    threadIds.push(threadId);
+    participantIds.push(participantId);
+
+    await global.testDataSource.query(
+      `INSERT INTO ${SCHEMA}."agentChatThread" (id, "workspaceMemberId")
+       VALUES ($1, $2)`,
+      [threadId, WORKSPACE_MEMBER_DATA_SEED_IDS.JANE],
+    );
+    await global.testDataSource.query(
+      `INSERT INTO ${SCHEMA}."agentChatThreadParticipant"
+         (id, "threadId", "workspaceMemberId", "archivedAt", "snoozedUntil")
+       VALUES ($1, $2, $3, $4, $5)`,
+      [
+        participantId,
+        threadId,
+        WORKSPACE_MEMBER_DATA_SEED_IDS.JONY,
+        MENTIONED_AT,
+        snoozedUntil,
+      ],
+    );
+
+    return participantId;
+  };
+
   const readResolutions = async () => {
     const rows: {
       id: string;
@@ -264,6 +294,34 @@ describe('2-52 workspace command - add chat mention resolution (integration)', (
     await expect(
       sharingService.getParticipantObjectMetadataId(SEED_APPLE_WORKSPACE_ID),
     ).resolves.toEqual(expect.any(String));
+  });
+
+  it('ends snoozes that came due before the upgrade', async () => {
+    const dueParticipantId = await createSnoozedParticipant(REPLIED_AT);
+    const futureParticipantId = await createSnoozedParticipant(
+      new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+    );
+
+    await command.up(RUN_ON_WORKSPACE_ARGS);
+
+    const rows: { id: string; archivedAt: Date | null }[] =
+      await global.testDataSource.query(
+        `SELECT id, "archivedAt" FROM ${SCHEMA}."agentChatThreadParticipant"
+         WHERE id = ANY($1::uuid[])`,
+        [[dueParticipantId, futureParticipantId]],
+      );
+
+    expect(
+      Object.fromEntries(
+        rows.map(({ id, archivedAt }) => [
+          id,
+          archivedAt?.toISOString() ?? null,
+        ]),
+      ),
+    ).toEqual({
+      [dueParticipantId]: null,
+      [futureParticipantId]: MENTIONED_AT,
+    });
   });
 
   it('preserves resolution cursors and row versions when repeated', async () => {

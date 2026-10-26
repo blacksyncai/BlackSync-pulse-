@@ -56,6 +56,10 @@ describe('AddChatMentionResolutionCommand', () => {
       total: 1,
     });
 
-    expect(query).toHaveBeenCalledTimes(2);
+    expect(
+      query.mock.calls.filter(([sql]: [string]) =>
+        sql.includes('answered_mentions'),
+      ),
+    ).toHaveLength(2);
   });
 });
