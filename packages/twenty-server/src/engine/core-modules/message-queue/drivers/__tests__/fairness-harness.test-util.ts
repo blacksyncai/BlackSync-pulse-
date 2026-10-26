@@ -87,8 +87,7 @@ const mockBullMQ: BullMQDouble = {
 
     return { id: job.id };
   },
-  // BullMQ serves the lowest priority first and keeps the insertion order on
-  // ties; a job leaving the delayed set joins the end of its priority level
+  // Lowest priority first, insertion order on ties, a promoted job joins the end of its level
   takeNext: () => {
     const eligibleJobs = mockBullMQ.jobs.filter(
       (job) => job.timestamp + (job.options.delay ?? 0) <= mockBullMQ.now,
