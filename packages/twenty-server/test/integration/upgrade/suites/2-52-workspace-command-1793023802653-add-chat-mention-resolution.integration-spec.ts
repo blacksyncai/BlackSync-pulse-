@@ -57,6 +57,49 @@ describe('2-52 workspace command - add chat mention resolution (integration)', (
     };
   };
 
+  const createParticipant = async ({
+    lastMentionedAt = null,
+    lastReadAt = null,
+    archivedAt = null,
+    snoozedUntil = null,
+    deletedAt = null,
+  }: {
+    lastMentionedAt?: string | null;
+    lastReadAt?: string | null;
+    archivedAt?: string | null;
+    snoozedUntil?: string | null;
+    deletedAt?: string | null;
+  }): Promise<{ threadId: string; participantId: string }> => {
+    const threadId = randomUUID();
+    const participantId = randomUUID();
+
+    threadIds.push(threadId);
+    participantIds.push(participantId);
+
+    await global.testDataSource.query(
+      `INSERT INTO ${SCHEMA}."agentChatThread" (id, "workspaceMemberId")
+       VALUES ($1, $2)`,
+      [threadId, WORKSPACE_MEMBER_DATA_SEED_IDS.JANE],
+    );
+    await global.testDataSource.query(
+      `INSERT INTO ${SCHEMA}."agentChatThreadParticipant"
+         (id, "threadId", "workspaceMemberId", "lastMentionedAt", "lastReadAt", "archivedAt", "snoozedUntil", "deletedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [
+        participantId,
+        threadId,
+        WORKSPACE_MEMBER_DATA_SEED_IDS.JONY,
+        lastMentionedAt,
+        lastReadAt,
+        archivedAt,
+        snoozedUntil,
+        deletedAt,
+      ],
+    );
+
+    return { threadId, participantId };
+  };
+
   const createHistoricalMention = async ({
     lastReadAt = null,
     participantDeletedAt = null,
@@ -74,30 +117,11 @@ describe('2-52 workspace command - add chat mention resolution (integration)', (
       turnDeletedAt?: string | null;
     };
   }): Promise<string> => {
-    const threadId = randomUUID();
-    const participantId = randomUUID();
-
-    threadIds.push(threadId);
-    participantIds.push(participantId);
-
-    await global.testDataSource.query(
-      `INSERT INTO ${SCHEMA}."agentChatThread" (id, "workspaceMemberId")
-       VALUES ($1, $2)`,
-      [threadId, WORKSPACE_MEMBER_DATA_SEED_IDS.JANE],
-    );
-    await global.testDataSource.query(
-      `INSERT INTO ${SCHEMA}."agentChatThreadParticipant"
-         (id, "threadId", "workspaceMemberId", "lastMentionedAt", "lastReadAt", "deletedAt")
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [
-        participantId,
-        threadId,
-        WORKSPACE_MEMBER_DATA_SEED_IDS.JONY,
-        MENTIONED_AT,
-        lastReadAt,
-        participantDeletedAt,
-      ],
-    );
+    const { threadId, participantId } = await createParticipant({
+      lastMentionedAt: MENTIONED_AT,
+      lastReadAt,
+      deletedAt: participantDeletedAt,
+    });
 
     if (!isDefined(reply)) {
       return participantId;
@@ -135,29 +159,10 @@ describe('2-52 workspace command - add chat mention resolution (integration)', (
   const createSnoozedParticipant = async (
     snoozedUntil: string,
   ): Promise<string> => {
-    const threadId = randomUUID();
-    const participantId = randomUUID();
-
-    threadIds.push(threadId);
-    participantIds.push(participantId);
-
-    await global.testDataSource.query(
-      `INSERT INTO ${SCHEMA}."agentChatThread" (id, "workspaceMemberId")
-       VALUES ($1, $2)`,
-      [threadId, WORKSPACE_MEMBER_DATA_SEED_IDS.JANE],
-    );
-    await global.testDataSource.query(
-      `INSERT INTO ${SCHEMA}."agentChatThreadParticipant"
-         (id, "threadId", "workspaceMemberId", "archivedAt", "snoozedUntil")
-       VALUES ($1, $2, $3, $4, $5)`,
-      [
-        participantId,
-        threadId,
-        WORKSPACE_MEMBER_DATA_SEED_IDS.JONY,
-        MENTIONED_AT,
-        snoozedUntil,
-      ],
-    );
+    const { participantId } = await createParticipant({
+      archivedAt: MENTIONED_AT,
+      snoozedUntil,
+    });
 
     return participantId;
   };
