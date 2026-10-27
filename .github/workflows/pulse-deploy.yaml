@@ -1,0 +1,74 @@
+name: Pulse deploy
+
+# Builds the production image on GitHub (with layer caching) and has Railway
+# pull it, instead of Railway rebuilding the whole monorepo on every push.
+
+on:
+  push:
+    branches:
+      - application-registration-ownership-guard
+  workflow_dispatch:
+
+concurrency:
+  group: pulse-deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/blacksyncai/blacksync-pulse
+  RAILWAY_ENVIRONMENT_ID: 8ab88842-edce-4c68-a73d-4c91f6f5b51e
+  RAILWAY_MAIN_SERVICE_ID: a5950130-0787-4c89-8f14-841138ad4da7
+  RAILWAY_WORKER_SERVICE_ID: 66f02f54-1b92-4f2a-964e-b3cf7ddea1af
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: packages/twenty-docker/twenty/Dockerfile.railway
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}
+          build-args: |
+            APP_VERSION=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ vars.PULSE_RAILWAY_IMAGE_DEPLOYS == 'true' }}
+    steps:
+      - name: Point Railway services at the new image and redeploy
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          set -euo pipefail
+          railway() {
+            curl -fsS https://backboard.railway.com/graphql/v2 \
+              -H 'Content-Type: application/json' \
+              -H "Project-Access-Token: ${RAILWAY_TOKEN}" \
+              -d "$1"
+            echo
+          }
+          for service in "$RAILWAY_MAIN_SERVICE_ID" "$RAILWAY_WORKER_SERVICE_ID"; do
+            railway "{\"query\":\"mutation { serviceInstanceUpdate(serviceId: \\\"${service}\\\", environmentId: \\\"${RAILWAY_ENVIRONMENT_ID}\\\", input: { source: { image: \\\"${IMAGE}:${GITHUB_SHA}\\\" } }) }\"}"
+            railway "{\"query\":\"mutation { serviceInstanceDeployV2(serviceId: \\\"${service}\\\", environmentId: \\\"${RAILWAY_ENVIRONMENT_ID}\\\") }\"}"
+          done
