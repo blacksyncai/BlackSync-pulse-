@@ -21,6 +21,22 @@ import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomState
 import { getWorkspaceMemberNameOrEmail } from '@/workspace-member/utils/getWorkspaceMemberNameOrEmail';
 import { getAbsoluteImageUrl } from '~/utils/image/getAbsoluteImageUrl';
 
+const getToggledRecipientWorkspaceMemberIds = ({
+  recipientWorkspaceMemberIds,
+  workspaceMemberId,
+}: {
+  recipientWorkspaceMemberIds: string[];
+  workspaceMemberId: string;
+}): string[] => {
+  if (recipientWorkspaceMemberIds.includes(workspaceMemberId)) {
+    return recipientWorkspaceMemberIds.filter(
+      (recipientId) => recipientId !== workspaceMemberId,
+    );
+  }
+
+  return [...recipientWorkspaceMemberIds, workspaceMemberId];
+};
+
 export const AiChatNewThreadRecipientPicker = () => {
   const { t } = useLingui();
   const [search, setSearch] = useState('');
@@ -63,13 +79,10 @@ export const AiChatNewThreadRecipientPicker = () => {
   const toggleWorkspaceMember = (workspaceMemberId: string) => {
     setRecipients((current) => ({
       ...current,
-      recipientWorkspaceMemberIds: current.recipientWorkspaceMemberIds.includes(
+      recipientWorkspaceMemberIds: getToggledRecipientWorkspaceMemberIds({
+        recipientWorkspaceMemberIds: current.recipientWorkspaceMemberIds,
         workspaceMemberId,
-      )
-        ? current.recipientWorkspaceMemberIds.filter(
-            (recipientId) => recipientId !== workspaceMemberId,
-          )
-        : [...current.recipientWorkspaceMemberIds, workspaceMemberId],
+      }),
     }));
   };
 
