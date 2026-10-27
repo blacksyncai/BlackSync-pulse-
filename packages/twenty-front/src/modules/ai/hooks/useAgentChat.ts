@@ -105,6 +105,7 @@ export const useAgentChat = () => {
     }
 
     const isNewChat = threadId === newAiChatThreadId;
+    const isNewInboxChat = isNewChat && isAiChatInboxEnabled;
     const newThreadRecipients = store.get(
       agentChatNewThreadRecipientsFamilyState.atomFamily(threadId),
     );
@@ -222,7 +223,7 @@ export const useAgentChat = () => {
       ({ workspaceMemberId }) => workspaceMemberId !== currentWorkspaceMemberId,
     );
     const initialRecipients = getAgentChatInitialRecipients({
-      shouldIncludeInitialRecipients: isNewChat && isAiChatInboxEnabled,
+      shouldIncludeInitialRecipients: isNewInboxChat,
       recipientWorkspaceMemberIds:
         newThreadRecipients.recipientWorkspaceMemberIds,
       workspaceMembers: store.get(currentWorkspaceMembersState.atom),
@@ -257,18 +258,16 @@ export const useAgentChat = () => {
             ? (store.get(agentChatNewThreadChannelIdState.atom) ?? undefined)
             : undefined,
           shouldAssistantReply: isNonEmptyArray(aiModels),
-          isAssistantParticipant:
-            isNewChat && isAiChatInboxEnabled
-              ? newThreadRecipients.isAssistantParticipant
-              : undefined,
+          isAssistantParticipant: isNewInboxChat
+            ? newThreadRecipients.isAssistantParticipant
+            : undefined,
           isAssistantMentioned:
             isAgentChatAssistantMentionedInSerializedDocument(
               serializedContentToSend,
             ),
-          recipientWorkspaceMemberIds:
-            isNewChat && isAiChatInboxEnabled
-              ? newThreadRecipients.recipientWorkspaceMemberIds
-              : undefined,
+          recipientWorkspaceMemberIds: isNewInboxChat
+            ? newThreadRecipients.recipientWorkspaceMemberIds
+            : undefined,
         },
       });
 
