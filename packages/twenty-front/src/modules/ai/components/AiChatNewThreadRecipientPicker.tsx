@@ -12,6 +12,7 @@ import { agentChatNewThreadRecipientsFamilyState } from '@/ai/states/agentChatNe
 import { agentChatIsSendingMessageFamilyState } from '@/ai/states/agentChatIsSendingMessageFamilyState';
 import { newAiChatThreadIdState } from '@/ai/states/newAiChatThreadIdState';
 import { agentChatAccessibleChannelsSelector } from '@/ai/states/selectors/agentChatAccessibleChannelsSelector';
+import { getToggledRecipientWorkspaceMemberIds } from '@/ai/utils/getToggledRecipientWorkspaceMemberIds';
 import { currentWorkspaceMemberState } from '@/auth/states/currentWorkspaceMemberState';
 import { currentWorkspaceMembersState } from '@/auth/states/currentWorkspaceMembersState';
 import { useAtomFamilyState } from '@/ui/utilities/state/jotai/hooks/useAtomFamilyState';
@@ -20,22 +21,6 @@ import { useAtomState } from '@/ui/utilities/state/jotai/hooks/useAtomState';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 import { getWorkspaceMemberNameOrEmail } from '@/workspace-member/utils/getWorkspaceMemberNameOrEmail';
 import { getAbsoluteImageUrl } from '~/utils/image/getAbsoluteImageUrl';
-
-const getToggledRecipientWorkspaceMemberIds = ({
-  recipientWorkspaceMemberIds,
-  workspaceMemberId,
-}: {
-  recipientWorkspaceMemberIds: string[];
-  workspaceMemberId: string;
-}): string[] => {
-  if (recipientWorkspaceMemberIds.includes(workspaceMemberId)) {
-    return recipientWorkspaceMemberIds.filter(
-      (recipientId) => recipientId !== workspaceMemberId,
-    );
-  }
-
-  return [...recipientWorkspaceMemberIds, workspaceMemberId];
-};
 
 export const AiChatNewThreadRecipientPicker = () => {
   const { t } = useLingui();
