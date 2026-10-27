@@ -6810,6 +6810,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fontsource/plus-jakarta-sans@npm:^5.2.8":
+  version: 5.2.8
+  resolution: "@fontsource/plus-jakarta-sans@npm:5.2.8"
+  checksum: 10c0/c16b0dcb5d5f7eeaa6cbc6a0824c0bb59bf70f58e3997c5bf95eb08cd46117b660bec61e7c3fdc7f517dd847e568449c468edfe936c51783e4b9438e52a39ff8
+  languageName: node
+  linkType: hard
+
 "@formatjs/icu-messageformat-parser@npm:^3.5.16":
   version: 3.5.17
   resolution: "@formatjs/icu-messageformat-parser@npm:3.5.17"
@@ -50462,6 +50469,7 @@ __metadata:
     "@floating-ui/react": "npm:^0.24.3"
     "@fontsource/dm-mono": "npm:^5.2.7"
     "@fontsource/inter": "npm:^5.2.8"
+    "@fontsource/plus-jakarta-sans": "npm:^5.2.8"
     "@graphiql/plugin-explorer": "npm:^5.1.2"
     "@graphiql/react": "npm:^0.37.6"
     "@graphql-codegen/cli": "npm:^6.3.1"

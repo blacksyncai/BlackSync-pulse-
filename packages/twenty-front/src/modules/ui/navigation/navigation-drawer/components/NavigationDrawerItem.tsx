@@ -45,9 +45,13 @@ type StyledItemProps = Pick<
 const StyledItem = styled.button<StyledItemProps>`
   align-items: center;
   background: ${({ active, variant }) =>
-    active || variant === 'placeholder'
-      ? themeCssVariables.background.transparent.light
-      : 'transparent'};
+    active
+      ? themeCssVariables.accent.quaternary
+      : variant === 'placeholder'
+        ? themeCssVariables.background.transparent.light
+        : 'transparent'};
+  box-shadow: ${({ active }) =>
+    active ? `inset 2px 0 0 ${themeCssVariables.accent.accent9}` : 'none'};
   border: ${({ isSelectedInEditMode }) =>
     isSelectedInEditMode
       ? `1px solid ${themeCssVariables.color.blue}`
