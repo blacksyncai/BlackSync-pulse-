@@ -41,6 +41,7 @@ import { agentChatNewThreadRecipientsFamilyState } from '@/ai/states/agentChatNe
 import { newAiChatThreadIdState } from '@/ai/states/newAiChatThreadIdState';
 import { getConversationTargetsFromSerializedDocument } from '@/ai/utils/getConversationTargetsFromSerializedDocument';
 import { getAgentChatInitialRecipients } from '@/ai/utils/getAgentChatInitialRecipients';
+import { getAgentChatRequestedParticipants } from '@/ai/utils/getAgentChatRequestedParticipants';
 import { getParticipantMentionsFromSerializedDocument } from '@/ai/utils/getParticipantMentionsFromSerializedDocument';
 import { isAgentChatAssistantMentionedInSerializedDocument } from '@/ai/utils/isAgentChatAssistantMentionedInSerializedDocument';
 import { isAiChatCreditsExhaustedError } from '@/ai/utils/isAiChatCreditsExhaustedError';
@@ -226,14 +227,10 @@ export const useAgentChat = () => {
         newThreadRecipients.recipientWorkspaceMemberIds,
       workspaceMembers: store.get(currentWorkspaceMembersState.atom),
     });
-    const requestedParticipants = [
-      ...new Map(
-        [...participantMentions, ...initialRecipients].map((participant) => [
-          participant.workspaceMemberId,
-          participant,
-        ]),
-      ).values(),
-    ];
+    const requestedParticipants = getAgentChatRequestedParticipants({
+      participantMentions,
+      initialRecipients,
+    });
 
     setAgentChatUploadedFiles([]);
 
