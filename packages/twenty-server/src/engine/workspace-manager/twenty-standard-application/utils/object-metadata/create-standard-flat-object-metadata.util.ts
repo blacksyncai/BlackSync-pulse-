@@ -688,13 +688,13 @@ export const STANDARD_FLAT_OBJECT_METADATA_BUILDERS_BY_OBJECT_NAME = {
         nameSingular: 'company',
         namePlural: 'companies',
         labelSingular: i18nLabel(
-          msg({ message: `Company`, context: 'objectMetadata.labelSingular' }),
+          msg({ message: `Account`, context: 'objectMetadata.labelSingular' }),
         ),
         labelPlural: i18nLabel(
-          msg({ message: `Companies`, context: 'objectMetadata.labelPlural' }),
+          msg({ message: `Accounts`, context: 'objectMetadata.labelPlural' }),
         ),
         description: i18nLabel(
-          msg({ message: `A company`, context: 'objectMetadata.description' }),
+          msg({ message: `An account`, context: 'objectMetadata.description' }),
         ),
         icon: 'IconBuildingSkyscraper',
         isSearchable: true,
@@ -1239,19 +1239,19 @@ export const STANDARD_FLAT_OBJECT_METADATA_BUILDERS_BY_OBJECT_NAME = {
         namePlural: 'opportunities',
         labelSingular: i18nLabel(
           msg({
-            message: `Opportunity`,
+            message: `Deal`,
             context: 'objectMetadata.labelSingular',
           }),
         ),
         labelPlural: i18nLabel(
           msg({
-            message: `Opportunities`,
+            message: `Deals`,
             context: 'objectMetadata.labelPlural',
           }),
         ),
         description: i18nLabel(
           msg({
-            message: `An opportunity`,
+            message: `A deal`,
             context: 'objectMetadata.description',
           }),
         ),

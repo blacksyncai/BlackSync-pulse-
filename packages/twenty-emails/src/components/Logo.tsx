@@ -7,7 +7,7 @@ const logoStyle = {
 export const Logo = () => {
   return (
     <Img
-      src="https://app.twenty.com/images/icons/windows11/Square150x150Logo.scale-100.png"
+      src="https://blacksync-pulse-production.up.railway.app/images/icons/windows11/Square150x150Logo.scale-100.png"
       alt="BlackSync Pulse logo"
       width="40"
       height="40"

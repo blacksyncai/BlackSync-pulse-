@@ -313,7 +313,7 @@ export const buildTaskTargetStandardFlatFieldMetadatas = ({
       morphId: STANDARD_OBJECTS.taskTarget.morphIds.targetMorphId.morphId,
       fieldName: 'targetCompany',
       label: i18nLabel(
-        msg({ message: `Company`, context: 'fieldMetadata.label' }),
+        msg({ message: `Account`, context: 'fieldMetadata.label' }),
       ),
       description: i18nLabel(
         msg({
@@ -346,7 +346,7 @@ export const buildTaskTargetStandardFlatFieldMetadatas = ({
       morphId: STANDARD_OBJECTS.taskTarget.morphIds.targetMorphId.morphId,
       fieldName: 'targetOpportunity',
       label: i18nLabel(
-        msg({ message: `Opportunity`, context: 'fieldMetadata.label' }),
+        msg({ message: `Deal`, context: 'fieldMetadata.label' }),
       ),
       description: i18nLabel(
         msg({

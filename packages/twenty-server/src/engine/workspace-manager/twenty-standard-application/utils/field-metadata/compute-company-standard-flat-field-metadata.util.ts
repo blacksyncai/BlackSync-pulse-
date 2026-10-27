@@ -582,7 +582,7 @@ export const buildCompanyStandardFlatFieldMetadatas = ({
       morphId: null,
       fieldName: 'opportunities',
       label: i18nLabel(
-        msg({ message: `Opportunities`, context: 'fieldMetadata.label' }),
+        msg({ message: `Deals`, context: 'fieldMetadata.label' }),
       ),
       description: i18nLabel(
         msg({

@@ -31,7 +31,7 @@ export const computeStandardOpportunityViews = (
       objectName: 'opportunity',
       context: {
         viewName: 'byStage',
-        name: i18nLabel(msg({ message: `By Stage`, context: 'view.name' })),
+        name: i18nLabel(msg({ message: `Pipeline`, context: 'view.name' })),
         type: ViewType.KANBAN,
         key: null,
         position: 2,

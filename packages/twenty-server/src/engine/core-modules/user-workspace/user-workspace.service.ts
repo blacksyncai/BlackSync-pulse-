@@ -194,7 +194,7 @@ export class UserWorkspaceService {
           firstName: user.firstName,
           lastName: user.lastName,
         },
-        colorScheme: 'System',
+        colorScheme: 'Dark',
         uiScale: 'Default',
         openRecordIn: OpenRecordIn.SIDE_PANEL,
         userId: user.id,

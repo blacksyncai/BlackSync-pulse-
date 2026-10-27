@@ -304,7 +304,7 @@ export const buildStandardTargetFlatFieldMetadatas = <
       morphId,
       fieldName: 'targetCompany',
       label: i18nLabel(
-        msg({ message: `Company`, context: 'fieldMetadata.label' }),
+        msg({ message: `Account`, context: 'fieldMetadata.label' }),
       ),
       description: i18nLabel(
         msg({
@@ -333,7 +333,7 @@ export const buildStandardTargetFlatFieldMetadatas = <
       morphId,
       fieldName: 'targetOpportunity',
       label: i18nLabel(
-        msg({ message: `Opportunity`, context: 'fieldMetadata.label' }),
+        msg({ message: `Deal`, context: 'fieldMetadata.label' }),
       ),
       description: i18nLabel(
         msg({

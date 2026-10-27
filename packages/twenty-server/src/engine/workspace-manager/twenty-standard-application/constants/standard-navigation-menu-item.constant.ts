@@ -21,9 +21,9 @@ export const STANDARD_NAVIGATION_MENU_ITEMS = {
   },
   allOpportunities: {
     universalIdentifier: '20202020-b004-4b04-8b04-c0aba11c0004',
-    type: NavigationMenuItemType.OBJECT,
+    type: NavigationMenuItemType.VIEW,
     viewUniversalIdentifier:
-      STANDARD_OBJECTS.opportunity.views.allOpportunities.universalIdentifier,
+      STANDARD_OBJECTS.opportunity.views.byStage.universalIdentifier,
     position: 2,
   },
   allTasks: {

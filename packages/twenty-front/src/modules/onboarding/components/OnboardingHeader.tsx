@@ -56,7 +56,7 @@ const StyledRightSide = styled(StyledSide)`
 `;
 
 const StyledLogo = styled.div`
-  background-image: url('/images/integrations/twenty-logo.svg');
+  background-image: url('/images/integrations/blacksync-pulse-logo.svg');
   background-size: cover;
   height: ${themeCssVariables.spacing[6]};
   opacity: 0.4;
