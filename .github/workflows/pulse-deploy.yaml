@@ -46,8 +46,9 @@ jobs:
           tags: |
             ${{ env.IMAGE }}:latest
             ${{ env.IMAGE }}:${{ github.sha }}
+          # The server rejects non-semver APP_VERSION values at startup.
           build-args: |
-            APP_VERSION=${{ github.sha }}
+            APP_VERSION=2.45.0
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
