@@ -15,6 +15,7 @@ import { isNonEmptyString } from '@sniptt/guards';
 import {
   IconAppWindow,
   IconApps,
+  IconStack2,
   IconAt,
   IconCalendarEvent,
   IconColorSwatch,
@@ -155,6 +156,12 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
         //   Icon: IconApps,
         //   isHidden: !permissionMap[PermissionFlagType.API_KEYS_AND_WEBHOOKS],
         // },
+        {
+          label: t`Clouds`,
+          path: SettingsPath.Clouds,
+          Icon: IconStack2,
+          isHidden: !permissionMap[PermissionFlagType.APPLICATIONS],
+        },
         {
           label: t`Apps`,
           path: SettingsPath.Applications,

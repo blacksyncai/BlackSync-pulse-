@@ -53,6 +53,7 @@ export enum SettingsPath {
   AiSkillDetail = 'ai/skills/:skillId',
   AiToolDetail = 'ai/tools/:toolIdentifier',
   Applications = 'applications',
+  Clouds = 'clouds',
   ApplicationDetail = 'applications/:applicationId',
   ApplicationConnectionDetail = 'applications/:applicationId/connections/:connectedAccountId',
   ApplicationPublicDomainNew = 'applications/:applicationId/public-domain/new',

@@ -267,6 +267,12 @@ const SettingsToolDetail = lazy(() =>
   })),
 );
 
+const SettingsClouds = lazy(() =>
+  import('~/pages/settings/clouds/SettingsClouds').then((module) => ({
+    default: module.SettingsClouds,
+  })),
+);
+
 const SettingsApplications = lazy(() =>
   import('~/pages/settings/applications/SettingsApplications').then(
     (module) => ({
@@ -1106,6 +1112,7 @@ const createSettingsRouteElements = ({
         path={SettingsPath.Applications}
         element={<SettingsApplications />}
       />
+      <Route path={SettingsPath.Clouds} element={<SettingsClouds />} />
       <Route
         path={SettingsPath.ApplicationDetail}
         element={<SettingsApplicationDetails />}
