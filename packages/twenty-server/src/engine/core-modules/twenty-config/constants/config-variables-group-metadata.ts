@@ -147,4 +147,11 @@ export const CONFIG_VARIABLES_GROUP_METADATA: Record<
     isHiddenOnLoad: true,
     isHiddenInAdminPanel: true,
   },
+  [ConfigVariablesGroup.PLIVO_CONFIG]: {
+    position: 2300,
+    description:
+      'Configure Plivo for click-to-call from the browser. Calls are disabled until auth ID, auth token, endpoint username and caller ID are set.',
+    isHiddenOnLoad: false,
+    isHiddenInAdminPanel: false,
+  },
 };

@@ -28,6 +28,7 @@ import { CacheStorageModule } from 'src/engine/core-modules/cache-storage/cache-
 import { TimelineCalendarEventModule } from 'src/engine/core-modules/calendar/timeline-calendar-event.module';
 import { CaptchaModule } from 'src/engine/core-modules/captcha/captcha.module';
 import { CloudflareModule } from 'src/engine/core-modules/cloudflare/cloudflare.module';
+import { PlivoModule } from 'src/engine/core-modules/plivo/plivo.module';
 import { CodeInterpreterModule } from 'src/engine/core-modules/code-interpreter/code-interpreter.module';
 import { DnsManagerModule } from 'src/engine/core-modules/dns-manager/dns-manager.module';
 import { DpaModule } from 'src/engine/core-modules/dpa/dpa.module';
@@ -127,6 +128,7 @@ import { FileApiModule } from './file/file-api.module';
     EmailingModule,
     PublicDomainModule,
     CloudflareModule,
+    PlivoModule,
     DnsManagerModule,
     WorkflowApiModule,
     AiToolCallAnswerModule,

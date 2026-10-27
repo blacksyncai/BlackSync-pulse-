@@ -7,6 +7,7 @@ import { KeyboardShortcutMenu } from '@/keyboard-shortcut-menu/components/Keyboa
 import { LayoutCustomizationBar } from '@/layout-customization/components/LayoutCustomizationBar';
 import { AppNavigationDrawer } from '@/navigation/components/AppNavigationDrawer';
 import { MobileNavigationBar } from '@/navigation/components/MobileNavigationBar';
+import { PulseCallBar } from '@/pulse-calling/components/PulseCallBar';
 import { PageDragDropProvider } from '@/navigation-menu-item/display/dnd/providers/PageDragDropProvider';
 import { useShowFullscreen } from '@/ui/layout/fullscreen/hooks/useShowFullscreen';
 import { useIsMobile } from 'twenty-ui/utilities';
@@ -98,6 +99,7 @@ export const DefaultLayout = () => {
               </PageDragDropProvider>
             </StyledPageContainer>
             {isMobile && <MobileNavigationBar />}
+            <PulseCallBar />
           </AppErrorBoundary>
         </StyledLayout>
       </FileUploadProvider>

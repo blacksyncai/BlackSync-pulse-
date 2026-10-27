@@ -1923,6 +1923,42 @@ export class ConfigVariables {
   SSL_CERT_PATH: string;
 
   @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.PLIVO_CONFIG,
+    description: 'Plivo account auth ID',
+    type: ConfigVariableType.STRING,
+  })
+  @IsOptional()
+  PLIVO_AUTH_ID: string;
+
+  @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.PLIVO_CONFIG,
+    isSensitive: true,
+    description:
+      'Plivo account auth token, used to sign browser calling tokens',
+    type: ConfigVariableType.STRING,
+  })
+  @IsOptional()
+  PLIVO_AUTH_TOKEN: string;
+
+  @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.PLIVO_CONFIG,
+    description:
+      'Username of the Plivo endpoint browsers sign in as. The endpoint must be attached to a Plivo application whose answer URL is <SERVER_URL>/webhooks/plivo/answer',
+    type: ConfigVariableType.STRING,
+  })
+  @IsOptional()
+  PLIVO_ENDPOINT_USERNAME: string;
+
+  @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.PLIVO_CONFIG,
+    description:
+      'Phone number outbound calls show as caller ID, in E.164 format (e.g. +14155550100). Must be a number on the Plivo account',
+    type: ConfigVariableType.STRING,
+  })
+  @IsOptional()
+  PLIVO_CALLER_ID: string;
+
+  @ConfigVariablesMetadata({
     group: ConfigVariablesGroup.CLOUDFLARE_CONFIG,
     isSensitive: true,
     description: 'API key for Cloudflare integration',
