@@ -201,6 +201,46 @@ const StyledCountLabel = styled.span`
   font-size: ${themeCssVariables.font.size.sm};
 `;
 
+const StyledRemoveRow = styled.div`
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${themeCssVariables.spacing[3]};
+  padding-top: ${themeCssVariables.spacing[4]};
+`;
+
+const StyledRemoveButton = styled.button`
+  background: transparent;
+  border: 1px solid rgba(255, 120, 120, 0.6);
+  border-radius: 10px;
+  color: #ffb4b4;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: ${themeCssVariables.font.size.md};
+  font-weight: ${themeCssVariables.font.weight.medium};
+  height: 36px;
+  padding: 0 ${themeCssVariables.spacing[4]};
+
+  &[data-confirming='true'] {
+    background: #e5484d;
+    border-color: #e5484d;
+    color: #fff;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+`;
+
+const StyledRemoveHint = styled.span`
+  color: rgba(255, 255, 255, 0.55);
+  flex: 1;
+  font-size: ${themeCssVariables.font.size.sm};
+  min-width: 240px;
+`;
+
 const StyledCard = styled.section`
   background: ${themeCssVariables.background.secondary};
   border: 1px solid ${themeCssVariables.border.color.medium};
@@ -275,11 +315,39 @@ const SpreadsheetImportButton = ({
 
 export const PulseImportPage = () => {
   const { t } = useLingui();
-  const { status, isStarting, startCloseImport } = useCloseImport();
+  const {
+    status,
+    isStarting,
+    isRemoving,
+    startCloseImport,
+    removeCloseImport,
+  } = useCloseImport();
+  const [isConfirmingRemoval, setIsConfirmingRemoval] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const isRunning = status?.state === 'running';
+  const isRemovingData =
+    isRunning && status.currentStep === 'Removing imported data';
+
+  const handleRemove = async () => {
+    if (!isConfirmingRemoval) {
+      setIsConfirmingRemoval(true);
+
+      return;
+    }
+
+    setIsConfirmingRemoval(false);
+    setSubmitError(null);
+
+    try {
+      await removeCloseImport();
+    } catch (error) {
+      setSubmitError(
+        getErrorMessage(error) ?? t`Could not remove the import. Try again.`,
+      );
+    }
+  };
 
   const countLabels: { key: keyof CloseImportCounts; label: string }[] = [
     { key: 'companies', label: t`Accounts` },
@@ -341,11 +409,13 @@ export const PulseImportPage = () => {
               <StyledProgressHeader>
                 <strong>
                   {isRunning && <StyledPulseDot />}
-                  {isRunning
-                    ? t`Importing ${status.currentStep ?? ''} from ${status.organizationName ?? 'Close'}...`
-                    : status.state === 'done'
-                      ? t`Imported from ${status.organizationName ?? 'Close'}`
-                      : t`Import stopped`}
+                  {isRemovingData
+                    ? t`Removing everything imported from Close...`
+                    : isRunning
+                      ? t`Importing ${status.currentStep ?? ''} from ${status.organizationName ?? 'Close'}...`
+                      : status.state === 'done'
+                        ? t`Imported from ${status.organizationName ?? 'Close'}`
+                        : t`Import stopped`}
                 </strong>
               </StyledProgressHeader>
               <StyledCountGrid>
@@ -397,6 +467,24 @@ export const PulseImportPage = () => {
               </StyledForm>
               {isDefined(submitError) && (
                 <StyledError>{submitError}</StyledError>
+              )}
+              {showProgress && (
+                <StyledRemoveRow>
+                  <StyledRemoveButton
+                    type="button"
+                    disabled={isRemoving}
+                    data-confirming={isConfirmingRemoval}
+                    onClick={handleRemove}
+                    onBlur={() => setIsConfirmingRemoval(false)}
+                  >
+                    {isConfirmingRemoval
+                      ? t`Click again to delete everything imported from Close`
+                      : t`Remove imported data`}
+                  </StyledRemoveButton>
+                  <StyledRemoveHint>
+                    {t`Deletes the accounts, people, deals, notes, calls, emails, texts and tasks this import created, so you can sync again from scratch. Records you made yourself stay.`}
+                  </StyledRemoveHint>
+                </StyledRemoveRow>
               )}
             </>
           )}

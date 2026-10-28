@@ -64,6 +64,7 @@ const IMPORTED_IDS_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 const STALE_RUN_MS = 15 * 60 * 1000;
 const EMAIL_BODY_MAX_LENGTH = 20_000;
 const LEAD_STATUS_FIELD_NAME = 'leadStatus';
+const REMOVAL_BATCH_SIZE = 500;
 
 const IMPORTED_BY = {
   source: FieldActorSource.IMPORT,
@@ -788,6 +789,90 @@ export class CloseImportService {
     return new Map(
       existing.map((record) => [record[compositeField][subField], record.id]),
     );
+  }
+
+  async startRemoval(workspaceId: string): Promise<CloseImportStatus> {
+    const current = await this.getStatus(workspaceId);
+
+    if (current.state === 'running') {
+      throw new CloseImportAlreadyRunningError();
+    }
+
+    const status: CloseImportStatus = {
+      ...current,
+      state: 'running',
+      currentStep: 'Removing imported data',
+      error: null,
+    };
+
+    await this.saveStatus(workspaceId, status);
+    await this.messageQueueService.add<{ workspaceId: string }>(
+      'CloseImportRemovalJob',
+      { workspaceId },
+    );
+
+    return status;
+  }
+
+  // Deletes every record the import created; records that existed before and were
+  // only matched by website or email are left alone.
+  async removeImportedData(workspaceId: string): Promise<void> {
+    const status = await this.getStatus(workspaceId);
+
+    try {
+      await this.workspaceOrmManager.executeInWorkspaceContext(async () => {
+        const entities = [
+          NoteWorkspaceEntity,
+          TaskWorkspaceEntity,
+          OpportunityWorkspaceEntity,
+          PersonWorkspaceEntity,
+          CompanyWorkspaceEntity,
+        ];
+
+        for (const entity of entities) {
+          const repository =
+            this.workspaceOrmManager.getRepository<ObjectLiteral>(
+              entity,
+              { shouldBypassPermissionChecks: true },
+              { shouldSkipEventEmission: true },
+            );
+
+          for (;;) {
+            const batch = await repository.find({
+              where: {
+                createdBy: {
+                  source: IMPORTED_BY.source,
+                  name: IMPORTED_BY.name,
+                },
+              },
+              select: { id: true },
+              take: REMOVAL_BATCH_SIZE,
+              withDeleted: true,
+            });
+
+            if (batch.length === 0) {
+              break;
+            }
+
+            await repository.delete({ id: In(batch.map(({ id }) => id)) });
+            await this.saveStatus(workspaceId, status);
+          }
+        }
+      }, buildSystemAuthContext(workspaceId));
+
+      await this.cacheStorage.del(this.idsKey(workspaceId));
+      await this.cacheStorage.del(this.statusKey(workspaceId));
+    } catch (error) {
+      this.logger.error(
+        `Removing Close import failed for workspace ${workspaceId}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+      await this.saveStatus(workspaceId, {
+        ...status,
+        state: 'failed',
+        error: 'Removing the imported data hit an error. Try again.',
+      });
+    }
   }
 
   private async saveStatus(workspaceId: string, status: CloseImportStatus) {

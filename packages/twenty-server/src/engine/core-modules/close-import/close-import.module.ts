@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { CloseImportRemovalJob } from 'src/engine/core-modules/close-import/jobs/close-import-removal.job';
 import { CloseImportJob } from 'src/engine/core-modules/close-import/jobs/close-import.job';
 import { CloseImportResolver } from 'src/engine/core-modules/close-import/close-import.resolver';
 import { CloseImportService } from 'src/engine/core-modules/close-import/services/close-import.service';
@@ -26,6 +27,7 @@ import { ViewModule } from 'src/engine/metadata-modules/view/view.module';
     CloseImportService,
     CloseImportResolver,
     CloseImportJob,
+    CloseImportRemovalJob,
     PulsePipelineProvisioningService,
   ],
 })

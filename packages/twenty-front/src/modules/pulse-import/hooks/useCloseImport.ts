@@ -1,5 +1,6 @@
 import {
   CLOSE_IMPORT_STATUS,
+  REMOVE_CLOSE_IMPORT,
   START_CLOSE_IMPORT,
 } from '@/pulse-import/graphql/closeImport';
 import { useMutation, useQuery } from '@apollo/client/react';
@@ -38,9 +39,23 @@ export const useCloseImport = () => {
     startCloseImport: CloseImportStatus;
   }>(START_CLOSE_IMPORT, { refetchQueries: [CLOSE_IMPORT_STATUS] });
 
+  const [removeCloseImportMutation, { loading: isRemoving }] = useMutation<{
+    removeCloseImport: CloseImportStatus;
+  }>(REMOVE_CLOSE_IMPORT, { refetchQueries: [CLOSE_IMPORT_STATUS] });
+
   const startCloseImport = async (apiKey: string) => {
     await startCloseImportMutation({ variables: { apiKey } });
   };
 
-  return { status: data?.closeImportStatus, isStarting, startCloseImport };
+  const removeCloseImport = async () => {
+    await removeCloseImportMutation();
+  };
+
+  return {
+    status: data?.closeImportStatus,
+    isStarting,
+    isRemoving,
+    startCloseImport,
+    removeCloseImport,
+  };
 };

@@ -47,6 +47,21 @@ export class CloseImportResolver {
   }
 
   @Mutation(() => CloseImportStatusDTO)
+  async removeCloseImport(
+    @AuthWorkspace() workspace: WorkspaceEntity,
+  ): Promise<CloseImportStatusDTO> {
+    try {
+      return await this.closeImportService.startRemoval(workspace.id);
+    } catch (error) {
+      if (error instanceof CloseImportAlreadyRunningError) {
+        throw new ConflictError('A Close import is already running');
+      }
+
+      throw error;
+    }
+  }
+
+  @Mutation(() => CloseImportStatusDTO)
   async startCloseImport(
     @AuthWorkspace() workspace: WorkspaceEntity,
     @Args('apiKey', { type: () => String }) apiKey: string,
