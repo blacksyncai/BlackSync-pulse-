@@ -468,24 +468,22 @@ export const PulseImportPage = () => {
               {isDefined(submitError) && (
                 <StyledError>{submitError}</StyledError>
               )}
-              {showProgress && (
-                <StyledRemoveRow>
-                  <StyledRemoveButton
-                    type="button"
-                    disabled={isRemoving}
-                    data-confirming={isConfirmingRemoval}
-                    onClick={handleRemove}
-                    onBlur={() => setIsConfirmingRemoval(false)}
-                  >
-                    {isConfirmingRemoval
-                      ? t`Click again to delete everything imported from Close`
-                      : t`Remove imported data`}
-                  </StyledRemoveButton>
-                  <StyledRemoveHint>
-                    {t`Deletes the accounts, people, deals, notes, calls, emails, texts and tasks this import created, so you can sync again from scratch. Records you made yourself stay.`}
-                  </StyledRemoveHint>
-                </StyledRemoveRow>
-              )}
+              <StyledRemoveRow>
+                <StyledRemoveButton
+                  type="button"
+                  disabled={isRemoving}
+                  data-confirming={isConfirmingRemoval}
+                  onClick={handleRemove}
+                  onBlur={() => setIsConfirmingRemoval(false)}
+                >
+                  {isConfirmingRemoval
+                    ? t`Click again to delete everything imported from Close`
+                    : t`Remove imported data`}
+                </StyledRemoveButton>
+                <StyledRemoveHint>
+                  {t`Deletes the accounts, people, deals, notes, calls, emails, texts and tasks any Close import created, so you can sync again from scratch. Records you made yourself stay.`}
+                </StyledRemoveHint>
+              </StyledRemoveRow>
             </>
           )}
         </StyledHero>
