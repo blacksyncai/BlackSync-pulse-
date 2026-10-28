@@ -133,7 +133,11 @@ export class CloseImportService {
     return status;
   }
 
-  async start(workspaceId: string, apiKey: string): Promise<CloseImportStatus> {
+  async start(
+    workspaceId: string,
+    apiKey: string,
+    userWorkspaceId?: string,
+  ): Promise<CloseImportStatus> {
     const current = await this.getStatus(workspaceId);
 
     if (current.state === 'running') {
@@ -160,6 +164,7 @@ export class CloseImportService {
       workspaceId,
       apiKey: apiKey.trim(),
       organizationName,
+      userWorkspaceId,
     });
 
     return status;
@@ -169,6 +174,7 @@ export class CloseImportService {
     workspaceId,
     apiKey,
     organizationName,
+    userWorkspaceId,
   }: CloseImportJobData): Promise<void> {
     const client = new CloseApiClient(apiKey);
     const status: CloseImportStatus = {
@@ -219,6 +225,7 @@ export class CloseImportService {
 
       await this.pulsePipelineProvisioningService.ensureKanbanBoard({
         workspaceId,
+        userWorkspaceId,
         objectNameSingular: 'company',
         name: 'Leads',
         groupByFieldId: leadStatusField.fieldId,
@@ -247,6 +254,7 @@ export class CloseImportService {
           await this.pulsePipelineProvisioningService.ensureOpportunityPipeline(
             {
               workspaceId,
+              userWorkspaceId,
               name: pipeline.name,
               stages: pipeline.statuses.map((closeStatus, index) => ({
                 label: closeStatus.label,

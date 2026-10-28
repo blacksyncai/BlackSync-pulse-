@@ -25,4 +25,5 @@ export type CloseImportJobData = {
   workspaceId: string;
   apiKey: string;
   organizationName: string;
+  userWorkspaceId?: string;
 };

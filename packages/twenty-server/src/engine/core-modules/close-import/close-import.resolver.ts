@@ -16,6 +16,7 @@ import {
   UserInputError,
 } from 'src/engine/core-modules/graphql/utils/graphql-errors.util';
 import { type WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
+import { AuthUserWorkspaceId } from 'src/engine/decorators/auth/auth-user-workspace-id.decorator';
 import { AuthWorkspace } from 'src/engine/decorators/auth/auth-workspace.decorator';
 import { AuthPrincipalGuard } from 'src/engine/guards/auth-principal.guard';
 import { SettingsPermissionGuard } from 'src/engine/guards/settings-permission.guard';
@@ -65,9 +66,14 @@ export class CloseImportResolver {
   async startCloseImport(
     @AuthWorkspace() workspace: WorkspaceEntity,
     @Args('apiKey', { type: () => String }) apiKey: string,
+    @AuthUserWorkspaceId() userWorkspaceId: string,
   ): Promise<CloseImportStatusDTO> {
     try {
-      return await this.closeImportService.start(workspace.id, apiKey);
+      return await this.closeImportService.start(
+        workspace.id,
+        apiKey,
+        userWorkspaceId,
+      );
     } catch (error) {
       if (error instanceof CloseImportAlreadyRunningError) {
         throw new ConflictError('A Close import is already running');

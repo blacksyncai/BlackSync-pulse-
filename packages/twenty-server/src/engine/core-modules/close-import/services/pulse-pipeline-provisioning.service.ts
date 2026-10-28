@@ -158,10 +158,12 @@ export class PulsePipelineProvisioningService {
 
   async ensureOpportunityPipeline({
     workspaceId,
+    userWorkspaceId,
     name,
     stages,
   }: {
     workspaceId: string;
+    userWorkspaceId?: string;
     name: string;
     stages: PulseSelectOptionInput[];
   }): Promise<{
@@ -214,6 +216,7 @@ export class PulsePipelineProvisioningService {
 
     await this.ensureKanbanBoard({
       workspaceId,
+      userWorkspaceId,
       objectNameSingular: 'opportunity',
       name,
       groupByFieldId: stageField.fieldId,
@@ -235,6 +238,7 @@ export class PulsePipelineProvisioningService {
 
   async ensureKanbanBoard({
     workspaceId,
+    userWorkspaceId,
     objectNameSingular,
     name,
     groupByFieldId,
@@ -243,6 +247,8 @@ export class PulsePipelineProvisioningService {
     filter,
   }: {
     workspaceId: string;
+    // Workspace-level sidebar entries are checked against the member who asked for them.
+    userWorkspaceId?: string;
     objectNameSingular: string;
     name: string;
     groupByFieldId: string;
@@ -316,6 +322,7 @@ export class PulsePipelineProvisioningService {
 
     await this.navigationMenuItemService.create({
       workspaceId,
+      authUserWorkspaceId: userWorkspaceId,
       input: { type: NavigationMenuItemType.VIEW, viewId: view.id },
     });
 
