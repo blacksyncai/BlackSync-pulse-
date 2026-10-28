@@ -57,13 +57,13 @@ export const mapCloseEmails = (emails: { email: string }[]) => {
     .filter(isNonEmptyString);
 
   return {
-    primaryEmail: primary ?? '',
+    primaryEmail: primary ?? null,
     additionalEmails: additional.length > 0 ? additional : null,
   };
 };
 
 export const mapCloseLeadDomain = (url: string | null) => ({
-  primaryLinkUrl: isNonEmptyString(url) ? url.trim() : '',
+  primaryLinkUrl: isNonEmptyString(url) ? url.trim() : null,
   primaryLinkLabel: '',
   secondaryLinks: null,
 });

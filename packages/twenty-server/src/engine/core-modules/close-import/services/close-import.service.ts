@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { isNonEmptyString } from '@sniptt/guards';
 import { FieldActorSource } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
+import { In, type ObjectLiteral } from 'typeorm';
 import { v4 } from 'uuid';
 
 import { InjectCacheStorage } from 'src/engine/core-modules/cache-storage/decorators/cache-storage.decorator';
@@ -42,6 +43,7 @@ import { InjectMessageQueue } from 'src/engine/core-modules/message-queue/decora
 import { MessageQueue } from 'src/engine/core-modules/message-queue/message-queue.constants';
 import { MessageQueueService } from 'src/engine/core-modules/message-queue/services/message-queue.service';
 import { transformRichTextValue } from 'src/engine/core-modules/record-transformer/utils/transform-rich-text.util';
+import { type WorkspaceRepository } from 'src/engine/twenty-orm/repository/workspace-repository';
 import { WorkspaceOrmManager } from 'src/engine/twenty-orm/workspace-orm.manager';
 import { buildSystemAuthContext } from 'src/engine/twenty-orm/utils/build-system-auth-context.util';
 import { CompanyWorkspaceEntity } from 'src/modules/company/standard-objects/company.workspace-entity';
@@ -287,51 +289,109 @@ export class CloseImportService {
         })) {
           const newLeads = leads.filter((lead) => !importedIds[lead.id]);
 
-          const companies = newLeads.map((lead) => ({
-            id: v4(),
-            name: lead.display_name || 'Untitled account',
-            domainName: mapCloseLeadDomain(lead.url),
-            address: mapCloseLeadAddress(lead),
-            position: nextPosition(),
-            createdBy: IMPORTED_BY,
-            updatedBy: IMPORTED_BY,
-          }));
+          // Website and primary email are unique in Pulse, so leads or contacts that
+          // share one are merged into the existing record instead of failing the import.
+          const companyIdByUrl = await this.findIdsByUniqueValue(
+            companyRepository,
+            'domainName',
+            'primaryLinkUrl',
+            newLeads.map((lead) => mapCloseLeadDomain(lead.url).primaryLinkUrl),
+          );
+
+          const companies = newLeads.flatMap((lead) => {
+            const domainName = mapCloseLeadDomain(lead.url);
+            const existingId = isNonEmptyString(domainName.primaryLinkUrl)
+              ? companyIdByUrl.get(domainName.primaryLinkUrl)
+              : undefined;
+
+            if (isDefined(existingId)) {
+              importedIds[lead.id] = existingId;
+
+              return [];
+            }
+
+            const id = v4();
+
+            importedIds[lead.id] = id;
+
+            if (isNonEmptyString(domainName.primaryLinkUrl)) {
+              companyIdByUrl.set(domainName.primaryLinkUrl, id);
+            }
+
+            return [
+              {
+                id,
+                name: lead.display_name || 'Untitled account',
+                domainName,
+                address: mapCloseLeadAddress(lead),
+                position: nextPosition(),
+                createdBy: IMPORTED_BY,
+                updatedBy: IMPORTED_BY,
+              },
+            ];
+          });
 
           if (companies.length > 0) {
             await companyRepository.insert(companies);
           }
 
-          newLeads.forEach((lead, index) => {
-            importedIds[lead.id] = companies[index].id;
-          });
           status.counts.companies += companies.length;
 
-          const people = leads.flatMap((lead) =>
+          const newContacts = leads.flatMap((lead) =>
             (lead.contacts ?? [])
               .filter((contact) => !importedIds[contact.id])
-              .map((contact) => ({
-                closeId: contact.id,
-                row: {
-                  id: v4(),
-                  name: splitFullName(contact.name),
-                  jobTitle: contact.title ?? '',
-                  emails: mapCloseEmails(contact.emails ?? []),
-                  phones: mapClosePhones(contact.phones ?? []),
-                  companyId: importedIds[lead.id],
-                  position: nextPosition(),
-                  createdBy: IMPORTED_BY,
-                  updatedBy: IMPORTED_BY,
-                },
-              })),
+              .map((contact) => ({ lead, contact })),
           );
 
+          const personIdByEmail = await this.findIdsByUniqueValue(
+            personRepository,
+            'emails',
+            'primaryEmail',
+            newContacts.map(
+              ({ contact }) =>
+                mapCloseEmails(contact.emails ?? []).primaryEmail,
+            ),
+          );
+
+          const people = newContacts.flatMap(({ lead, contact }) => {
+            const emails = mapCloseEmails(contact.emails ?? []);
+            const existingId = isNonEmptyString(emails.primaryEmail)
+              ? personIdByEmail.get(emails.primaryEmail)
+              : undefined;
+
+            if (isDefined(existingId)) {
+              importedIds[contact.id] = existingId;
+
+              return [];
+            }
+
+            const id = v4();
+
+            importedIds[contact.id] = id;
+
+            if (isNonEmptyString(emails.primaryEmail)) {
+              personIdByEmail.set(emails.primaryEmail, id);
+            }
+
+            return [
+              {
+                id,
+                name: splitFullName(contact.name),
+                jobTitle: contact.title ?? '',
+                emails,
+                phones: mapClosePhones(contact.phones ?? []),
+                companyId: importedIds[lead.id],
+                position: nextPosition(),
+                createdBy: IMPORTED_BY,
+                updatedBy: IMPORTED_BY,
+              },
+            ];
+          });
+
           if (people.length > 0) {
-            await personRepository.insert(people.map(({ row }) => row));
+            await personRepository.insert(people);
           }
 
-          people.forEach(({ closeId, row }) => {
-            importedIds[closeId] = row.id;
-          });
           status.counts.people += people.length;
 
           await insertNotes(
@@ -574,6 +634,36 @@ export class CloseImportService {
 
     status.finishedAt = new Date().toISOString();
     await saveProgress();
+  }
+
+  private async findIdsByUniqueValue(
+    repository: WorkspaceRepository<ObjectLiteral>,
+    compositeField: string,
+    subField: string,
+    values: (string | null)[],
+  ): Promise<Map<string, string>> {
+    const uniqueValues = [...new Set(values.filter(isNonEmptyString))];
+
+    if (uniqueValues.length === 0) {
+      return new Map();
+    }
+
+    const existing = await repository.find({
+      where: { [compositeField]: { [subField]: In(uniqueValues) } },
+      withDeleted: true,
+    });
+
+    const deletedIds = existing
+      .filter((record) => isDefined(record.deletedAt))
+      .map((record) => record.id);
+
+    if (deletedIds.length > 0) {
+      await repository.update({ id: In(deletedIds) }, { deletedAt: null });
+    }
+
+    return new Map(
+      existing.map((record) => [record[compositeField][subField], record.id]),
+    );
   }
 
   private async saveStatus(workspaceId: string, status: CloseImportStatus) {
