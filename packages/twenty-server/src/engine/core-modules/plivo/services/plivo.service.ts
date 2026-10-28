@@ -35,7 +35,15 @@ type PlivoEndpoint = {
   application: string | null;
 };
 
-type PlivoNumber = { number: string; voice_enabled: boolean };
+type PlivoNumber = {
+  number: string;
+  voice_enabled: boolean;
+  alias: string | null;
+};
+
+export type PlivoCallerId = { number: string; label: string | null };
+
+const CALLER_IDS_CACHE_MS = 5 * 60 * 1000;
 
 const escapeXml = (value: string) =>
   value
@@ -52,6 +60,10 @@ const toE164 = (number: string) =>
 export class PlivoService {
   private readonly logger = new Logger(PlivoService.name);
   private voiceSetup: Promise<PlivoVoiceSetup | null> | null = null;
+  private callerIdsCache: {
+    expiresAt: number;
+    callerIds: PlivoCallerId[];
+  } | null = null;
 
   constructor(private readonly twentyConfigService: TwentyConfigService) {}
 
@@ -114,9 +126,60 @@ export class PlivoService {
     );
   }
 
+  // Voice-enabled numbers in the Plivo account that callers may present as caller ID.
+  async listCallerIds(): Promise<PlivoCallerId[]> {
+    if (
+      this.callerIdsCache !== null &&
+      this.callerIdsCache.expiresAt > Date.now()
+    ) {
+      return this.callerIdsCache.callerIds;
+    }
+
+    if (!this.hasCredentials()) {
+      return [];
+    }
+
+    const numbers = await this.plivoRequest<PlivoList<PlivoNumber>>(
+      'GET',
+      '/Number/?limit=50',
+    );
+    const callerIds = numbers.objects
+      .filter((number) => number.voice_enabled)
+      .map((number) => ({
+        number: toE164(number.number),
+        label: isNonEmptyString(number.alias) ? number.alias : null,
+      }));
+
+    this.callerIdsCache = {
+      expiresAt: Date.now() + CALLER_IDS_CACHE_MS,
+      callerIds,
+    };
+
+    return callerIds;
+  }
+
+  // The browser may ask for another caller ID, but only one of the account's own numbers.
+  async resolveCallerId(requestedCallerId: string | undefined) {
+    const voiceSetup = await this.getVoiceSetup();
+
+    if (!isNonEmptyString(requestedCallerId)) {
+      return voiceSetup?.callerId;
+    }
+
+    const callerIds: PlivoCallerId[] = await this.listCallerIds().catch(
+      () => [],
+    );
+    const requested = toE164(requestedCallerId.replace(/[\s()-]/g, ''));
+
+    return callerIds.some((callerId) => callerId.number === requested)
+      ? requested
+      : voiceSetup?.callerId;
+  }
+
   buildAnswerXml(
     destination: string | undefined,
     callerId: string | undefined,
+    shouldRecord = false,
   ): string {
     const normalizedDestination = (destination ?? '').replace(/[\s()-]/g, '');
 
@@ -127,7 +190,11 @@ export class PlivoService {
       return '<?xml version="1.0" encoding="UTF-8"?><Response><Hangup reason="rejected"/></Response>';
     }
 
-    return `<?xml version="1.0" encoding="UTF-8"?><Response><Dial callerId="${escapeXml(callerId)}"><Number>${escapeXml(normalizedDestination)}</Number></Dial></Response>`;
+    const record = shouldRecord
+      ? '<Record recordSession="true" startOnDialAnswer="true" redirect="false" maxLength="14400"/>'
+      : '';
+
+    return `<?xml version="1.0" encoding="UTF-8"?><Response>${record}<Dial callerId="${escapeXml(callerId)}"><Number>${escapeXml(normalizedDestination)}</Number></Dial></Response>`;
   }
 
   private async provisionVoiceSetup(): Promise<PlivoVoiceSetup | null> {

@@ -60,4 +60,10 @@ describe('PlivoService', () => {
       ).toContain('<Hangup reason="rejected"/>');
     }
   });
+
+  it('records the call when asked', () => {
+    expect(
+      buildService().buildAnswerXml('+14155550199', '+14155550100', true),
+    ).toContain('<Record recordSession="true" startOnDialAnswer="true"');
+  });
 });

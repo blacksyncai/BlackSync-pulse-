@@ -5,6 +5,11 @@ export const PLIVO_VOICE_ACCESS = gql`
     plivoVoiceAccess {
       isEnabled
       accessToken
+      defaultCallerId
+      callerIds {
+        number
+        label
+      }
     }
   }
 `;

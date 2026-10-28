@@ -1,3 +1,4 @@
+import { PulsePhoneWidget } from '@/pulse-calling/components/PulsePhoneWidget';
 import { FrontComponentMediaSessionIndicator } from '@/front-components/media-session/components/FrontComponentMediaSessionIndicator';
 import { APP_HEADER_HEIGHT } from '@/ui/layout/constants/AppHeaderHeight';
 import { NAVIGATION_DRAWER_COLLAPSED_BUTTON_SIZE } from '@/ui/navigation/navigation-drawer/constants/NavigationDrawerCollapsedButtonSize';
@@ -112,6 +113,7 @@ export const NavigationDrawerHeader = () => {
         {isExpanded && (
           <StyledRightActions>
             <FrontComponentMediaSessionIndicator />
+            <PulsePhoneWidget />
             {searchButton}
             <StyledNavigationDrawerCollapseButtonContainer>
               <NavigationDrawerCollapseButton direction="left" />
@@ -122,6 +124,7 @@ export const NavigationDrawerHeader = () => {
       {!isExpanded && !isMobile && (
         <StyledCollapsedSearch>
           <FrontComponentMediaSessionIndicator />
+          <PulsePhoneWidget />
           {searchButton}
         </StyledCollapsedSearch>
       )}

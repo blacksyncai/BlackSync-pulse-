@@ -26,12 +26,24 @@ export class PlivoWebhookController {
   @Header('Content-Type', 'application/xml')
   @UseGuards(PublicEndpointGuard, NoPermissionGuard)
   async answer(@Req() request: Request): Promise<string> {
-    const destination = request.body?.To ?? request.query?.To;
-    const voiceSetup = await this.plivoService.getVoiceSetup();
+    const params: Record<string, unknown> = {
+      ...(request.query ?? {}),
+      ...(request.body ?? {}),
+    };
+    // The browser sends its choices as X-PH- SIP headers, which Plivo forwards as params.
+    const header = (name: string) => {
+      const value = Object.entries(params).find(
+        ([key]) => key.toLowerCase() === name,
+      )?.[1];
+
+      return typeof value === 'string' ? value : undefined;
+    };
+    const destination = params.To;
 
     return this.plivoService.buildAnswerXml(
       typeof destination === 'string' ? destination : undefined,
-      voiceSetup?.callerId,
+      await this.plivoService.resolveCallerId(header('x-ph-callerid')),
+      header('x-ph-record') === '1',
     );
   }
 }

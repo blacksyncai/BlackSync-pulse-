@@ -4,7 +4,10 @@ import { Query } from '@nestjs/graphql';
 import { MetadataResolver } from 'src/engine/api/graphql/graphql-config/decorators/metadata-resolver.decorator';
 import { AuthGraphqlApiExceptionFilter } from 'src/engine/core-modules/auth/filters/auth-graphql-api-exception.filter';
 import { PreventNestToAutoLogGraphqlErrorsFilter } from 'src/engine/core-modules/graphql/filters/prevent-nest-to-auto-log-graphql-errors.filter';
-import { PlivoVoiceAccessDTO } from 'src/engine/core-modules/plivo/dtos/plivo-voice-access.dto';
+import {
+  PlivoCallerIdDTO,
+  PlivoVoiceAccessDTO,
+} from 'src/engine/core-modules/plivo/dtos/plivo-voice-access.dto';
 import { PlivoService } from 'src/engine/core-modules/plivo/services/plivo.service';
 import { type AuthContextUser } from 'src/engine/core-modules/auth/types/auth-context.type';
 import { AuthUser } from 'src/engine/decorators/auth/auth-user.decorator';
@@ -40,8 +43,17 @@ export class PlivoResolver {
     const voiceSetup = await this.plivoService.getVoiceSetup();
 
     if (voiceSetup === null) {
-      return { isEnabled: false, accessToken: null };
+      return {
+        isEnabled: false,
+        accessToken: null,
+        callerIds: [],
+        defaultCallerId: null,
+      };
     }
+
+    const callerIds: PlivoCallerIdDTO[] = await this.plivoService
+      .listCallerIds()
+      .catch(() => []);
 
     return {
       isEnabled: true,
@@ -49,6 +61,11 @@ export class PlivoResolver {
         user.id,
         voiceSetup.endpointUsername,
       ),
+      callerIds:
+        callerIds.length > 0
+          ? callerIds
+          : [{ number: voiceSetup.callerId, label: null }],
+      defaultCallerId: voiceSetup.callerId,
     };
   }
 }

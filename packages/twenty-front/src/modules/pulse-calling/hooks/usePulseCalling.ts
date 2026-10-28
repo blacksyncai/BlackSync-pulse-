@@ -3,13 +3,22 @@ import {
   PULSE_CALL_IDLE,
   pulseCallState,
 } from '@/pulse-calling/states/pulseCallState';
+import {
+  type PulseCallSettings,
+  pulseCallSettingsState,
+} from '@/pulse-calling/states/pulseCallSettingsState';
 import { useApolloClient } from '@apollo/client/react';
 import { useStore } from 'jotai';
 import { type Client } from 'plivo-browser-sdk/client';
 import { isDefined } from 'twenty-shared/utils';
 
-type PlivoVoiceAccessResult = {
-  plivoVoiceAccess: { isEnabled: boolean; accessToken: string | null };
+export type PlivoVoiceAccessResult = {
+  plivoVoiceAccess: {
+    isEnabled: boolean;
+    accessToken: string | null;
+    defaultCallerId: string | null;
+    callerIds: { number: string; label: string | null }[];
+  };
 };
 
 // Access tokens live one hour; sign in again a little before that.
@@ -101,6 +110,20 @@ export const usePulseCalling = () => {
     return plivoClientPromise;
   };
 
+  const applyAudioDevices = (client: Client, settings: PulseCallSettings) => {
+    if (isDefined(settings.speakerDeviceId)) {
+      client.audio.speakerDevices.set(settings.speakerDeviceId);
+    }
+
+    if (isDefined(settings.ringtoneDeviceId)) {
+      client.audio.ringtoneDevices.set(settings.ringtoneDeviceId);
+    }
+
+    if (isDefined(settings.microphoneDeviceId)) {
+      client.audio.microphoneDevices.set(settings.microphoneDeviceId);
+    }
+  };
+
   const startCall = async (phoneNumber: string) => {
     const currentStatus = store.get(pulseCallState.atom).status;
 
@@ -116,8 +139,16 @@ export const usePulseCalling = () => {
 
     try {
       const client = await getClient();
+      const settings = store.get(pulseCallSettingsState.atom);
 
-      client.call(phoneNumber, {});
+      applyAudioDevices(client, settings);
+      // Plivo forwards X-PH- headers to the answer webhook, which validates them.
+      client.call(phoneNumber, {
+        ...(isDefined(settings.callerId)
+          ? { 'X-PH-Callerid': settings.callerId }
+          : {}),
+        ...(settings.autoRecord ? { 'X-PH-Record': '1' } : {}),
+      });
     } catch (error) {
       store.set(pulseCallState.atom, PULSE_CALL_IDLE);
       throw error;
