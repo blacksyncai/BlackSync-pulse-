@@ -11,6 +11,7 @@ import {
   usePulseAccountData,
 } from '@/pulse-record/hooks/usePulseAccountData';
 import { type PulseTimelineItem } from '@/pulse-record/types/PulseTimelineItem';
+import { SidePanelPageTitleSyncEffect } from '@/side-panel/components/SidePanelPageTitleSyncEffect';
 import { useOpenRecordInSidePanel } from '@/side-panel/hooks/useOpenRecordInSidePanel';
 import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
@@ -465,6 +466,9 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
 
   return (
     <StyledRoot>
+      <SidePanelPageTitleSyncEffect
+        pageTitle={accountName.length > 0 ? accountName : undefined}
+      />
       <StyledHeader>
         <StyledLogo>{accountName.charAt(0).toUpperCase() || '·'}</StyledLogo>
         <StyledIdentity>

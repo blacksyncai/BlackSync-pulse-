@@ -33,13 +33,17 @@ export const usePulseBoardDeals = (
   pipeline: PulsePipeline | undefined,
   hasPipelineField: boolean,
 ) => {
+  // Named pipelines filter on the pipeline field; Cloud boards on having a stage of their
+  // own; the original board on deals that belong to no named pipeline.
   const pipelineFilter = !isDefined(pipeline)
     ? undefined
     : isDefined(pipeline.pipelineValue)
       ? { pipeline: { in: [pipeline.pipelineValue] } }
-      : hasPipelineField
-        ? { pipeline: { is: 'NULL' as const } }
-        : undefined;
+      : !pipeline.isDefault
+        ? { [pipeline.stageFieldName]: { is: 'NOT_NULL' as const } }
+        : hasPipelineField
+          ? { pipeline: { is: 'NULL' as const } }
+          : undefined;
 
   const { records, loading } = useFindManyRecords<PulseBoardDeal>({
     objectNameSingular: CoreObjectNameSingular.Opportunity,
