@@ -3,7 +3,7 @@ import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
 import { useLocation } from 'react-router-dom';
 import { AppPath } from 'twenty-shared/types';
-import { IconInbox, IconLayoutDashboard } from 'twenty-ui/icon';
+import { IconFileImport, IconInbox, IconLayoutDashboard } from 'twenty-ui/icon';
 import { themeCssVariables } from 'twenty-ui/theme';
 
 const StyledSection = styled.div`
@@ -29,6 +29,12 @@ export const PulseNavigationSection = () => {
         to={AppPath.PulseInbox}
         Icon={IconInbox}
         active={pathname === AppPath.PulseInbox}
+      />
+      <NavigationDrawerItem
+        label={t`Import`}
+        to={AppPath.PulseImport}
+        Icon={IconFileImport}
+        active={pathname === AppPath.PulseImport}
       />
     </StyledSection>
   );

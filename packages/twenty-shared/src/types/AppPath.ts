@@ -17,6 +17,7 @@ export enum AppPath {
   AiChat = '/chat/:threadId?',
   PulseDashboard = '/dashboard',
   PulseInbox = '/inbox',
+  PulseImport = '/import',
   Index = '/',
   // Mobile only: the navigation menu is a page there rather than a drawer.
   Home = '/home',

@@ -29,6 +29,7 @@ import { TimelineCalendarEventModule } from 'src/engine/core-modules/calendar/ti
 import { CaptchaModule } from 'src/engine/core-modules/captcha/captcha.module';
 import { CloudflareModule } from 'src/engine/core-modules/cloudflare/cloudflare.module';
 import { PlivoModule } from 'src/engine/core-modules/plivo/plivo.module';
+import { CloseImportModule } from 'src/engine/core-modules/close-import/close-import.module';
 import { CodeInterpreterModule } from 'src/engine/core-modules/code-interpreter/code-interpreter.module';
 import { DnsManagerModule } from 'src/engine/core-modules/dns-manager/dns-manager.module';
 import { DpaModule } from 'src/engine/core-modules/dpa/dpa.module';
@@ -129,6 +130,7 @@ import { FileApiModule } from './file/file-api.module';
     PublicDomainModule,
     CloudflareModule,
     PlivoModule,
+    CloseImportModule,
     DnsManagerModule,
     WorkflowApiModule,
     AiToolCallAnswerModule,
