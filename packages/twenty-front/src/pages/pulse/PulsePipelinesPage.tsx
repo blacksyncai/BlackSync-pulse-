@@ -18,7 +18,7 @@ import {
 import { Tag, type TagColor } from 'twenty-ui/primitives/data-display';
 import { themeCssVariables } from 'twenty-ui/theme';
 
-const OPPORTUNITY_BOARD_PATH = '/objects/opportunities';
+const OPPORTUNITY_BOARD_PATH = '/pipeline';
 
 const StyledScroll = styled.div`
   box-sizing: border-box;
@@ -332,7 +332,7 @@ export const PulsePipelinesPage = () => {
       });
 
       // A full load picks up the new field, board and sidebar entry everywhere at once.
-      window.location.assign(`${OPPORTUNITY_BOARD_PATH}?viewId=${viewId}`);
+      window.location.assign(`${OPPORTUNITY_BOARD_PATH}?pipeline=${viewId}`);
     } catch (createError) {
       setError(
         getErrorMessage(createError) ??
@@ -352,7 +352,7 @@ export const PulsePipelinesPage = () => {
             {pipelines.map((pipeline) => (
               <StyledPipelineCard
                 key={pipeline.viewId}
-                href={`${OPPORTUNITY_BOARD_PATH}?viewId=${pipeline.viewId}`}
+                href={`${OPPORTUNITY_BOARD_PATH}?pipeline=${pipeline.viewId}`}
               >
                 <StyledCardHeader>
                   <StyledCardTitle>

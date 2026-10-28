@@ -5,6 +5,9 @@ import { filterWorkspaceNavigationMenuItems } from '@/navigation-menu-item/commo
 import { navigationMenuItemsSelector } from '@/navigation-menu-item/common/states/navigationMenuItemsSelector';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 
+import { objectMetadataItemsByNameSingularMapSelector } from '@/object-metadata/states/objectMetadataItemsByNameSingularMapSelector';
+import { viewsSelector } from '@/views/states/selectors/viewsSelector';
+import { CoreObjectNameSingular, ViewType } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 import { type NavigationMenuItem } from '~/generated-metadata/graphql';
 
@@ -30,8 +33,29 @@ export const useNavigationMenuItemsData = (): NavigationMenuItemsData => {
     isDefined(item.userWorkspaceId),
   );
 
+  const views = useAtomStateValue(viewsSelector);
+  const objectMetadataItemsByNameSingular = useAtomStateValue(
+    objectMetadataItemsByNameSingularMapSelector,
+  );
+  const opportunityObjectMetadataId = objectMetadataItemsByNameSingular.get(
+    CoreObjectNameSingular.Opportunity,
+  )?.id;
+  // Deal boards live on the Opportunities page behind a pipeline switcher, so their
+  // individual sidebar shortcuts are hidden.
+  const dealBoardViewIds = new Set(
+    views
+      .filter(
+        (view) =>
+          view.type === ViewType.KANBAN &&
+          view.objectMetadataId === opportunityObjectMetadataId,
+      )
+      .map((view) => view.id),
+  );
+
   const workspaceNavigationMenuItemsFromState =
-    filterWorkspaceNavigationMenuItems(navigationMenuItems);
+    filterWorkspaceNavigationMenuItems(navigationMenuItems).filter(
+      (item) => !isDefined(item.viewId) || !dealBoardViewIds.has(item.viewId),
+    );
 
   const workspaceNavigationMenuItems =
     isLayoutCustomizationModeEnabled && isDefined(navigationMenuItemsDraft)

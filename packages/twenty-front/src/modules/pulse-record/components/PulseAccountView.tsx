@@ -1,10 +1,10 @@
 import { useOpenCreateActivityDrawer } from '@/activities/hooks/useOpenCreateActivityDrawer';
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
-import {
-  PulseCallingUnavailableError,
-  usePulseCalling,
-} from '@/pulse-calling/hooks/usePulseCalling';
 import { PulseTimelineCard } from '@/pulse-record/components/PulseTimelineCard';
+import {
+  formatContactPhone,
+  usePulseContactActions,
+} from '@/pulse-record/hooks/usePulseContactActions';
 import {
   formatFullName,
   type PulseContact,
@@ -12,7 +12,6 @@ import {
 } from '@/pulse-record/hooks/usePulseAccountData';
 import { type PulseTimelineItem } from '@/pulse-record/types/PulseTimelineItem';
 import { useOpenRecordInSidePanel } from '@/side-panel/hooks/useOpenRecordInSidePanel';
-import { useToast } from 'twenty-ui/components';
 import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
@@ -361,10 +360,7 @@ const formatMoney = (amount: number, currencyCode: string) =>
   }).format(amount);
 
 const formatPhone = (contact: PulseContact) =>
-  isDefined(contact.phones?.primaryPhoneNumber) &&
-  contact.phones.primaryPhoneNumber.length > 0
-    ? `${contact.phones.primaryPhoneCallingCode ?? ''}${contact.phones.primaryPhoneNumber}`
-    : null;
+  formatContactPhone(contact.phones);
 
 type PulseAccountViewProps = {
   companyId: string;
@@ -372,12 +368,10 @@ type PulseAccountViewProps = {
 
 export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
   const { t } = useLingui();
-  const { enqueueToast } = useToast();
   const { account, contacts, deals, timeline, attachments, leadStatus } =
     usePulseAccountData(companyId);
   const { updateOneRecord } = useUpdateOneRecord();
   const { openRecordInSidePanel } = useOpenRecordInSidePanel();
-  const { startCall } = usePulseCalling();
   const openCreateNote = useOpenCreateActivityDrawer({
     activityObjectNameSingular: CoreObjectNameSingular.Note,
   });
@@ -411,43 +405,11 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
     { id: companyId, targetObjectNameSingular: CoreObjectNameSingular.Company },
   ];
 
-  const handleCall = async (phoneNumber: string | null | undefined) => {
-    if (!isDefined(phoneNumber)) {
-      enqueueToast({
-        variant: 'error',
-        children: t`No phone number on this account yet.`,
-      });
-
-      return;
-    }
-
-    try {
-      await startCall(phoneNumber);
-    } catch (error) {
-      if (error instanceof PulseCallingUnavailableError) {
-        window.location.href = `tel:${phoneNumber}`;
-
-        return;
-      }
-
-      enqueueToast({
-        variant: 'error',
-        children: t`Could not start the call. Check your microphone and Plivo settings.`,
-      });
-    }
-  };
-
-  const handleEmail = (email: string | null | undefined) => {
-    if (isDefined(email)) {
-      window.open(`mailto:${email}`, '_blank');
-    }
-  };
-
-  const handleSms = (phoneNumber: string | null | undefined) => {
-    if (isDefined(phoneNumber)) {
-      window.location.href = `sms:${phoneNumber}`;
-    }
-  };
+  const {
+    call: handleCall,
+    email: handleEmail,
+    text: handleSms,
+  } = usePulseContactActions();
 
   const handleMeeting = () => {
     const guests = contacts

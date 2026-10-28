@@ -8,6 +8,7 @@ import {
   IconInbox,
   IconLayoutDashboard,
   IconLayoutKanban,
+  IconTargetArrow,
 } from 'twenty-ui/icon';
 import { themeCssVariables } from 'twenty-ui/theme';
 
@@ -36,7 +37,13 @@ export const PulseNavigationSection = () => {
         active={pathname === AppPath.PulseInbox}
       />
       <NavigationDrawerItem
-        label={t`Pipelines`}
+        label={t`Opportunities`}
+        to={AppPath.PulseOpportunities}
+        Icon={IconTargetArrow}
+        active={pathname === AppPath.PulseOpportunities}
+      />
+      <NavigationDrawerItem
+        label={t`Pipeline builder`}
         to={AppPath.PulsePipelines}
         Icon={IconLayoutKanban}
         active={pathname === AppPath.PulsePipelines}
