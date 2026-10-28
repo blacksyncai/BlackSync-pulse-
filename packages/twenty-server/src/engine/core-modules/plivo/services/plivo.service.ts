@@ -11,8 +11,8 @@ const ACCESS_TOKEN_LIFETIME_SECONDS = 60 * 60;
 const PHONE_NUMBER_PATTERN = /^\+?[0-9]{6,15}$/;
 
 const PLIVO_API_BASE_URL = 'https://api.plivo.com/v1/Account';
-const PLIVO_APPLICATION_NAME = 'BlackSync Pulse';
-const PLIVO_ENDPOINT_ALIAS = 'BlackSync Pulse browser';
+const PLIVO_APPLICATION_NAME = 'blacksync_pulse';
+const PLIVO_ENDPOINT_ALIAS = 'blacksync_pulse_browser';
 const PLIVO_ENDPOINT_USERNAME_PREFIX = 'pulse';
 
 export type PlivoVoiceSetup = {
