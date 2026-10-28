@@ -88,10 +88,10 @@ export const usePulseDashboardData = () => {
     objectNameSingular: CoreObjectNameSingular.CalendarEvent,
     recordGqlFields: { id: true, startsAt: true },
     filter: {
-      startsAt: {
-        gte: weekStart.toISOString(),
-        lt: weekEnd.toISOString(),
-      },
+      and: [
+        { startsAt: { gte: weekStart.toISOString() } },
+        { startsAt: { lt: weekEnd.toISOString() } },
+      ],
     },
     limit: 200,
   });

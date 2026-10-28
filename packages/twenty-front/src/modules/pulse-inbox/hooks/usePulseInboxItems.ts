@@ -1,5 +1,5 @@
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { CoreObjectNameSingular } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 
@@ -38,6 +38,9 @@ type MessageRow = {
 
 const EMAIL_LOOKBACK_DAYS = 14;
 
+const startOfDay = (date: Date) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
 const endOfToday = () => {
   const date = new Date();
   date.setHours(23, 59, 59, 999);
@@ -60,8 +63,12 @@ export const usePulseInboxItems = (view: PulseInboxView) => {
     },
   );
 
-  const since = new Date();
-  since.setDate(since.getDate() - EMAIL_LOOKBACK_DAYS);
+  // Fixed per mount so the query variables stay stable across renders.
+  const [since] = useState(() => {
+    const date = startOfDay(new Date());
+    date.setDate(date.getDate() - EMAIL_LOOKBACK_DAYS);
+    return date;
+  });
 
   const { records: messages, loading: messagesLoading } =
     useFindManyRecords<MessageRow>({
