@@ -524,7 +524,14 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
           <StyledActionButton
             type="button"
             data-primary
-            onClick={() => handleCall(primaryPhone)}
+            onClick={() =>
+              handleCall(primaryPhone, {
+                personId: contacts.find(
+                  (contact) => formatPhone(contact) === primaryPhone,
+                )?.id,
+                companyId,
+              })
+            }
           >
             <IconPhone size={16} />
             {primaryContact
@@ -688,7 +695,12 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
                           <StyledIconButton
                             type="button"
                             aria-label={t`Call`}
-                            onClick={() => handleCall(phone)}
+                            onClick={() =>
+                              handleCall(phone, {
+                                personId: contact.id,
+                                companyId,
+                              })
+                            }
                           >
                             <IconPhone size={16} />
                           </StyledIconButton>

@@ -158,6 +158,24 @@ export class PlivoService {
     return callerIds;
   }
 
+  // Recordings show up in Plivo a little after the call ends; null until then.
+  async findRecordingUrl(callUuid: string): Promise<string | null> {
+    const recordings = await this.plivoRequest<
+      PlivoList<{ recording_url: string | null }>
+    >('GET', `/Recording/?call_uuid=${encodeURIComponent(callUuid)}&limit=1`);
+
+    return recordings.objects[0]?.recording_url ?? null;
+  }
+
+  basicAuthHeader(): Record<string, string> {
+    const authId = this.twentyConfigService.get('PLIVO_AUTH_ID');
+    const authToken = this.twentyConfigService.get('PLIVO_AUTH_TOKEN');
+
+    return {
+      Authorization: `Basic ${Buffer.from(`${authId}:${authToken}`).toString('base64')}`,
+    };
+  }
+
   // The browser may ask for another caller ID, but only one of the account's own numbers.
   async resolveCallerId(requestedCallerId: string | undefined) {
     const voiceSetup = await this.getVoiceSetup();

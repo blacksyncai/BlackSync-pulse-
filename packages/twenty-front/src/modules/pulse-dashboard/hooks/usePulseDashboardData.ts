@@ -96,6 +96,23 @@ export const usePulseDashboardData = () => {
     limit: 200,
   });
 
+  // Calls are notes titled "Outbound call · …", whether dialed in Pulse or imported.
+  const { records: dials, totalCount: dialsThisWeek } = useFindManyRecords<{
+    id: string;
+    createdAt: string;
+    __typename: string;
+  }>({
+    objectNameSingular: CoreObjectNameSingular.Note,
+    recordGqlFields: { id: true, createdAt: true },
+    filter: {
+      and: [
+        { title: { ilike: '%call ·%' } },
+        { createdAt: { gte: weekStart.toISOString() } },
+      ],
+    },
+    limit: 1000,
+  });
+
   const data = useMemo<PulseDashboardData>(() => {
     const now = new Date();
     const today = startOfDay(now);
@@ -182,9 +199,9 @@ export const usePulseDashboardData = () => {
         (total, o) => total + toDollars(o),
         0,
       ),
-      // Call logging is not built yet, so dials stay at zero until calls are recorded.
-      dialsToday: 0,
-      dialsThisWeek: 0,
+      dialsToday: dials.filter((dial) => new Date(dial.createdAt) >= today)
+        .length,
+      dialsThisWeek: dialsThisWeek ?? dials.length,
       tasksOpen: tasks.length,
       tasksOverdue: dueTasks.filter((task) => new Date(task.dueAt ?? 0) < today)
         .length,
@@ -210,7 +227,15 @@ export const usePulseDashboardData = () => {
           stage: STAGE_LABELS[o.stage ?? ''] ?? o.stage ?? '',
         })),
     };
-  }, [opportunities, tasks, meetings, peopleCount, companyCount]);
+  }, [
+    opportunities,
+    tasks,
+    meetings,
+    peopleCount,
+    companyCount,
+    dials,
+    dialsThisWeek,
+  ]);
 
   return { data, loading: opportunitiesLoading || tasksLoading };
 };

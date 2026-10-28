@@ -7,5 +7,6 @@ import { PlivoService } from 'src/engine/core-modules/plivo/services/plivo.servi
 @Module({
   controllers: [PlivoWebhookController],
   providers: [PlivoService, PlivoResolver],
+  exports: [PlivoService],
 })
 export class PlivoModule {}

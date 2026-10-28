@@ -1959,6 +1959,15 @@ export class ConfigVariables {
   PLIVO_CALLER_ID: string;
 
   @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.PLIVO_CONFIG,
+    isSensitive: true,
+    description: 'Deepgram API key, used to transcribe call recordings',
+    type: ConfigVariableType.STRING,
+  })
+  @IsOptional()
+  DEEPGRAM_API_KEY: string;
+
+  @ConfigVariablesMetadata({
     group: ConfigVariablesGroup.CLOUDFLARE_CONFIG,
     isSensitive: true,
     description: 'API key for Cloudflare integration',

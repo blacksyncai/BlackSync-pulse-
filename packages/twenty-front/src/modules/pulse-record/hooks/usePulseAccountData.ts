@@ -11,6 +11,7 @@ import { isDefined } from 'twenty-shared/utils';
 const NO_MATCH_ID = '00000000-0000-0000-0000-000000000000';
 const LEAD_STATUS_FIELD_NAME = 'leadStatus';
 const PIPELINE_FIELD_NAME = 'pipeline';
+const AUDIO_EXTENSIONS = ['mp3', 'wav', 'm4a', 'ogg', 'webm'];
 
 type FullName = { firstName: string | null; lastName: string | null } | null;
 
@@ -60,6 +61,10 @@ type NoteTargetRecord = ObjectRecord & {
     title: string | null;
     createdAt: string;
     bodyV2: { markdown: string | null } | null;
+    attachments?: {
+      id: string;
+      file: { url?: string; extension?: string }[] | null;
+    }[];
   } | null;
 };
 
@@ -178,6 +183,7 @@ export const usePulseAccountData = (companyId: string) => {
           title: true,
           createdAt: true,
           bodyV2: { markdown: true },
+          attachments: { id: true, file: true },
         },
       },
       limit: 500,
@@ -278,8 +284,16 @@ export const usePulseAccountData = (companyId: string) => {
       );
       const contactName = formatFullName(target.targetPerson?.name);
 
+      // Recordings copied into Pulse play from storage; older notes still carry a link.
+      const storedRecordingUrl = note.attachments
+        ?.flatMap((attachment) => attachment.file ?? [])
+        .find((file) =>
+          AUDIO_EXTENSIONS.includes((file.extension ?? '').toLowerCase()),
+        )?.url;
+
       items.push({
         ...activity,
+        recordingUrl: storedRecordingUrl ?? activity.recordingUrl,
         title:
           activity.kind === 'call' && contactName.length > 0
             ? activity.direction === 'inbound'

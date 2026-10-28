@@ -23,6 +23,10 @@ export class CloseApiClient {
     this.authorization = `Basic ${Buffer.from(`${apiKey}:`).toString('base64')}`;
   }
 
+  authorizationHeader(): Record<string, string> {
+    return { Authorization: this.authorization };
+  }
+
   async get<TResponse>(
     path: string,
     params: Record<string, string | number> = {},

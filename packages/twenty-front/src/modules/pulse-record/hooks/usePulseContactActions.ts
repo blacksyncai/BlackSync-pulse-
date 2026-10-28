@@ -24,7 +24,10 @@ export const usePulseContactActions = () => {
   const { enqueueToast } = useToast();
   const { startCall } = usePulseCalling();
 
-  const call = async (phoneNumber: string | null | undefined) => {
+  const call = async (
+    phoneNumber: string | null | undefined,
+    context: { personId?: string | null; companyId?: string | null } = {},
+  ) => {
     if (!isDefined(phoneNumber)) {
       enqueueToast({
         variant: 'error',
@@ -35,7 +38,7 @@ export const usePulseContactActions = () => {
     }
 
     try {
-      await startCall(phoneNumber);
+      await startCall(phoneNumber, context);
     } catch (error) {
       if (error instanceof PulseCallingUnavailableError) {
         window.location.href = `tel:${phoneNumber}`;

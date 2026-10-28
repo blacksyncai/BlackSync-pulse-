@@ -31,6 +31,7 @@ import {
   type CloseImportStatus,
 } from 'src/engine/core-modules/close-import/types/close-import-status.type';
 import { PulsePipelineProvisioningService } from 'src/engine/core-modules/close-import/services/pulse-pipeline-provisioning.service';
+import { PulseRecordingService } from 'src/engine/core-modules/pulse-calls/services/pulse-recording.service';
 import {
   buildCallNote,
   getCloseStatusColor,
@@ -65,6 +66,7 @@ const STALE_RUN_MS = 15 * 60 * 1000;
 const EMAIL_BODY_MAX_LENGTH = 20_000;
 const LEAD_STATUS_FIELD_NAME = 'leadStatus';
 const REMOVAL_BATCH_SIZE = 500;
+const RECORDING_CONCURRENCY = 4;
 
 const IMPORTED_BY = {
   source: FieldActorSource.IMPORT,
@@ -101,6 +103,7 @@ export class CloseImportService {
     @InjectMessageQueue(MessageQueue.workspaceQueue)
     private readonly messageQueueService: MessageQueueService,
     private readonly pulsePipelineProvisioningService: PulsePipelineProvisioningService,
+    private readonly pulseRecordingService: PulseRecordingService,
   ) {}
 
   async getStatus(workspaceId: string): Promise<CloseImportStatus> {
@@ -637,6 +640,7 @@ export class CloseImportService {
           path: string,
           countKey: keyof CloseImportCounts,
           toNote: (activity: TActivity) => ActivityNote,
+          afterPage?: (activities: TActivity[]) => Promise<void>,
         ) => {
           status.currentStep = step;
           await saveProgress();
@@ -661,7 +665,59 @@ export class CloseImportService {
             );
 
             status.counts[countKey] += newActivities.length;
+            await afterPage?.(activities);
             await saveProgress();
+          }
+        };
+
+        // Close recording links need the Close login and expire, so the audio is copied
+        // into Pulse (and transcribed) the first time each call is imported.
+        const copyRecordings = async (calls: CloseCallActivity[]) => {
+          const pending = calls.filter((call) => {
+            const recordingUrl = call.recording_url ?? call.voicemail_url;
+
+            return (
+              isNonEmptyString(recordingUrl) &&
+              isDefined(importedIds[call.id]) &&
+              !isDefined(importedIds[`${call.id}:recording`])
+            );
+          });
+
+          for (
+            let start = 0;
+            start < pending.length;
+            start += RECORDING_CONCURRENCY
+          ) {
+            await Promise.all(
+              pending
+                .slice(start, start + RECORDING_CONCURRENCY)
+                .map(async (call) => {
+                  const recording = await this.pulseRecordingService
+                    .download(
+                      call.recording_url ?? call.voicemail_url ?? '',
+                      client.authorizationHeader(),
+                    )
+                    .catch(() => null);
+
+                  if (recording === null) {
+                    return;
+                  }
+
+                  const isStored =
+                    await this.pulseRecordingService.attachRecording({
+                      workspaceId,
+                      noteId: importedIds[call.id],
+                      recording,
+                      label: isNonEmptyString(call.recording_url)
+                        ? 'Call recording'
+                        : 'Voicemail',
+                    });
+
+                  if (isStored) {
+                    importedIds[`${call.id}:recording`] = importedIds[call.id];
+                  }
+                }),
+            );
           }
         };
 
@@ -675,10 +731,11 @@ export class CloseImportService {
           }),
         );
         await importActivities<CloseCallActivity>(
-          'Calls',
+          'Calls and recordings',
           '/activity/call/',
           'calls',
           buildCallNote,
+          copyRecordings,
         );
         await importActivities<CloseEmailActivity>(
           'Emails',

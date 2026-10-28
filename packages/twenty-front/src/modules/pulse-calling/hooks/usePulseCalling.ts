@@ -1,3 +1,4 @@
+import { LOG_PULSE_CALL } from '@/pulse-calling/graphql/mutations/logPulseCall';
 import { PLIVO_VOICE_ACCESS } from '@/pulse-calling/graphql/queries/plivoVoiceAccess';
 import {
   PULSE_CALL_IDLE,
@@ -36,6 +37,36 @@ export const usePulseCalling = () => {
   const setCall = (update: Partial<typeof PULSE_CALL_IDLE>) =>
     store.set(pulseCallState.atom, (previous) => ({ ...previous, ...update }));
 
+  // Every dial is logged once, when it ends, whether or not anyone picked up.
+  const logEndedCall = (outcome: 'answered' | 'no-answer' | 'failed') => {
+    const call = store.get(pulseCallState.atom);
+
+    if (call.isLogged || !isDefined(call.phoneNumber)) {
+      return;
+    }
+
+    setCall({ isLogged: true });
+
+    void apolloClient
+      .mutate({
+        mutation: LOG_PULSE_CALL,
+        variables: {
+          input: {
+            phoneNumber: call.phoneNumber,
+            durationSeconds: isDefined(call.answeredAt)
+              ? Math.round((Date.now() - call.answeredAt) / 1000)
+              : 0,
+            outcome: isDefined(call.answeredAt) ? 'answered' : outcome,
+            callUuid: call.callUuid,
+            personId: call.personId,
+            companyId: call.companyId,
+            isRecorded: call.isRecorded,
+          },
+        },
+      })
+      .catch(() => setCall({ isLogged: false }));
+  };
+
   const createClient = async (): Promise<Client> => {
     const { data } = await apolloClient.query<PlivoVoiceAccessResult>({
       query: PLIVO_VOICE_ACCESS,
@@ -58,17 +89,27 @@ export const usePulseCalling = () => {
     const client = plivo.client;
 
     client.on('onCalling', () => setCall({ status: 'connecting' }));
-    client.on('onCallRemoteRinging', () => setCall({ status: 'ringing' }));
-    client.on('onCallAnswered', () =>
-      setCall({ status: 'in-call', answeredAt: Date.now() }),
+    client.on('onCallRemoteRinging', () =>
+      setCall({ status: 'ringing', callUuid: client.getCallUUID() }),
     );
-    client.on('onCallTerminated', () => setCall({ status: 'ended' }));
-    client.on('onCallFailed', (reason: unknown) =>
+    client.on('onCallAnswered', () =>
+      setCall({
+        status: 'in-call',
+        answeredAt: Date.now(),
+        callUuid: client.getCallUUID(),
+      }),
+    );
+    client.on('onCallTerminated', () => {
+      logEndedCall('no-answer');
+      setCall({ status: 'ended' });
+    });
+    client.on('onCallFailed', (reason: unknown) => {
+      logEndedCall('failed');
       setCall({
         status: 'failed',
         errorMessage: typeof reason === 'string' ? reason : null,
-      }),
-    );
+      });
+    });
     client.on('onMediaPermission', (event: { status?: string }) => {
       if (event?.status === 'failure') {
         setCall({
@@ -124,7 +165,10 @@ export const usePulseCalling = () => {
     }
   };
 
-  const startCall = async (phoneNumber: string) => {
+  const startCall = async (
+    phoneNumber: string,
+    context: { personId?: string | null; companyId?: string | null } = {},
+  ) => {
     const currentStatus = store.get(pulseCallState.atom).status;
 
     if (['connecting', 'ringing', 'in-call'].includes(currentStatus)) {
@@ -135,6 +179,9 @@ export const usePulseCalling = () => {
       ...PULSE_CALL_IDLE,
       status: 'connecting',
       phoneNumber,
+      personId: context.personId ?? null,
+      companyId: context.companyId ?? null,
+      isRecorded: store.get(pulseCallSettingsState.atom).autoRecord,
     });
 
     try {
@@ -159,6 +206,7 @@ export const usePulseCalling = () => {
     const client = await plivoClientPromise?.catch(() => null);
 
     client?.hangup();
+    logEndedCall('no-answer');
     setCall({ status: 'ended' });
   };
 

@@ -385,7 +385,12 @@ export const PulseDealCard = ({
               <StyledIconButton
                 type="button"
                 aria-label={t`Call`}
-                onClick={() => call(phone)}
+                onClick={() =>
+                  call(phone, {
+                    personId: contact.id,
+                    companyId: deal.company?.id,
+                  })
+                }
               >
                 <IconPhone size={15} />
               </StyledIconButton>

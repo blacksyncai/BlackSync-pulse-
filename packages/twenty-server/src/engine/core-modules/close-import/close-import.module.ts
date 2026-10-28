@@ -9,6 +9,7 @@ import { FieldMetadataModule } from 'src/engine/metadata-modules/field-metadata/
 import { WorkspaceManyOrAllFlatEntityMapsCacheModule } from 'src/engine/metadata-modules/flat-entity/services/workspace-many-or-all-flat-entity-maps-cache.module';
 import { NavigationMenuItemModule } from 'src/engine/metadata-modules/navigation-menu-item/navigation-menu-item.module';
 import { PermissionsModule } from 'src/engine/metadata-modules/permissions/permissions.module';
+import { PulseCallsModule } from 'src/engine/core-modules/pulse-calls/pulse-calls.module';
 import { ViewFieldModule } from 'src/engine/metadata-modules/view-field/view-field.module';
 import { ViewFilterModule } from 'src/engine/metadata-modules/view-filter/view-filter.module';
 import { ViewModule } from 'src/engine/metadata-modules/view/view.module';
@@ -16,6 +17,7 @@ import { ViewModule } from 'src/engine/metadata-modules/view/view.module';
 @Module({
   imports: [
     PermissionsModule,
+    PulseCallsModule,
     FieldMetadataModule,
     ViewModule,
     ViewFieldModule,
