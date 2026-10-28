@@ -17,6 +17,12 @@ import { useRecordShowPage } from '@/object-record/record-show/hooks/useRecordSh
 import { useRecordShowPageResource } from '@/object-record/record-show/hooks/useRecordShowPageResource';
 import { useWorkspaceSurface } from '@/ui/layout/hooks/useWorkspaceSurface';
 import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
+import { PulseAccountView } from '@/pulse-record/components/PulseAccountView';
+import { PulseWideSidePanelEffect } from '@/pulse-record/components/PulseWideSidePanelEffect';
+import { PageCardLayout } from '@/ui/layout/page/components/PageCardLayout';
+import { PageHeader } from '@/ui/layout/page/components/PageHeader';
+import { useLingui } from '@lingui/react/macro';
+import { IconBuildingSkyscraper } from 'twenty-ui/icon';
 
 type RecordShowPageParameters = {
   objectNameSingular?: string;
@@ -59,6 +65,7 @@ export const RecordShowPageContent = ({
 };
 
 export const RecordShowPage = () => {
+  const { t } = useLingui();
   const parameters = useParams<RecordShowPageParameters>();
   const workspaceSurface = useWorkspaceSurface();
   const { objectMetadataItems } = useObjectMetadataItems();
@@ -109,6 +116,26 @@ export const RecordShowPage = () => {
 
   if (isDefined(CoreObjectShowPage) && isDefined(parameters.objectRecordId)) {
     return <CoreObjectShowPage objectRecordId={parameters.objectRecordId} />;
+  }
+
+  if (
+    parameters.objectNameSingular === CoreObjectNameSingular.Company &&
+    isDefined(parameters.objectRecordId)
+  ) {
+    return isInSidePanel ? (
+      <>
+        <PulseWideSidePanelEffect />
+        <PulseAccountView companyId={parameters.objectRecordId} />
+      </>
+    ) : (
+      <PageCardLayout
+        header={
+          <PageHeader title={t`Accounts`} Icon={IconBuildingSkyscraper} />
+        }
+      >
+        <PulseAccountView companyId={parameters.objectRecordId} />
+      </PageCardLayout>
+    );
   }
 
   return <RecordShowPageContent parameters={parameters} />;
