@@ -1,5 +1,7 @@
 import { NavigationDrawerOpenedSection } from '@/navigation-menu-item/display/sections/components/NavigationDrawerOpenedSection';
 import { NavigationDrawerWorkspaceSectionSkeletonLoader } from '@/object-metadata/components/NavigationDrawerWorkspaceSectionSkeletonLoader';
+import { PulseLiquidSidebar } from '@/pulse-navigation/components/PulseLiquidSidebar';
+import { PulseNavigationSection } from '@/pulse-navigation/components/PulseNavigationSection';
 
 import { styled } from '@linaria/react';
 import { lazy, Suspense } from 'react';
@@ -30,12 +32,15 @@ const StyledScrollableItemsContainer = styled.div`
 
 export const MainNavigationDrawerScrollableItems = () => {
   return (
-    <StyledScrollableItemsContainer>
-      <NavigationDrawerOpenedSection />
-      <Suspense fallback={<NavigationDrawerWorkspaceSectionSkeletonLoader />}>
-        <FavoritesSectionDispatcher />
-        <WorkspaceSectionDispatcher />
-      </Suspense>
-    </StyledScrollableItemsContainer>
+    <PulseLiquidSidebar>
+      <StyledScrollableItemsContainer>
+        <PulseNavigationSection />
+        <NavigationDrawerOpenedSection />
+        <Suspense fallback={<NavigationDrawerWorkspaceSectionSkeletonLoader />}>
+          <FavoritesSectionDispatcher />
+          <WorkspaceSectionDispatcher />
+        </Suspense>
+      </StyledScrollableItemsContainer>
+    </PulseLiquidSidebar>
   );
 };

@@ -41,6 +41,18 @@ const AiChatPage = lazy(() =>
   })),
 );
 
+const PulseDashboardPage = lazy(() =>
+  import('~/pages/pulse/PulseDashboardPage').then((module) => ({
+    default: module.PulseDashboardPage,
+  })),
+);
+
+const PulseInboxPage = lazy(() =>
+  import('~/pages/pulse/PulseInboxPage').then((module) => ({
+    default: module.PulseInboxPage,
+  })),
+);
+
 const MobileHomePage = lazy(() =>
   import('~/pages/mobile-home/MobileHomePage').then((module) => ({
     default: module.MobileHomePage,
@@ -118,6 +130,22 @@ export const createWorkspaceRouteObjects = ({
       element: (
         <LazyRoute>
           <AiChatPage />
+        </LazyRoute>
+      ),
+    },
+    {
+      path: AppPath.PulseDashboard,
+      element: (
+        <LazyRoute>
+          <PulseDashboardPage />
+        </LazyRoute>
+      ),
+    },
+    {
+      path: AppPath.PulseInbox,
+      element: (
+        <LazyRoute>
+          <PulseInboxPage />
         </LazyRoute>
       ),
     },
