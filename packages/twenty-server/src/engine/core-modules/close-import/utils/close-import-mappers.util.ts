@@ -162,3 +162,65 @@ export const buildSmsNote = (sms: CloseSmsActivity) => ({
     isNonEmptyString(sms.remote_phone) && `Phone: ${sms.remote_phone}`,
   ]),
 });
+
+const toWords = (label: string) =>
+  label
+    .normalize('NFKD')
+    .replace(/[^A-Za-z0-9]+/g, ' ')
+    .trim()
+    .split(' ')
+    .filter(isNonEmptyString);
+
+export const toSelectOptionValue = (label: string) => {
+  const value = toWords(label).join('_').toUpperCase();
+
+  // Select option values must start with a letter.
+  return /^[A-Z]/.test(value) ? value : `OPTION_${value || 'EMPTY'}`;
+};
+
+export const toCamelCaseFieldName = (label: string) => {
+  const name = toWords(label)
+    .map((word, index) => {
+      const lower = word.toLowerCase();
+
+      return index === 0
+        ? lower
+        : lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join('');
+
+  return /^[a-z]/.test(name) ? name : `pipeline${name}`;
+};
+
+export const makeUniqueName = (candidate: string, taken: string[]) => {
+  let unique = candidate;
+
+  for (let suffix = 2; taken.includes(unique); suffix++) {
+    unique = `${candidate}${suffix}`;
+  }
+
+  return unique;
+};
+
+const STAGE_COLORS = ['gray', 'sky', 'blue', 'purple', 'orange', 'yellow'];
+
+export const getCloseStatusColor = (
+  status: { label: string; type?: string | null },
+  index: number,
+) => {
+  if (
+    status.type === 'lost' ||
+    /lost|bad fit|dead|disqualif|churn/i.test(status.label)
+  ) {
+    return 'red';
+  }
+
+  if (
+    status.type === 'won' ||
+    /won|customer|closed|signed|funded/i.test(status.label)
+  ) {
+    return 'green';
+  }
+
+  return STAGE_COLORS[index % STAGE_COLORS.length];
+};

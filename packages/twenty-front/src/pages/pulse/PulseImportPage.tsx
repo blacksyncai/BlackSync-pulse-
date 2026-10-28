@@ -317,10 +317,12 @@ export const PulseImportPage = () => {
           <StyledEyebrow>{t`Switch in minutes`}</StyledEyebrow>
           <StyledHeroTitle>{t`Migrate from Close`}</StyledHeroTitle>
           <StyledHeroText>
-            {t`Bring your whole Close account over in one go. Everything lands on the right account and person, with the original dates, and running it again only adds what's new.`}
+            {t`Bring your whole Close account over in one go. Your Close pipelines, stages and lead statuses are rebuilt here exactly, and every deal lands in the same stage. Running it again only adds what's new.`}
           </StyledHeroText>
           <StyledChips>
             {[
+              t`Pipelines + stages`,
+              t`Lead statuses`,
               t`Leads → Accounts`,
               t`Contacts → People`,
               t`Opportunities → Deals`,

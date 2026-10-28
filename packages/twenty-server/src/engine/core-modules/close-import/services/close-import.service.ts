@@ -18,8 +18,10 @@ import {
   type CloseCallActivity,
   type CloseEmailActivity,
   type CloseLead,
+  type CloseLeadStatus,
   type CloseNoteActivity,
   type CloseOpportunity,
+  type ClosePipeline,
   type CloseSmsActivity,
   type CloseTask,
 } from 'src/engine/core-modules/close-import/types/close-api.type';
@@ -28,8 +30,10 @@ import {
   type CloseImportJobData,
   type CloseImportStatus,
 } from 'src/engine/core-modules/close-import/types/close-import-status.type';
+import { PulsePipelineProvisioningService } from 'src/engine/core-modules/close-import/services/pulse-pipeline-provisioning.service';
 import {
   buildCallNote,
+  getCloseStatusColor,
   buildEmailNote,
   buildSmsNote,
   mapCloseEmails,
@@ -59,6 +63,7 @@ const IMPORTED_IDS_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 // A running import refreshes its status at least this often; older means the worker died.
 const STALE_RUN_MS = 15 * 60 * 1000;
 const EMAIL_BODY_MAX_LENGTH = 20_000;
+const LEAD_STATUS_FIELD_NAME = 'leadStatus';
 
 const IMPORTED_BY = {
   source: FieldActorSource.IMPORT,
@@ -94,6 +99,7 @@ export class CloseImportService {
     private readonly cacheStorage: CacheStorageService,
     @InjectMessageQueue(MessageQueue.workspaceQueue)
     private readonly messageQueueService: MessageQueueService,
+    private readonly pulsePipelineProvisioningService: PulsePipelineProvisioningService,
   ) {}
 
   async getStatus(workspaceId: string): Promise<CloseImportStatus> {
@@ -189,6 +195,83 @@ export class CloseImportService {
     };
 
     try {
+      status.currentStep = 'Pipelines and stages';
+      await saveProgress();
+
+      // Close lead statuses and opportunity pipelines are rebuilt first, with the same
+      // names and order, so every record lands where it was in Close.
+      const leadStatuses = await client.get<{ data: CloseLeadStatus[] }>(
+        '/status/lead/',
+      );
+      const leadStatusField =
+        await this.pulsePipelineProvisioningService.ensureSelectField({
+          workspaceId,
+          objectNameSingular: 'company',
+          fieldName: LEAD_STATUS_FIELD_NAME,
+          label: 'Lead status',
+          icon: 'IconFlag',
+          options: leadStatuses.data.map((leadStatus, index) => ({
+            label: leadStatus.label,
+            color: getCloseStatusColor(leadStatus, index),
+          })),
+        });
+
+      await this.pulsePipelineProvisioningService.ensureKanbanBoard({
+        workspaceId,
+        objectNameSingular: 'company',
+        name: 'Leads',
+        groupByFieldId: leadStatusField.fieldId,
+        cardFieldNames: ['name', 'domainName', 'accountOwner'],
+      });
+
+      const leadStatusValue = (label: string | null) =>
+        isNonEmptyString(label)
+          ? leadStatusField.valueByLabel.get(label.trim().toLowerCase())
+          : undefined;
+
+      const closePipelines = new Map<
+        string,
+        {
+          pipelineValue: string;
+          stageFieldName: string;
+          stageValueByStatusId: Map<string, string>;
+        }
+      >();
+      const pipelines = await client.get<{ data: ClosePipeline[] }>(
+        '/pipeline/',
+      );
+
+      for (const pipeline of pipelines.data) {
+        const provisioned =
+          await this.pulsePipelineProvisioningService.ensureOpportunityPipeline(
+            {
+              workspaceId,
+              name: pipeline.name,
+              stages: pipeline.statuses.map((closeStatus, index) => ({
+                label: closeStatus.label,
+                color: getCloseStatusColor(closeStatus, index),
+              })),
+            },
+          );
+
+        closePipelines.set(pipeline.id, {
+          pipelineValue: provisioned.pipelineValue,
+          stageFieldName: provisioned.stageFieldName,
+          stageValueByStatusId: new Map(
+            pipeline.statuses.flatMap((closeStatus) => {
+              const value = provisioned.stageValueByLabel.get(
+                closeStatus.label.trim().toLowerCase(),
+              );
+
+              return isDefined(value) ? [[closeStatus.id, value]] : [];
+            }),
+          ),
+        });
+      }
+
+      status.currentStep = 'Accounts and contacts';
+      await saveProgress();
+
       await this.workspaceOrmManager.executeInWorkspaceContext(async () => {
         const repositoryOptions = { shouldSkipEventEmission: true };
         const permissionOptions = {
@@ -289,6 +372,23 @@ export class CloseImportService {
         })) {
           const newLeads = leads.filter((lead) => !importedIds[lead.id]);
 
+          // Accounts from an earlier import pick up their Close lead status.
+          for (const lead of leads) {
+            const companyId = importedIds[lead.id];
+            const value = leadStatusValue(lead.status_label);
+
+            if (
+              isDefined(companyId) &&
+              !newLeads.includes(lead) &&
+              isDefined(value)
+            ) {
+              await companyRepository.update(
+                { id: companyId },
+                { [LEAD_STATUS_FIELD_NAME]: value },
+              );
+            }
+          }
+
           // Website and primary email are unique in Pulse, so leads or contacts that
           // share one are merged into the existing record instead of failing the import.
           const companyIdByUrl = await this.findIdsByUniqueValue(
@@ -323,6 +423,8 @@ export class CloseImportService {
                 id,
                 name: lead.display_name || 'Untitled account',
                 domainName,
+                [LEAD_STATUS_FIELD_NAME]:
+                  leadStatusValue(lead.status_label) ?? null,
                 address: mapCloseLeadAddress(lead),
                 position: nextPosition(),
                 createdBy: IMPORTED_BY,
@@ -429,17 +531,60 @@ export class CloseImportService {
         for await (const opportunities of client.paginate<CloseOpportunity>(
           '/opportunity/',
         )) {
-          const newOpportunities = opportunities.filter(
-            (opportunity) => !importedIds[opportunity.id],
-          );
-          const lost = newOpportunities.filter(
-            (opportunity) => opportunity.status_type === 'lost',
-          );
-          const open = newOpportunities.filter(
-            (opportunity) => opportunity.status_type !== 'lost',
+          const placement = (opportunity: CloseOpportunity) => {
+            const pipeline = isNonEmptyString(opportunity.pipeline_id)
+              ? closePipelines.get(opportunity.pipeline_id)
+              : undefined;
+            const stageValue = isNonEmptyString(opportunity.status_id)
+              ? pipeline?.stageValueByStatusId.get(opportunity.status_id)
+              : undefined;
+
+            return {
+              stage: mapCloseOpportunityStage(opportunity),
+              ...(isDefined(pipeline) && isDefined(stageValue)
+                ? {
+                    pipeline: pipeline.pipelineValue,
+                    [pipeline.stageFieldName]: stageValue,
+                  }
+                : {}),
+            };
+          };
+
+          // Deals from an earlier import are moved into their Close pipeline and stage.
+          // Older imports stored lost deals as notes under the plain Close id.
+          const dealIdFor = (opportunity: CloseOpportunity) =>
+            importedIds[`${opportunity.id}:deal`] ??
+            importedIds[opportunity.id];
+          const previouslyImportedIds = opportunities
+            .map(dealIdFor)
+            .filter(isNonEmptyString);
+          const existingDealIds = new Set(
+            previouslyImportedIds.length > 0
+              ? (
+                  await opportunityRepository.find({
+                    where: { id: In(previouslyImportedIds) },
+                    select: { id: true },
+                  })
+                ).map((deal) => deal.id)
+              : [],
           );
 
-          const rows = open.map((opportunity) => ({
+          for (const opportunity of opportunities) {
+            const dealId = dealIdFor(opportunity);
+
+            if (isDefined(dealId) && existingDealIds.has(dealId)) {
+              await opportunityRepository.update(
+                { id: dealId },
+                placement(opportunity),
+              );
+            }
+          }
+
+          const newOpportunities = opportunities.filter(
+            (opportunity) => !existingDealIds.has(dealIdFor(opportunity) ?? ''),
+          );
+
+          const rows = newOpportunities.map((opportunity) => ({
             id: v4(),
             name:
               [
@@ -453,7 +598,7 @@ export class CloseImportService {
               amountMicros: Math.round((opportunity.value ?? 0) * 10_000),
               currencyCode: opportunity.value_currency || 'USD',
             },
-            stage: mapCloseOpportunityStage(opportunity),
+            ...placement(opportunity),
             closeDate: isNonEmptyString(opportunity.date_won)
               ? new Date(opportunity.date_won)
               : null,
@@ -470,31 +615,10 @@ export class CloseImportService {
             await opportunityRepository.insert(rows);
           }
 
-          open.forEach((opportunity, index) => {
-            importedIds[opportunity.id] = rows[index].id;
+          newOpportunities.forEach((opportunity, index) => {
+            importedIds[`${opportunity.id}:deal`] = rows[index].id;
           });
           status.counts.opportunities += rows.length;
-
-          // Pulse pipelines have no lost stage, so lost deals are kept as history on the account.
-          await insertNotes(
-            lost.map((opportunity) => ({
-              closeId: opportunity.id,
-              note: {
-                title: `Lost deal: $${((opportunity.value ?? 0) / 100).toLocaleString('en-US')}`,
-                markdown: [
-                  isNonEmptyString(opportunity.status_label)
-                    ? `Status: ${opportunity.status_label}`
-                    : null,
-                  opportunity.note,
-                ]
-                  .filter(isNonEmptyString)
-                  .join('\n\n'),
-              },
-              createdAt: null,
-              companyId: importedIds[opportunity.lead_id],
-              personId: undefined,
-            })),
-          );
 
           await saveProgress();
         }

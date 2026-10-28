@@ -1,5 +1,9 @@
 import {
   buildCallNote,
+  getCloseStatusColor,
+  makeUniqueName,
+  toCamelCaseFieldName,
+  toSelectOptionValue,
   mapCloseEmails,
   mapCloseOpportunityStage,
   mapClosePhones,
@@ -73,5 +77,22 @@ describe('close import mappers', () => {
       markdown:
         'Talked pricing\n\nPhone: +14155550123\n\n[Call recording](https://close.com/rec.mp3)',
     });
+  });
+
+  it('builds field names and option values from Close labels', () => {
+    expect(toCamelCaseFieldName('Enterprise / Corporate Sales')).toBe(
+      'enterpriseCorporateSales',
+    );
+    expect(toSelectOptionValue('New prospect')).toBe('NEW_PROSPECT');
+    expect(toSelectOptionValue('1st call')).toBe('OPTION_1ST_CALL');
+    expect(makeUniqueName('salesStage', ['salesStage'])).toBe('salesStage2');
+  });
+
+  it('colors won and lost Close statuses', () => {
+    expect(getCloseStatusColor({ label: 'Signed', type: 'won' }, 3)).toBe(
+      'green',
+    );
+    expect(getCloseStatusColor({ label: 'Bad Fit' }, 2)).toBe('red');
+    expect(getCloseStatusColor({ label: 'Potential' }, 0)).toBe('gray');
   });
 });

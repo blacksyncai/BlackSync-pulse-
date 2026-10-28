@@ -28,8 +28,18 @@ export type CloseLead = {
   contacts: CloseContact[];
 };
 
+export type ClosePipeline = {
+  id: string;
+  name: string;
+  statuses: { id: string; label: string; type: 'active' | 'won' | 'lost' }[];
+};
+
+export type CloseLeadStatus = { id: string; label: string };
+
 export type CloseOpportunity = {
   id: string;
+  pipeline_id: string | null;
+  status_id: string | null;
   lead_id: string;
   lead_name: string | null;
   contact_id: string | null;
