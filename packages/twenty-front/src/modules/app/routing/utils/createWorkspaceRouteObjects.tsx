@@ -59,6 +59,12 @@ const PulseImportPage = lazy(() =>
   })),
 );
 
+const PulsePipelinesPage = lazy(() =>
+  import('~/pages/pulse/PulsePipelinesPage').then((module) => ({
+    default: module.PulsePipelinesPage,
+  })),
+);
+
 const MobileHomePage = lazy(() =>
   import('~/pages/mobile-home/MobileHomePage').then((module) => ({
     default: module.MobileHomePage,
@@ -160,6 +166,14 @@ export const createWorkspaceRouteObjects = ({
       element: (
         <LazyRoute>
           <PulseImportPage />
+        </LazyRoute>
+      ),
+    },
+    {
+      path: AppPath.PulsePipelines,
+      element: (
+        <LazyRoute>
+          <PulsePipelinesPage />
         </LazyRoute>
       ),
     },
