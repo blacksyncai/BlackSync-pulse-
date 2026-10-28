@@ -35,6 +35,7 @@ const StyledCard = styled.div`
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   cursor: grab;
+  flex-shrink: 0;
   overflow: hidden;
   transition:
     border-color 0.15s,

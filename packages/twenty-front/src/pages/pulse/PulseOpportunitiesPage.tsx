@@ -148,6 +148,7 @@ const StyledCards = styled.div`
   flex: 1;
   flex-direction: column;
   gap: ${themeCssVariables.spacing[2]};
+  min-height: 0;
   overflow-y: auto;
   padding: ${themeCssVariables.spacing[2]};
 `;
