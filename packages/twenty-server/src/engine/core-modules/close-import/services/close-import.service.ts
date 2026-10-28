@@ -6,9 +6,8 @@ import { isDefined } from 'twenty-shared/utils';
 import { In, type ObjectLiteral } from 'typeorm';
 import { v4 } from 'uuid';
 
-import { InjectCacheStorage } from 'src/engine/core-modules/cache-storage/decorators/cache-storage.decorator';
-import { CacheStorageService } from 'src/engine/core-modules/cache-storage/services/cache-storage.service';
-import { CacheStorageNamespace } from 'src/engine/core-modules/cache-storage/types/cache-storage-namespace.enum';
+import { KeyValuePairType } from 'src/engine/core-modules/key-value-pair/key-value-pair.entity';
+import { KeyValuePairService } from 'src/engine/core-modules/key-value-pair/key-value-pair.service';
 import {
   CloseApiClient,
   CloseApiError,
@@ -59,8 +58,10 @@ import { PersonWorkspaceEntity } from 'src/modules/person/standard-objects/perso
 import { TaskTargetWorkspaceEntity } from 'src/modules/task/standard-objects/task-target.workspace-entity';
 import { TaskWorkspaceEntity } from 'src/modules/task/standard-objects/task.workspace-entity';
 
-const STATUS_TTL_MS = 30 * 24 * 60 * 60 * 1000;
-const IMPORTED_IDS_TTL_MS = 365 * 24 * 60 * 60 * 1000;
+// Kept in the database: the cache is flushed on every deploy, and losing the id map
+// would make the next sync import everything a second time.
+const STATUS_KEY = 'pulse-close-import:status';
+const IMPORTED_IDS_KEY = 'pulse-close-import:ids';
 // A running import refreshes its status at least this often; older means the worker died.
 const STALE_RUN_MS = 15 * 60 * 1000;
 const EMAIL_BODY_MAX_LENGTH = 20_000;
@@ -98,8 +99,7 @@ export class CloseImportService {
 
   constructor(
     private readonly workspaceOrmManager: WorkspaceOrmManager,
-    @InjectCacheStorage(CacheStorageNamespace.EngineWorkspace)
-    private readonly cacheStorage: CacheStorageService,
+    private readonly keyValuePairService: KeyValuePairService,
     @InjectMessageQueue(MessageQueue.workspaceQueue)
     private readonly messageQueueService: MessageQueueService,
     private readonly pulsePipelineProvisioningService: PulsePipelineProvisioningService,
@@ -107,8 +107,9 @@ export class CloseImportService {
   ) {}
 
   async getStatus(workspaceId: string): Promise<CloseImportStatus> {
-    const stored = await this.cacheStorage.get<StoredCloseImportStatus>(
-      this.statusKey(workspaceId),
+    const stored = await this.readStored<StoredCloseImportStatus>(
+      workspaceId,
+      STATUS_KEY,
     );
 
     if (!isDefined(stored)) {
@@ -191,20 +192,27 @@ export class CloseImportService {
     };
     // Close ids already imported, so a re-run only adds what is new.
     const importedIds =
-      (await this.cacheStorage.get<Record<string, string>>(
-        this.idsKey(workspaceId),
+      (await this.readStored<Record<string, string>>(
+        workspaceId,
+        IMPORTED_IDS_KEY,
       )) ?? {};
 
     const saveProgress = async () => {
       await this.saveStatus(workspaceId, status);
-      await this.cacheStorage.set(
-        this.idsKey(workspaceId),
-        importedIds,
-        IMPORTED_IDS_TTL_MS,
-      );
+      await this.writeStored(workspaceId, IMPORTED_IDS_KEY, importedIds);
     };
 
     try {
+      // Without the id map, earlier imported records can't be matched, so they are
+      // cleared first instead of being imported a second time.
+      if (Object.keys(importedIds).length === 0) {
+        status.currentStep = 'Clearing an earlier import';
+        await saveProgress();
+        await this.deleteImportedRecords(workspaceId, () =>
+          this.saveStatus(workspaceId, status),
+        );
+      }
+
       status.currentStep = 'Pipelines and stages';
       await saveProgress();
 
@@ -913,48 +921,11 @@ export class CloseImportService {
     const status = await this.getStatus(workspaceId);
 
     try {
-      await this.workspaceOrmManager.executeInWorkspaceContext(async () => {
-        const entities = [
-          NoteWorkspaceEntity,
-          TaskWorkspaceEntity,
-          OpportunityWorkspaceEntity,
-          PersonWorkspaceEntity,
-          CompanyWorkspaceEntity,
-        ];
-
-        for (const entity of entities) {
-          const repository =
-            this.workspaceOrmManager.getRepository<ObjectLiteral>(
-              entity,
-              { shouldBypassPermissionChecks: true },
-              { shouldSkipEventEmission: true },
-            );
-
-          for (;;) {
-            const batch = await repository.find({
-              where: {
-                createdBy: {
-                  source: IMPORTED_BY.source,
-                  name: IMPORTED_BY.name,
-                },
-              },
-              select: { id: true },
-              take: REMOVAL_BATCH_SIZE,
-              withDeleted: true,
-            });
-
-            if (batch.length === 0) {
-              break;
-            }
-
-            await repository.delete({ id: In(batch.map(({ id }) => id)) });
-            await this.saveStatus(workspaceId, status);
-          }
-        }
-      }, buildSystemAuthContext(workspaceId));
-
-      await this.cacheStorage.del(this.idsKey(workspaceId));
-      await this.cacheStorage.del(this.statusKey(workspaceId));
+      await this.deleteImportedRecords(workspaceId, () =>
+        this.saveStatus(workspaceId, status),
+      );
+      await this.deleteStored(workspaceId, IMPORTED_IDS_KEY);
+      await this.deleteStored(workspaceId, STATUS_KEY);
     } catch (error) {
       this.logger.error(
         `Removing Close import failed for workspace ${workspaceId}`,
@@ -968,19 +939,92 @@ export class CloseImportService {
     }
   }
 
+  private async deleteImportedRecords(
+    workspaceId: string,
+    onBatchDeleted: () => Promise<void>,
+  ): Promise<void> {
+    await this.workspaceOrmManager.executeInWorkspaceContext(async () => {
+      const entities = [
+        NoteWorkspaceEntity,
+        TaskWorkspaceEntity,
+        OpportunityWorkspaceEntity,
+        PersonWorkspaceEntity,
+        CompanyWorkspaceEntity,
+      ];
+
+      for (const entity of entities) {
+        const repository =
+          this.workspaceOrmManager.getRepository<ObjectLiteral>(
+            entity,
+            { shouldBypassPermissionChecks: true },
+            { shouldSkipEventEmission: true },
+          );
+
+        for (;;) {
+          const batch = await repository.find({
+            where: {
+              createdBy: {
+                source: IMPORTED_BY.source,
+                name: IMPORTED_BY.name,
+              },
+            },
+            select: { id: true },
+            take: REMOVAL_BATCH_SIZE,
+            withDeleted: true,
+          });
+
+          if (batch.length === 0) {
+            break;
+          }
+
+          await repository.delete({ id: In(batch.map(({ id }) => id)) });
+          await onBatchDeleted();
+        }
+      }
+    }, buildSystemAuthContext(workspaceId));
+  }
+
   private async saveStatus(workspaceId: string, status: CloseImportStatus) {
-    await this.cacheStorage.set<StoredCloseImportStatus>(
-      this.statusKey(workspaceId),
-      { ...status, heartbeatAt: Date.now() },
-      STATUS_TTL_MS,
-    );
+    await this.writeStored<StoredCloseImportStatus>(workspaceId, STATUS_KEY, {
+      ...status,
+      heartbeatAt: Date.now(),
+    });
   }
 
-  private statusKey(workspaceId: string) {
-    return `close-import:status:${workspaceId}`;
+  private async readStored<TValue>(
+    workspaceId: string,
+    key: string,
+  ): Promise<TValue | undefined> {
+    const [stored] = await this.keyValuePairService.get({
+      workspaceId,
+      userId: null,
+      type: KeyValuePairType.USER_VARIABLE,
+      key,
+    });
+
+    return stored?.value as TValue | undefined;
   }
 
-  private idsKey(workspaceId: string) {
-    return `close-import:ids:${workspaceId}`;
+  private async writeStored<TValue>(
+    workspaceId: string,
+    key: string,
+    value: TValue,
+  ): Promise<void> {
+    await this.keyValuePairService.set({
+      workspaceId,
+      userId: null,
+      type: KeyValuePairType.USER_VARIABLE,
+      key,
+      value,
+    });
+  }
+
+  private async deleteStored(workspaceId: string, key: string): Promise<void> {
+    await this.keyValuePairService.delete({
+      workspaceId,
+      userId: null,
+      type: KeyValuePairType.USER_VARIABLE,
+      key,
+    });
   }
 }

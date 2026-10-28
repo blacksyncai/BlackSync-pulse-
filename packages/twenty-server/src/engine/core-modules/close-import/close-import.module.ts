@@ -8,6 +8,7 @@ import { PulsePipelineProvisioningService } from 'src/engine/core-modules/close-
 import { FieldMetadataModule } from 'src/engine/metadata-modules/field-metadata/field-metadata.module';
 import { WorkspaceManyOrAllFlatEntityMapsCacheModule } from 'src/engine/metadata-modules/flat-entity/services/workspace-many-or-all-flat-entity-maps-cache.module';
 import { NavigationMenuItemModule } from 'src/engine/metadata-modules/navigation-menu-item/navigation-menu-item.module';
+import { KeyValuePairModule } from 'src/engine/core-modules/key-value-pair/key-value-pair.module';
 import { PermissionsModule } from 'src/engine/metadata-modules/permissions/permissions.module';
 import { PulseCallsModule } from 'src/engine/core-modules/pulse-calls/pulse-calls.module';
 import { ViewFieldModule } from 'src/engine/metadata-modules/view-field/view-field.module';
@@ -17,6 +18,7 @@ import { ViewModule } from 'src/engine/metadata-modules/view/view.module';
 @Module({
   imports: [
     PermissionsModule,
+    KeyValuePairModule,
     PulseCallsModule,
     FieldMetadataModule,
     ViewModule,
