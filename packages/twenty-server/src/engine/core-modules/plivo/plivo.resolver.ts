@@ -34,14 +34,21 @@ export class PlivoResolver {
   constructor(private readonly plivoService: PlivoService) {}
 
   @Query(() => PlivoVoiceAccessDTO)
-  plivoVoiceAccess(@AuthUser() user: AuthContextUser): PlivoVoiceAccessDTO {
-    if (!this.plivoService.isEnabled()) {
+  async plivoVoiceAccess(
+    @AuthUser() user: AuthContextUser,
+  ): Promise<PlivoVoiceAccessDTO> {
+    const voiceSetup = await this.plivoService.getVoiceSetup();
+
+    if (voiceSetup === null) {
       return { isEnabled: false, accessToken: null };
     }
 
     return {
       isEnabled: true,
-      accessToken: this.plivoService.createAccessToken(user.id),
+      accessToken: this.plivoService.createAccessToken(
+        user.id,
+        voiceSetup.endpointUsername,
+      ),
     };
   }
 }

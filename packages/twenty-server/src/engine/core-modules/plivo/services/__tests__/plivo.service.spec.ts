@@ -16,15 +16,21 @@ const buildService = (config: Record<string, string> = CONFIG) =>
   } as unknown as TwentyConfigService);
 
 describe('PlivoService', () => {
-  it('is disabled until every Plivo variable is set', () => {
-    expect(buildService().isEnabled()).toBe(true);
-    expect(buildService({ ...CONFIG, PLIVO_CALLER_ID: '' }).isEnabled()).toBe(
-      false,
-    );
+  it('uses the configured endpoint and caller ID without calling Plivo', async () => {
+    await expect(buildService().getVoiceSetup()).resolves.toEqual({
+      endpointUsername: 'pulse-browser',
+      callerId: '+14155550100',
+    });
+  });
+
+  it('stays disabled without Plivo credentials', async () => {
+    await expect(
+      buildService({ PLIVO_AUTH_ID: '', PLIVO_AUTH_TOKEN: '' }).getVoiceSetup(),
+    ).resolves.toBeNull();
   });
 
   it('signs an outbound-only access token for the configured endpoint', () => {
-    const token = buildService().createAccessToken('user-1');
+    const token = buildService().createAccessToken('user-1', 'pulse-browser');
     const decoded = jwt.verify(token, 'secret-token', {
       complete: true,
     }) as jwt.Jwt;
@@ -40,16 +46,18 @@ describe('PlivoService', () => {
   });
 
   it('dials the destination with the configured caller ID', () => {
-    expect(buildService().buildAnswerXml('+1 (415) 555-0199')).toBe(
+    expect(
+      buildService().buildAnswerXml('+1 (415) 555-0199', '+14155550100'),
+    ).toBe(
       '<?xml version="1.0" encoding="UTF-8"?><Response><Dial callerId="+14155550100"><Number>+14155550199</Number></Dial></Response>',
     );
   });
 
   it('hangs up instead of dialing anything that is not a phone number', () => {
     for (const destination of [undefined, 'sip:someone@example.com', '<x/>']) {
-      expect(buildService().buildAnswerXml(destination)).toContain(
-        '<Hangup reason="rejected"/>',
-      );
+      expect(
+        buildService().buildAnswerXml(destination, '+14155550100'),
+      ).toContain('<Hangup reason="rejected"/>');
     }
   });
 });

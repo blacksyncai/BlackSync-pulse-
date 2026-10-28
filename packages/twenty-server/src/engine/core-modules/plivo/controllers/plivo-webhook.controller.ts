@@ -25,11 +25,13 @@ export class PlivoWebhookController {
   @HttpCode(200)
   @Header('Content-Type', 'application/xml')
   @UseGuards(PublicEndpointGuard, NoPermissionGuard)
-  answer(@Req() request: Request): string {
+  async answer(@Req() request: Request): Promise<string> {
     const destination = request.body?.To ?? request.query?.To;
+    const voiceSetup = await this.plivoService.getVoiceSetup();
 
     return this.plivoService.buildAnswerXml(
       typeof destination === 'string' ? destination : undefined,
+      voiceSetup?.callerId,
     );
   }
 }
