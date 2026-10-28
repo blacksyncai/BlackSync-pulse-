@@ -278,6 +278,29 @@ export class CloseImportService {
         });
       }
 
+      const placement = (opportunity: CloseOpportunity) => {
+        const pipeline = isNonEmptyString(opportunity.pipeline_id)
+          ? closePipelines.get(opportunity.pipeline_id)
+          : undefined;
+        const stageValue = isNonEmptyString(opportunity.status_id)
+          ? pipeline?.stageValueByStatusId.get(opportunity.status_id)
+          : undefined;
+
+        return {
+          stage: mapCloseOpportunityStage(opportunity),
+          ...(isDefined(pipeline) && isDefined(stageValue)
+            ? {
+                pipeline: pipeline.pipelineValue,
+                [pipeline.stageFieldName]: stageValue,
+              }
+            : {}),
+        };
+      };
+
+      // Older imports stored lost deals as notes under the plain Close id.
+      const dealIdFor = (opportunity: CloseOpportunity) =>
+        importedIds[`${opportunity.id}:deal`] ?? importedIds[opportunity.id];
+
       status.currentStep = 'Accounts and contacts';
       await saveProgress();
 
@@ -540,30 +563,6 @@ export class CloseImportService {
         for await (const opportunities of client.paginate<CloseOpportunity>(
           '/opportunity/',
         )) {
-          const placement = (opportunity: CloseOpportunity) => {
-            const pipeline = isNonEmptyString(opportunity.pipeline_id)
-              ? closePipelines.get(opportunity.pipeline_id)
-              : undefined;
-            const stageValue = isNonEmptyString(opportunity.status_id)
-              ? pipeline?.stageValueByStatusId.get(opportunity.status_id)
-              : undefined;
-
-            return {
-              stage: mapCloseOpportunityStage(opportunity),
-              ...(isDefined(pipeline) && isDefined(stageValue)
-                ? {
-                    pipeline: pipeline.pipelineValue,
-                    [pipeline.stageFieldName]: stageValue,
-                  }
-                : {}),
-            };
-          };
-
-          // Deals from an earlier import are moved into their Close pipeline and stage.
-          // Older imports stored lost deals as notes under the plain Close id.
-          const dealIdFor = (opportunity: CloseOpportunity) =>
-            importedIds[`${opportunity.id}:deal`] ??
-            importedIds[opportunity.id];
           const previouslyImportedIds = opportunities
             .map(dealIdFor)
             .filter(isNonEmptyString);
@@ -578,6 +577,7 @@ export class CloseImportService {
               : [],
           );
 
+          // Deals from an earlier import are moved into their Close pipeline and stage.
           for (const opportunity of opportunities) {
             const dealId = dealIdFor(opportunity);
 
@@ -748,6 +748,34 @@ export class CloseImportService {
           });
           status.counts.tasks += rows.length;
           await saveProgress();
+        }
+      }, buildSystemAuthContext(workspaceId));
+
+      // Stage fields created at the start can reach the record layer a moment late, which
+      // silently dropped the stage on the first deals; a second pass re-places every deal.
+      status.currentStep = 'Placing deals in pipelines';
+      await saveProgress();
+
+      await this.workspaceOrmManager.executeInWorkspaceContext(async () => {
+        const opportunityRepository = this.workspaceOrmManager.getRepository(
+          OpportunityWorkspaceEntity,
+          { shouldBypassPermissionChecks: true },
+          { shouldSkipEventEmission: true },
+        );
+
+        for await (const opportunities of client.paginate<CloseOpportunity>(
+          '/opportunity/',
+        )) {
+          for (const opportunity of opportunities) {
+            const dealId = dealIdFor(opportunity);
+
+            if (isDefined(dealId)) {
+              await opportunityRepository.update(
+                { id: dealId },
+                placement(opportunity),
+              );
+            }
+          }
         }
       }, buildSystemAuthContext(workspaceId));
 
