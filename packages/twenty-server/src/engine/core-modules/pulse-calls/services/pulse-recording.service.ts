@@ -205,6 +205,60 @@ export class PulseRecordingService {
     }, buildSystemAuthContext(workspaceId));
   }
 
+  // Only Pulse's own file links are fetched, so a caller can't point the server elsewhere.
+  private isPulseFileUrl(recordingUrl: string) {
+    try {
+      const url = new URL(recordingUrl);
+      const serverUrl = new URL(this.twentyConfigService.get('SERVER_URL'));
+      const baseDomain = serverUrl.hostname.split('.').slice(-2).join('.');
+
+      return (
+        url.protocol === 'https:' &&
+        (url.hostname === serverUrl.hostname ||
+          url.hostname.endsWith(`.${baseDomain}`) ||
+          url.hostname === baseDomain)
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  async transcribeStoredRecording({
+    workspaceId,
+    noteId,
+    recordingUrl,
+  }: {
+    workspaceId: string;
+    noteId: string;
+    recordingUrl: string;
+  }): Promise<string | null> {
+    if (!isNonEmptyString(this.twentyConfigService.get('DEEPGRAM_API_KEY'))) {
+      throw new Error(
+        'Transcription is not set up (DEEPGRAM_API_KEY is missing)',
+      );
+    }
+
+    if (!this.isPulseFileUrl(recordingUrl)) {
+      throw new Error('Only recordings stored in Pulse can be transcribed');
+    }
+
+    const recording = await this.download(recordingUrl);
+
+    if (!isDefined(recording)) {
+      throw new Error('The recording could not be downloaded');
+    }
+
+    const transcript = await this.transcribe(recording);
+
+    if (!isNonEmptyString(transcript)) {
+      return null;
+    }
+
+    await this.appendTranscript({ workspaceId, noteId, transcript });
+
+    return transcript;
+  }
+
   // Store and transcribe in one go; failures are logged so a bad recording never
   // breaks the call log or an import.
   async attachRecording({

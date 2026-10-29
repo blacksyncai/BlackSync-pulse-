@@ -1,3 +1,4 @@
+import { PulseCallCardBody } from '@/pulse-record/components/PulseCallCardBody';
 import { type PulseTimelineItem } from '@/pulse-record/types/PulseTimelineItem';
 import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
@@ -230,36 +231,38 @@ export const PulseTimelineCard = ({ item, onOpen }: PulseTimelineCardProps) => {
           )}
           <StyledDate>{formatDate(item.date)}</StyledDate>
         </StyledCardHeader>
-        {(body.length > 0 || isDefined(item.recordingUrl)) && (
-          <StyledBody>
-            {isDefined(item.recordingUrl) &&
-              (canPlayRecording ? (
-                <StyledAudio
-                  controls
-                  preload="none"
-                  src={item.recordingUrl}
-                  onError={() => setCanPlayRecording(false)}
-                />
-              ) : (
-                <StyledLink
-                  href={item.recordingUrl}
-                  target="_blank"
-                  rel="noreferrer"
+        {item.kind === 'call' && <PulseCallCardBody item={item} />}
+        {item.kind !== 'call' &&
+          (body.length > 0 || isDefined(item.recordingUrl)) && (
+            <StyledBody>
+              {isDefined(item.recordingUrl) &&
+                (canPlayRecording ? (
+                  <StyledAudio
+                    controls
+                    preload="none"
+                    src={item.recordingUrl}
+                    onError={() => setCanPlayRecording(false)}
+                  />
+                ) : (
+                  <StyledLink
+                    href={item.recordingUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {t`Open recording`}
+                  </StyledLink>
+                ))}
+              {body.length > 0 && <span>{visibleBody}</span>}
+              {isLong && (
+                <StyledShowMore
+                  type="button"
+                  onClick={() => setIsExpanded((current) => !current)}
                 >
-                  {t`Open recording`}
-                </StyledLink>
-              ))}
-            {body.length > 0 && <span>{visibleBody}</span>}
-            {isLong && (
-              <StyledShowMore
-                type="button"
-                onClick={() => setIsExpanded((current) => !current)}
-              >
-                {isExpanded ? t`Show less` : t`Show more...`}
-              </StyledShowMore>
-            )}
-          </StyledBody>
-        )}
+                  {isExpanded ? t`Show less` : t`Show more...`}
+                </StyledShowMore>
+              )}
+            </StyledBody>
+          )}
       </StyledCard>
     </StyledRow>
   );
