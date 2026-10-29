@@ -497,7 +497,7 @@ export class ConfigVariables {
     description: 'Name used in the From header for outgoing emails',
     type: ConfigVariableType.STRING,
   })
-  EMAIL_FROM_NAME = 'BlackSync Pulse';
+  EMAIL_FROM_NAME = 'BlackSync Cloud';
 
   @ConfigVariablesMetadata({
     group: ConfigVariablesGroup.EMAIL_SETTINGS,

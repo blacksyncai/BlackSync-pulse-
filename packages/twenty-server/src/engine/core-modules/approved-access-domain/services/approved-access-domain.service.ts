@@ -121,7 +121,7 @@ export class ApprovedAccessDomainService {
     });
 
     await this.emailService.send({
-      from: `${sender.name.firstName} ${sender.name.lastName} (via BlackSync Pulse) <${this.twentyConfigService.get('EMAIL_FROM_ADDRESS')}>`,
+      from: `${sender.name.firstName} ${sender.name.lastName} (via BlackSync Cloud) <${this.twentyConfigService.get('EMAIL_FROM_ADDRESS')}>`,
       to,
       subject: 'Approve your access domain',
       text,

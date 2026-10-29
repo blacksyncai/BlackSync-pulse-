@@ -42,7 +42,7 @@ export const NotFound = () => {
 
   return (
     <>
-      <PageTitle title={t`Page Not Found | BlackSync Pulse`} />
+      <PageTitle title={t`Page Not Found | BlackSync Cloud`} />
       <StyledBackDrop>
         <ErrorState.Root>
           <AnimatedPlaceholder type="error404" />

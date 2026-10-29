@@ -58,6 +58,6 @@ describe('getTimelineActivityAuthorFullName', () => {
       currentWorkspaceMember as CurrentWorkspaceMember,
     );
 
-    expect(result).toBe('BlackSync Pulse');
+    expect(result).toBe('BlackSync Cloud');
   });
 });

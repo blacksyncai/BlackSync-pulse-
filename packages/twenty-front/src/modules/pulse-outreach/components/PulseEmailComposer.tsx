@@ -169,7 +169,7 @@ export const PulseEmailComposer = ({
         <StyledMuted>
           {status?.canSend === true
             ? t`Logged on this lead's timeline after sending.`
-            : t`Sending from Pulse isn't on yet, so this opens your mail app.`}
+            : t`Sending from BlackSync Cloud isn't on yet, so this opens your mail app.`}
         </StyledMuted>
         <StyledRow>
           <StyledButton type="button" onClick={onDone}>

@@ -76,7 +76,7 @@ export const OnboardingInviteTeamSkipDialog = ({
               one: "Your invite isn't sent yet",
               other: "Your # invites aren't sent yet",
             })
-          : t`BlackSync Pulse works better with your team`
+          : t`BlackSync Cloud works better with your team`
       }
       description={
         hasInviteEmails ? undefined : t`All it takes is their email.`

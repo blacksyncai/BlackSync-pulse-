@@ -27,7 +27,7 @@ const DEEPGRAM_LISTEN_URL =
 
 const RECORDED_BY = {
   source: FieldActorSource.SYSTEM,
-  name: 'Pulse calling',
+  name: 'BlackSync Cloud calling',
   workspaceMemberId: null,
   context: {},
 };
@@ -239,7 +239,7 @@ export class PulseRecordingService {
     }
 
     if (!this.isPulseFileUrl(recordingUrl)) {
-      throw new Error('Only recordings stored in Pulse can be transcribed');
+      throw new Error('Only recordings stored in BlackSync Cloud can be transcribed');
     }
 
     const recording = await this.download(recordingUrl);

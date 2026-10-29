@@ -394,12 +394,12 @@ export class WorkspaceInvitationService {
           plainText: true,
         });
 
-        const joinTeamMsg = msg`Join your team on BlackSync Pulse`;
+        const joinTeamMsg = msg`Join your team on BlackSync Cloud`;
         const i18n = this.i18nService.getI18nInstance(sender.locale);
         const subject = i18n._(joinTeamMsg);
 
         await this.emailService.send({
-          from: `${sender.name.firstName} ${sender.name.lastName} (via BlackSync Pulse) <${this.twentyConfigService.get('EMAIL_FROM_ADDRESS')}>`,
+          from: `${sender.name.firstName} ${sender.name.lastName} (via BlackSync Cloud) <${this.twentyConfigService.get('EMAIL_FROM_ADDRESS')}>`,
           to: invitation.value.email,
           subject,
           text,

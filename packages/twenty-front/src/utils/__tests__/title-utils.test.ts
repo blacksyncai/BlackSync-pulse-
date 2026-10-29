@@ -52,7 +52,7 @@ describe('title-utils', () => {
     expect(getPageTitleFromPath('/settings/general')).toBe(
       'General - Settings',
     );
-    expect(getPageTitleFromPath('/')).toBe('BlackSync Pulse');
-    expect(getPageTitleFromPath('/random')).toBe('BlackSync Pulse');
+    expect(getPageTitleFromPath('/')).toBe('BlackSync Cloud');
+    expect(getPageTitleFromPath('/random')).toBe('BlackSync Cloud');
   });
 });

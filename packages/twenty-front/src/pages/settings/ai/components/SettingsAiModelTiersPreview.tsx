@@ -107,7 +107,7 @@ export const SettingsAiModelTiersPreview = () => {
                           ? t`No model is available for this mode.`
                           : tier.isPinned
                             ? t`Manually selected for this mode.`
-                            : t`Automatically selected by BlackSync Pulse for this mode.`
+                            : t`Automatically selected by BlackSync Cloud for this mode.`
                       }
                     >
                       {getAiModelModeDescription(tier, {

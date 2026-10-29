@@ -1,11 +1,11 @@
 import { t } from '@lingui/core/macro';
 
 export const getStandardApplicationDescription =
-  (): string => t`The base data model every BlackSync Pulse workspace runs on.
+  (): string => t`The base data model every BlackSync Cloud workspace runs on.
 
 #### What "foundation" means
 
-Every BlackSync Pulse workspace starts with this set of objects. They define the shape of your CRM, including relationships, activity, and reporting. Everything else, including marketplace apps, AI agents, and custom objects, plugs into them.
+Every BlackSync Cloud workspace starts with this set of objects. They define the shape of your CRM, including relationships, activity, and reporting. Everything else, including marketplace apps, AI agents, and custom objects, plugs into them.
 
 #### Included objects
 - **People & Companies**: contact and account records
@@ -13,11 +13,11 @@ Every BlackSync Pulse workspace starts with this set of objects. They define the
 - **Notes & Tasks**: activity and follow-ups
 - **Workflows & Dashboards**: automation and reporting
 
-Remove this app and the rest of BlackSync Pulse has nothing to hang off.
+Remove this app and the rest of BlackSync Cloud has nothing to hang off.
 
 #### Build your own app
 
-Extend BlackSync Pulse with your own objects, fields, logic functions, or AI skills. Scaffold a new app in one command:
+Extend BlackSync Cloud with your own objects, fields, logic functions, or AI skills. Scaffold a new app in one command:
 
 \`\`\`bash
 npx create-twenty-app@latest my-twenty-app

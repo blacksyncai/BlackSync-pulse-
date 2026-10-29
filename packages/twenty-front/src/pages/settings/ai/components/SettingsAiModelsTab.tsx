@@ -61,7 +61,7 @@ export const SettingsAiModelsTab = () => {
             <SettingsOptionCardContentSelect
               Icon={IconMessage}
               title={t`AI chat`}
-              description={t`Model used when you chat with BlackSync Pulse`}
+              description={t`Model used when you chat with BlackSync Cloud`}
               divider
             >
               <Select
@@ -90,7 +90,7 @@ export const SettingsAiModelsTab = () => {
           <SettingsOptionCardContentSwitch
             Icon={IconWand}
             title={t`Choose automatically`}
-            description={t`BlackSync Pulse fills each level with the best model that meets your requirements`}
+            description={t`BlackSync Cloud fills each level with the best model that meets your requirements`}
             checked={isAutoModelSelectionEnabled}
             onChange={handleAutoModelSelectionToggle}
           />

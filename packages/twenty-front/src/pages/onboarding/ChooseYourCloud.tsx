@@ -77,7 +77,7 @@ export const ChooseYourCloud = () => {
         </OnboardingStepAnimatedItem>
         <OnboardingStepAnimatedItem index={1}>
           <StyledOnboardingStepSubtitle>
-            {t`Pulse sets up the records and pipelines your industry runs on. Pick one or more.`}
+            {t`BlackSync Cloud sets up the records and pipelines your industry runs on. Pick one or more.`}
           </StyledOnboardingStepSubtitle>
         </OnboardingStepAnimatedItem>
       </StyledOnboardingStepHeading>

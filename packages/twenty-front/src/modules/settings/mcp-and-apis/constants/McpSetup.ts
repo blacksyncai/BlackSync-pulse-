@@ -11,7 +11,7 @@ export const MCP_SETUP = {
   },
   server: {
     name: 'twenty',
-    displayName: 'BlackSync Pulse',
+    displayName: 'BlackSync Cloud',
   },
   clientDocsUrls: {
     augment: 'https://docs.augmentcode.com/setup-augment/mcp',

@@ -20,7 +20,7 @@ export const Footer = ({ i18n }: FooterProps) => {
             <Link
               href="https://blacksync.ai/"
               value={i18n._('Website')}
-              aria-label={i18n._("Visit BlackSync Pulse's website")}
+              aria-label={i18n._("Visit BlackSync Cloud's website")}
             />
           </ShadowText>
         </Column>

@@ -11,5 +11,5 @@ export const getTimelineActivityAuthorFullName = (
       ? 'You'
       : `${event.workspaceMember?.name.firstName} ${event.workspaceMember?.name.lastName}`;
   }
-  return 'BlackSync Pulse';
+  return 'BlackSync Cloud';
 };

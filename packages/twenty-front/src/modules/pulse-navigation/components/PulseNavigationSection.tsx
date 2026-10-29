@@ -110,7 +110,7 @@ export const PulseNavigationSection = () => {
       <StyledGroup>
         <NavigationDrawerSectionTitle label={t`Setup`} />
         <NavigationDrawerItem
-          label={t`Customize Pulse`}
+          label={t`Customize`}
           to={AppPath.PulseCustomize}
           Icon={IconAdjustments}
           active={pathname === AppPath.PulseCustomize}

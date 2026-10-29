@@ -117,7 +117,7 @@ export const SignInUp = () => {
     }
 
     if (isGlobalScope) {
-      return t`Welcome to BlackSync Pulse`;
+      return t`Welcome to BlackSync Cloud`;
     }
 
     const workspaceName = workspacePublicData?.displayName;

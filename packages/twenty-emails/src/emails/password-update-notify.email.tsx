@@ -43,7 +43,7 @@ export const PasswordUpdateNotifyEmail = ({
         <br />
       </MainText>
       <br />
-      <CallToAction value={i18n._('Connect to BlackSync Pulse')} href={link} />
+      <CallToAction value={i18n._('Connect to BlackSync Cloud')} href={link} />
       <br />
       <br />
     </BaseEmail>

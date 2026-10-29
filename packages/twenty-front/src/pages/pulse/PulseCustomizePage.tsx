@@ -179,7 +179,7 @@ export const PulseCustomizePage = () => {
 
   return (
     <PageCardLayout
-      header={<PageHeader title={t`Customize Pulse`} Icon={IconAdjustments} />}
+      header={<PageHeader title={t`Customize`} Icon={IconAdjustments} />}
     >
       <StyledLayout>
         <StyledMenu>

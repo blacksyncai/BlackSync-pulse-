@@ -48,7 +48,7 @@ export class PulseEmailSenderService {
 
     return isOnVerifiedDomain
       ? `${senderName || sender.email} <${sender.email}>`
-      : `${senderName || 'BlackSync Pulse'} <${this.twentyConfigService.get('EMAIL_FROM_ADDRESS')}>`;
+      : `${senderName || 'BlackSync Cloud'} <${this.twentyConfigService.get('EMAIL_FROM_ADDRESS')}>`;
   }
 
   async findRecipients(

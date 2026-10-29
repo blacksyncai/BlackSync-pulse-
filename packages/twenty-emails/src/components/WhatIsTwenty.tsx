@@ -9,7 +9,7 @@ type WhatIsTwentyProps = {
 export const WhatIsTwenty = ({ i18n }: WhatIsTwentyProps) => {
   return (
     <>
-      <SubTitle value={i18n._('What is BlackSync Pulse?')} />
+      <SubTitle value={i18n._('What is BlackSync Cloud?')} />
       <MainText>
         {i18n._(
           "It's a CRM, a software to help businesses manage their customer data and relationships efficiently.",
