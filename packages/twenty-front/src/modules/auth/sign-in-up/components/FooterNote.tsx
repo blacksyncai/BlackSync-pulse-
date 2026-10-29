@@ -84,7 +84,7 @@ export const FooterNote = ({
         <Trans>and</Trans>{' '}
         {secondaryAgreement === 'dataProcessingAgreement' ? (
           <a
-            href="https://twenty.com/legal/dpa"
+            href="https://blacksync.ai/legal/dpa"
             target="_blank"
             rel="noopener noreferrer"
           >

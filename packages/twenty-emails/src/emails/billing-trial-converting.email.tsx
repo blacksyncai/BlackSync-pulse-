@@ -75,7 +75,7 @@ BillingTrialConvertingEmail.PreviewProps = {
   workspaceDisplayName: 'Acme Inc.',
   trialEndsAt: new Date('2026-07-02'),
   interval: 'month',
-  link: 'https://acme.twenty.com/settings/billing',
+  link: 'https://acme.blacksync.cloud/settings/billing',
   locale: 'en',
 } as BillingTrialConvertingEmailProps;
 

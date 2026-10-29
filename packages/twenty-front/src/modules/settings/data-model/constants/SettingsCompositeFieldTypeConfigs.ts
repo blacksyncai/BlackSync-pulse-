@@ -121,20 +121,20 @@ export const SETTINGS_COMPOSITE_FIELD_TYPE_CONFIGS = {
     ],
     exampleValues: [
       {
-        primaryEmail: 'tim@twenty.com',
+        primaryEmail: 'tim@blacksync.ai',
         additionalEmails: [
-          'tim@twenty.com',
-          'timapple@twenty.com',
-          'johnappletim@twenty.com',
+          'tim@blacksync.ai',
+          'timapple@blacksync.ai',
+          'johnappletim@blacksync.ai',
         ],
       },
       {
-        primaryEmail: 'jane@twenty.com',
-        additionalEmails: ['jane@twenty.com', 'jane.doe@twenty.com'],
+        primaryEmail: 'jane@blacksync.ai',
+        additionalEmails: ['jane@blacksync.ai', 'jane.doe@blacksync.ai'],
       },
       {
-        primaryEmail: 'john@twenty.com',
-        additionalEmails: ['john.doe@twenty.com'],
+        primaryEmail: 'john@blacksync.ai',
+        additionalEmails: ['john.doe@blacksync.ai'],
       },
     ],
     category: 'Basic',
@@ -179,14 +179,14 @@ export const SETTINGS_COMPOSITE_FIELD_TYPE_CONFIGS = {
     ],
     exampleValues: [
       {
-        primaryLinkUrl: 'twenty.com',
+        primaryLinkUrl: 'blacksync.ai',
         primaryLinkLabel: '',
-        secondaryLinks: [{ url: 'twenty.com', label: 'Twenty' }],
+        secondaryLinks: [{ url: 'blacksync.ai', label: 'BlackSync' }],
       },
       {
-        primaryLinkUrl: 'github.com/twentyhq/twenty',
+        primaryLinkUrl: 'blacksync.cloud',
         primaryLinkLabel: 'Twenty Repo',
-        secondaryLinks: [{ url: 'twenty.com', label: '' }],
+        secondaryLinks: [{ url: 'blacksync.ai', label: '' }],
       },
       {
         primaryLinkUrl: 'react.dev',

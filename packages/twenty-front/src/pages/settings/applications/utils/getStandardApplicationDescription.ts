@@ -13,21 +13,4 @@ Every BlackSync Cloud workspace starts with this set of objects. They define the
 - **Notes & Tasks**: activity and follow-ups
 - **Workflows & Dashboards**: automation and reporting
 
-Remove this app and the rest of BlackSync Cloud has nothing to hang off.
-
-#### Build your own app
-
-Extend BlackSync Cloud with your own objects, fields, logic functions, or AI skills. Scaffold a new app in one command:
-
-\`\`\`bash
-npx create-twenty-app@latest my-twenty-app
-\`\`\`
-
-Then inside the folder:
-
-\`\`\`bash
-cd my-twenty-app
-yarn twenty dev
-\`\`\`
-
-See the [Getting Started guide](https://twenty.com/developers/extend/apps/getting-started) for the full walkthrough, and [Building Apps](https://twenty.com/developers/extend/apps/building) for the \`defineApplication\` / \`defineEntity\` APIs.`;
+Remove this app and the rest of BlackSync Cloud has nothing to hang off.`;

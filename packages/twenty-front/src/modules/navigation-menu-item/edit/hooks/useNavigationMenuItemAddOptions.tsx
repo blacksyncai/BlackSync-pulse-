@@ -174,7 +174,7 @@ export const useNavigationMenuItemAddOptions = ({
             addItem({
               type: NavigationMenuItemType.LINK,
               name: 'Twenty',
-              link: 'https://twenty.com',
+              link: 'https://blacksync.ai',
               color: DEFAULT_NAVIGATION_MENU_ITEM_COLOR_LINK,
             });
           },

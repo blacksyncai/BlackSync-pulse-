@@ -4,7 +4,7 @@ import {
   type DocumentationSupportedLanguage,
 } from 'twenty-shared/constants';
 
-const TWENTY_WEBSITE_HREF = 'https://twenty.com';
+const TWENTY_WEBSITE_HREF = 'https://blacksync.ai';
 
 type TwentyWebsitePage = 'terms' | 'privacy-policy';
 
