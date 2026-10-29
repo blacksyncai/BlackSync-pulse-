@@ -5,12 +5,17 @@ import {
   usePulseContactActions,
 } from '@/pulse-record/hooks/usePulseContactActions';
 import { formatFullName } from '@/pulse-record/hooks/usePulseAccountData';
+import { pulseDealCardSettingsState } from '@/pulse-opportunities/states/pulseDealCardSettingsState';
+import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
-import { isDefined } from 'twenty-shared/utils';
+import { getLogoUrlFromDomainName, isDefined } from 'twenty-shared/utils';
 import {
   IconCalendarEvent,
+  IconClock,
+  IconLink,
+  IconUserCircle,
   IconMail,
   IconMessage,
   IconPencil,
@@ -72,6 +77,14 @@ const StyledLogo = styled.span`
   font-weight: 700;
   height: 22px;
   justify-content: center;
+  overflow: hidden;
+  width: 22px;
+`;
+
+const StyledLogoImage = styled.img`
+  border-radius: 6px;
+  height: 22px;
+  object-fit: cover;
   width: 22px;
 `;
 
@@ -213,6 +226,24 @@ const StyledButton = styled.button`
   }
 `;
 
+const formatRelativeDate = (isoDate: string) => {
+  const minutes = Math.round(
+    (Date.now() - new Date(isoDate).getTime()) / 60_000,
+  );
+
+  if (minutes < 60) {
+    return `${Math.max(minutes, 1)}m ago`;
+  }
+
+  if (minutes < 60 * 24) {
+    return `${Math.round(minutes / 60)}h ago`;
+  }
+
+  const days = Math.round(minutes / (60 * 24));
+
+  return days < 30 ? `${days}d ago` : `${Math.round(days / 30)}mo ago`;
+};
+
 const formatMoney = (amount: number, currencyCode: string) =>
   new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -240,6 +271,11 @@ export const PulseDealCard = ({
   const { t } = useLingui();
   const { call, email, text } = usePulseContactActions();
   const [isEditing, setIsEditing] = useState(false);
+  const [hasLogoFailed, setHasLogoFailed] = useState(false);
+  const fields = useAtomStateValue(pulseDealCardSettingsState);
+  const website = deal.company?.domainName?.primaryLinkUrl ?? '';
+  const logoUrl = getLogoUrlFromDomainName(website);
+  const ownerName = formatFullName(deal.owner?.name);
 
   const amount = (deal.amount?.amountMicros ?? 0) / 1_000_000;
   const currencyCode = deal.amount?.currencyCode || 'USD';
@@ -291,7 +327,17 @@ export const PulseDealCard = ({
       }}
     >
       <StyledHead>
-        <StyledLogo>{companyName.charAt(0).toUpperCase()}</StyledLogo>
+        <StyledLogo>
+          {isDefined(logoUrl) && !hasLogoFailed ? (
+            <StyledLogoImage
+              src={logoUrl}
+              alt=""
+              onError={() => setHasLogoFailed(true)}
+            />
+          ) : (
+            companyName.charAt(0).toUpperCase()
+          )}
+        </StyledLogo>
         <StyledCompany>{companyName}</StyledCompany>
         {!isEditing && (
           <>
@@ -370,8 +416,10 @@ export const PulseDealCard = ({
         </StyledForm>
       ) : (
         <StyledBody>
-          <StyledAmount>{formatMoney(amount, currencyCode)}</StyledAmount>
-          {isDefined(contact) && (
+          {fields.value && (
+            <StyledAmount>{formatMoney(amount, currencyCode)}</StyledAmount>
+          )}
+          {fields.contact && isDefined(contact) && (
             <StyledRow>
               <IconUser size={15} />
               <StyledRowText>{contactName || t`Contact`}</StyledRowText>
@@ -403,7 +451,21 @@ export const PulseDealCard = ({
               </StyledIconButton>
             </StyledRow>
           )}
-          {isDefined(deal.closeDate) && (
+          {fields.owner && ownerName.length > 0 && (
+            <StyledRow>
+              <IconUserCircle size={15} />
+              <StyledRowText>{ownerName}</StyledRowText>
+            </StyledRow>
+          )}
+          {fields.website && website.length > 0 && (
+            <StyledRow>
+              <IconLink size={15} />
+              <StyledRowText>
+                {website.replace(/^https?:\/\//, '')}
+              </StyledRowText>
+            </StyledRow>
+          )}
+          {fields.closeDate && isDefined(deal.closeDate) && (
             <StyledRow>
               <IconCalendarEvent size={15} />
               <StyledRowText>
@@ -415,7 +477,15 @@ export const PulseDealCard = ({
               </StyledRowText>
             </StyledRow>
           )}
-          {note.length > 0 && <StyledNote>{note}</StyledNote>}
+          {fields.lastActivity && (
+            <StyledRow>
+              <IconClock size={15} />
+              <StyledRowText>
+                {t`Updated ${formatRelativeDate(deal.updatedAt)}`}
+              </StyledRowText>
+            </StyledRow>
+          )}
+          {fields.note && note.length > 0 && <StyledNote>{note}</StyledNote>}
         </StyledBody>
       )}
     </StyledCard>

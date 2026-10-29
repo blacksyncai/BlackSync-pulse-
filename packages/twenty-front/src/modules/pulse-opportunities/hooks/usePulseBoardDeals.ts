@@ -17,6 +17,7 @@ export type PulseBoardDeal = ObjectRecord & {
     name: string | null;
     domainName: { primaryLinkUrl: string | null } | null;
   } | null;
+  owner: { id: string; name: FullName } | null;
   pointOfContact: {
     id: string;
     name: FullName;
@@ -57,6 +58,7 @@ export const usePulseBoardDeals = (
       ...(hasPipelineField ? { pipeline: true } : {}),
       ...(isDefined(pipeline) ? { [pipeline.stageFieldName]: true } : {}),
       company: { id: true, name: true, domainName: { primaryLinkUrl: true } },
+      owner: { id: true, name: { firstName: true, lastName: true } },
       pointOfContact: {
         id: true,
         name: { firstName: true, lastName: true },

@@ -1,6 +1,7 @@
 import { useCreateOneRecord } from '@/object-record/hooks/useCreateOneRecord';
 import { useDeleteOneRecord } from '@/object-record/hooks/useDeleteOneRecord';
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
+import { PulseDealCardSettingsButton } from '@/pulse-opportunities/components/PulseDealCardSettingsButton';
 import {
   PulseDealCard,
   type PulseDealUpdate,
@@ -295,6 +296,7 @@ export const PulseOpportunitiesPage = () => {
             <strong>{deals.length}</strong> {t`deals`} ·{' '}
             <strong>{formatCompactMoney(totalValue)}</strong>
           </StyledTotals>
+          <PulseDealCardSettingsButton />
           <StyledNewButton type="button" onClick={handleNewDeal}>
             <IconPlus size={16} />
             {t`New deal`}
