@@ -18,6 +18,7 @@ const PLIVO_ENDPOINT_USERNAME_PREFIX = 'pulse';
 export type PlivoVoiceSetup = {
   endpointUsername: string;
   callerId: string;
+  applicationId?: string;
 };
 
 type PlivoList<TObject> = { objects: TObject[] };
@@ -103,21 +104,55 @@ export class PlivoService {
     return this.voiceSetup;
   }
 
-  // The browser SDK reads call permissions from `per.voice` and refuses to dial without it.
-  createAccessToken(callerIdentity: string, endpointUsername: string): string {
+  // Plivo's token API issues tokens its servers accept for SIP registration; the
+  // locally signed token is only a fallback when that API cannot be reached.
+  async createAccessToken(
+    callerIdentity: string,
+    voiceSetup: PlivoVoiceSetup,
+  ): Promise<string> {
     const authId = this.twentyConfigService.get('PLIVO_AUTH_ID');
     const nowInSeconds = Math.floor(Date.now() / 1000);
+
+    try {
+      const response = await this.plivoRequest<{ token?: string }>(
+        'POST',
+        '/JWT/Token/',
+        {
+          iss: authId,
+          sub: voiceSetup.endpointUsername,
+          nbf: nowInSeconds,
+          exp: nowInSeconds + ACCESS_TOKEN_LIFETIME_SECONDS,
+          per: { voice: { incoming_allow: false, outgoing_allow: true } },
+          ...(isNonEmptyString(voiceSetup.applicationId)
+            ? { app: voiceSetup.applicationId }
+            : {}),
+        },
+      );
+
+      if (isNonEmptyString(response.token)) {
+        return response.token;
+      }
+
+      this.logger.warn('Plivo token API returned no token, signing locally');
+    } catch (error) {
+      this.logger.warn(
+        `Plivo token API failed, signing locally: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
 
     return jwt.sign(
       {
         jti: `${callerIdentity}-${Date.now()}`,
         iss: authId,
-        sub: endpointUsername,
+        sub: voiceSetup.endpointUsername,
         nbf: nowInSeconds,
         exp: nowInSeconds + ACCESS_TOKEN_LIFETIME_SECONDS,
         per: {
           voice: { incoming_allow: false, outgoing_allow: true },
         },
+        ...(isNonEmptyString(voiceSetup.applicationId)
+          ? { app: voiceSetup.applicationId }
+          : {}),
       },
       this.twentyConfigService.get('PLIVO_AUTH_TOKEN'),
       {
@@ -301,7 +336,11 @@ export class PlivoService {
 
     this.logger.log(`Plivo calling ready as ${endpointUsername}`);
 
-    return { endpointUsername, callerId: toE164(callerId) };
+    return {
+      endpointUsername,
+      callerId: toE164(callerId),
+      applicationId,
+    };
   }
 
   private async plivoRequest<TResponse>(

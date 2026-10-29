@@ -265,7 +265,10 @@ export const PulsePhoneWidget = () => {
 
       enqueueToast({
         variant: 'error',
-        children: t`Could not start the call. Check your microphone and Plivo settings.`,
+        children:
+          error instanceof Error && error.message.length > 0
+            ? t`Could not start the call: ${error.message}`
+            : t`Could not start the call. Check your microphone and Plivo settings.`,
       });
     }
   };

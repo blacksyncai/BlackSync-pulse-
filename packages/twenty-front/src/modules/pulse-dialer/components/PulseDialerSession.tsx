@@ -314,10 +314,13 @@ export const PulseDialerSession = () => {
   const dialSafely = async (lead = current) => {
     try {
       await dial(lead);
-    } catch {
+    } catch (error) {
       enqueueToast({
         variant: 'error',
-        children: t`Could not start the call. Check your microphone and phone settings.`,
+        children:
+          error instanceof Error && error.message.length > 0
+            ? t`Could not start the call: ${error.message}`
+            : t`Could not start the call. Check your microphone and phone settings.`,
       });
     }
   };

@@ -24,6 +24,7 @@ export type PlivoVoiceAccessResult = {
 
 // Access tokens live one hour; sign in again a little before that.
 const CLIENT_MAX_AGE_MS = 50 * 60 * 1000;
+const LOGIN_TIMEOUT_MS = 20 * 1000;
 
 let plivoClientPromise: Promise<Client> | null = null;
 let plivoClientCreatedAt = 0;
@@ -133,10 +134,24 @@ export const usePulseCalling = () => {
     });
 
     await new Promise<void>((resolve, reject) => {
-      client.on('onLogin', () => resolve());
-      client.on('onLoginFailed', (reason: unknown) =>
-        reject(new Error(String(reason))),
+      const timeout = setTimeout(
+        () =>
+          reject(
+            new Error('The phone line did not respond. Check your connection.'),
+          ),
+        LOGIN_TIMEOUT_MS,
       );
+
+      client.on('onLogin', () => {
+        clearTimeout(timeout);
+        resolve();
+      });
+      client.on('onLoginFailed', (reason: unknown) => {
+        clearTimeout(timeout);
+        reject(
+          new Error(`Phone line sign-in was rejected (${String(reason)})`),
+        );
+      });
       client.loginWithAccessToken(accessToken);
     });
 

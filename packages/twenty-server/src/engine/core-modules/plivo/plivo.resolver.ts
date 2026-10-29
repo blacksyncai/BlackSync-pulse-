@@ -57,9 +57,9 @@ export class PlivoResolver {
 
     return {
       isEnabled: true,
-      accessToken: this.plivoService.createAccessToken(
+      accessToken: await this.plivoService.createAccessToken(
         user.id,
-        voiceSetup.endpointUsername,
+        voiceSetup,
       ),
       callerIds:
         callerIds.length > 0
