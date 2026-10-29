@@ -1,3 +1,5 @@
+import { usePulseDialer } from '@/pulse-dialer/hooks/usePulseDialer';
+import { toPulseDialerQueue } from '@/pulse-dialer/utils/toPulseDialerQueue';
 import { PulseLeadsBulkBar } from '@/pulse-leads/components/PulseLeadsBulkBar';
 import { PulseLeadsFilterBar } from '@/pulse-leads/components/PulseLeadsFilterBar';
 import { PulseLeadsTable } from '@/pulse-leads/components/PulseLeadsTable';
@@ -20,11 +22,11 @@ import { PageHeader } from '@/ui/layout/page/components/PageHeader';
 import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { CoreObjectNameSingular } from 'twenty-shared/types';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { AppPath, CoreObjectNameSingular } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 import { useToast } from 'twenty-ui/components';
-import { IconBuildingSkyscraper, IconPlus } from 'twenty-ui/icon';
+import { IconBuildingSkyscraper, IconPhone, IconPlus } from 'twenty-ui/icon';
 import { themeCssVariables } from 'twenty-ui/theme';
 
 const VIEW_PARAM = 'view';
@@ -158,6 +160,8 @@ export const PulseLeadsPage = () => {
   const { setStatus } = usePulseLeadActions();
   const { currentWorkspaceMemberId } = usePulseTaskActions();
   const { openRecordInSidePanel } = useOpenRecordInSidePanel();
+  const navigate = useNavigate();
+  const { start: startDialer } = usePulseDialer();
 
   const currentView =
     smartViews.find((view) => view.id === searchParams.get(VIEW_PARAM)) ??
@@ -191,6 +195,22 @@ export const PulseLeadsPage = () => {
   const neverCalled = visibleLeads.filter(
     (lead) => lead.callCount === 0,
   ).length;
+
+  const startDialing = (leadsToDial: typeof visibleLeads, label: string) => {
+    const queue = toPulseDialerQueue(leadsToDial);
+
+    if (queue.length === 0) {
+      enqueueToast({
+        variant: 'error',
+        children: t`None of these leads has a phone number.`,
+      });
+
+      return;
+    }
+
+    startDialer(queue, label);
+    navigate(AppPath.PulseDialer);
+  };
 
   const selectView = (viewId: string) => {
     setSelectedIds(new Set());
@@ -325,6 +345,13 @@ export const PulseLeadsPage = () => {
                 )}
                 <StyledButton
                   type="button"
+                  onClick={() => startDialing(visibleLeads, currentView.name)}
+                >
+                  <IconPhone size={16} />
+                  {t`Power dial`}
+                </StyledButton>
+                <StyledButton
+                  type="button"
                   data-primary
                   onClick={() => setIsCreatingLead(!isCreatingLead)}
                 >
@@ -394,6 +421,12 @@ export const PulseLeadsPage = () => {
             selectedIds={[...selectedIds]}
             statusOptions={statusOptions}
             onClear={() => setSelectedIds(new Set())}
+            onDial={() =>
+              startDialing(
+                visibleLeads.filter((lead) => selectedIds.has(lead.id)),
+                t`${selectedIds.size} selected leads`,
+              )
+            }
             onDone={() => {
               setSelectedIds(new Set());
               void refetch();

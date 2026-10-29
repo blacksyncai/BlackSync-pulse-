@@ -12,6 +12,7 @@ export type PulseCall = {
   status: PulseCallStatus;
   phoneNumber: string | null;
   answeredAt: number | null;
+  endedAt: number | null;
   isMuted: boolean;
   errorMessage: string | null;
   personId: string | null;
@@ -19,12 +20,14 @@ export type PulseCall = {
   callUuid: string | null;
   isRecorded: boolean;
   isLogged: boolean;
+  loggedNoteId: string | null;
 };
 
 export const PULSE_CALL_IDLE: PulseCall = {
   status: 'idle',
   phoneNumber: null,
   answeredAt: null,
+  endedAt: null,
   isMuted: false,
   errorMessage: null,
   personId: null,
@@ -32,6 +35,7 @@ export const PULSE_CALL_IDLE: PulseCall = {
   callUuid: null,
   isRecorded: false,
   isLogged: false,
+  loggedNoteId: null,
 };
 
 export const pulseCallState = createAtomState<PulseCall>({

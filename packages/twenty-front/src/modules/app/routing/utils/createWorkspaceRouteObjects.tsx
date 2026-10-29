@@ -95,6 +95,12 @@ const PulseOutreachPage = lazy(() =>
   })),
 );
 
+const PulseDialerPage = lazy(() =>
+  import('~/pages/pulse/PulseDialerPage').then((module) => ({
+    default: module.PulseDialerPage,
+  })),
+);
+
 const MobileHomePage = lazy(() =>
   import('~/pages/mobile-home/MobileHomePage').then((module) => ({
     default: module.MobileHomePage,
@@ -228,6 +234,14 @@ export const createWorkspaceRouteObjects = ({
       element: (
         <LazyRoute>
           <PulseOutreachPage />
+        </LazyRoute>
+      ),
+    },
+    {
+      path: AppPath.PulseDialer,
+      element: (
+        <LazyRoute>
+          <PulseDialerPage />
         </LazyRoute>
       ),
     },

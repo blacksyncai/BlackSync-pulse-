@@ -15,6 +15,7 @@ import {
   IconInbox,
   IconLayoutDashboard,
   IconMail,
+  IconPhone,
   IconTargetArrow,
 } from 'twenty-ui/icon';
 import { themeCssVariables } from 'twenty-ui/theme';
@@ -78,6 +79,12 @@ export const PulseNavigationSection = () => {
             })}
           />
         ))}
+        <NavigationDrawerItem
+          label={t`Power dialer`}
+          to={AppPath.PulseDialer}
+          Icon={IconPhone}
+          active={pathname === AppPath.PulseDialer}
+        />
         <NavigationDrawerItem
           label={t`Opportunities`}
           to={AppPath.PulseOpportunities}

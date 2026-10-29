@@ -66,6 +66,7 @@ type PulseLeadsBulkBarProps = {
   statusOptions: LeadStatusOption[];
   onDone: () => void;
   onClear: () => void;
+  onDial: () => void;
 };
 
 export const PulseLeadsBulkBar = ({
@@ -73,6 +74,7 @@ export const PulseLeadsBulkBar = ({
   statusOptions,
   onDone,
   onClear,
+  onDial,
 }: PulseLeadsBulkBarProps) => {
   const { t } = useLingui();
   const { enqueueToast } = useToast();
@@ -105,6 +107,9 @@ export const PulseLeadsBulkBar = ({
   return (
     <StyledBar>
       <strong>{t`${count} selected`}</strong>
+      <button type="button" onClick={onDial}>
+        {t`Dial selected`}
+      </button>
       {statusOptions.length > 0 && (
         <select
           aria-label={t`Set status`}

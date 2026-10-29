@@ -48,7 +48,7 @@ export const usePulseCalling = () => {
     setCall({ isLogged: true });
 
     void apolloClient
-      .mutate({
+      .mutate<{ logPulseCall: string }>({
         mutation: LOG_PULSE_CALL,
         variables: {
           input: {
@@ -63,6 +63,12 @@ export const usePulseCalling = () => {
             isRecorded: call.isRecorded,
           },
         },
+      })
+      .then(({ data }) => {
+        // A new call may have started meanwhile; only tag the call that was logged.
+        if (store.get(pulseCallState.atom).callUuid === call.callUuid) {
+          setCall({ loggedNoteId: data?.logPulseCall ?? null });
+        }
       })
       .catch(() => setCall({ isLogged: false }));
   };
@@ -101,12 +107,13 @@ export const usePulseCalling = () => {
     );
     client.on('onCallTerminated', () => {
       logEndedCall('no-answer');
-      setCall({ status: 'ended' });
+      setCall({ status: 'ended', endedAt: Date.now() });
     });
     client.on('onCallFailed', (reason: unknown) => {
       logEndedCall('failed');
       setCall({
         status: 'failed',
+        endedAt: Date.now(),
         errorMessage: typeof reason === 'string' ? reason : null,
       });
     });
@@ -220,7 +227,7 @@ export const usePulseCalling = () => {
 
     client?.hangup();
     logEndedCall('no-answer');
-    setCall({ status: 'ended' });
+    setCall({ status: 'ended', endedAt: Date.now() });
   };
 
   const toggleMute = async () => {
