@@ -3,7 +3,7 @@ import { MAUVE_COLOR_TOKENS } from './color/mauve';
 
 const mauve = MAUVE_COLOR_TOKENS.scale;
 
-// BlackSync Pulse neutrals carry a slight violet tint to sit with the violet accent.
+// BlackSync Cloud neutrals carry a slight violet tint to sit with the violet accent.
 export const GRAY_SCALE_TOKENS: typeof GRAY_COLOR_TOKENS.scale = {
   gray1: mauve.mauve1,
   gray2: mauve.mauve2,
