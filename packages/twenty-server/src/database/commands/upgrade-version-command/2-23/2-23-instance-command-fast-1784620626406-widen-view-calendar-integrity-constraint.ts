@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.23.0', 1784620626406)
-export class WidenViewCalendarIntegrityConstraintFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class WidenViewCalendarIntegrityConstraintFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       'ALTER TABLE "core"."view" DROP CONSTRAINT IF EXISTS "CHK_VIEW_CALENDAR_INTEGRITY"',

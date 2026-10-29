@@ -24,7 +24,8 @@ export const buildEditLayoutCommandMenuItemUpdate = ({
     return undefined;
   }
 
-  const standardCommandMenuItem = STANDARD_COMMAND_MENU_ITEMS.editRecordPageLayout;
+  const standardCommandMenuItem =
+    STANDARD_COMMAND_MENU_ITEMS.editRecordPageLayout;
 
   return {
     ...existingCommandMenuItem,

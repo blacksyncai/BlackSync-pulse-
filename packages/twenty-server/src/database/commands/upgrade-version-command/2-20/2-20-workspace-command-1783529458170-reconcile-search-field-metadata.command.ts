@@ -280,7 +280,9 @@ export class ReconcileSearchFieldMetadataCommand extends ProvisionedWorkspaceCom
     ] as const;
     const cacheKeysToFlush = [
       ...new Set(
-        searchFieldMetadataRelatedMetadataNames.map(getMetadataFlatEntityMapsKey),
+        searchFieldMetadataRelatedMetadataNames.map(
+          getMetadataFlatEntityMapsKey,
+        ),
       ),
     ];
 

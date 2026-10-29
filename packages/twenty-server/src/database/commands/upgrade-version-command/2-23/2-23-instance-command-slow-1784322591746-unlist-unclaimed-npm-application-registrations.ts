@@ -7,9 +7,7 @@ import { SlowInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 // now curated by server admins, so unlist the auto-synced ones: npm-sourced,
 // still unclaimed, and not vetted. Owned or vetted rows are left untouched.
 @RegisteredInstanceCommand('2.23.0', 1784322591746, { type: 'slow' })
-export class UnlistUnclaimedNpmApplicationRegistrationsSlowInstanceCommand
-  implements SlowInstanceCommand
-{
+export class UnlistUnclaimedNpmApplicationRegistrationsSlowInstanceCommand implements SlowInstanceCommand {
   async runDataMigration(dataSource: DataSource): Promise<void> {
     await dataSource.query(
       `UPDATE "core"."applicationRegistration"

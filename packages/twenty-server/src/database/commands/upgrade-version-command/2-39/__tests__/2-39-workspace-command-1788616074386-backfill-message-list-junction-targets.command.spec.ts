@@ -177,10 +177,13 @@ describe('BackfillMessageListJunctionTargetsCommand', () => {
     getOrRecomputeMock.mockResolvedValue({
       flatFieldMetadataMaps: buildFlatFieldMetadataMaps(flatFieldMetadatas),
     });
-    findOneMock.mockImplementation(({ where: { id } }: { where: { id: string } }) =>
-      Promise.resolve(
-        flatFieldMetadatas.find((flatFieldMetadata) => flatFieldMetadata.id === id),
-      ),
+    findOneMock.mockImplementation(
+      ({ where: { id } }: { where: { id: string } }) =>
+        Promise.resolve(
+          flatFieldMetadatas.find(
+            (flatFieldMetadata) => flatFieldMetadata.id === id,
+          ),
+        ),
     );
   };
 

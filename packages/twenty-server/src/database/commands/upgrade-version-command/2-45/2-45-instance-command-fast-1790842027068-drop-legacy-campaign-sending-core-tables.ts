@@ -6,9 +6,7 @@ import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interf
 // Replaced by the campaignDelivery and messageSuppression workspace objects in
 // 2.43, which intentionally did not copy rows over (only test sends existed).
 @RegisteredInstanceCommand('2.45.0', 1790842027068)
-export class DropLegacyCampaignSendingCoreTablesFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class DropLegacyCampaignSendingCoreTablesFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`DROP TABLE IF EXISTS "core"."campaignDelivery"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "core"."messageSuppression"`);

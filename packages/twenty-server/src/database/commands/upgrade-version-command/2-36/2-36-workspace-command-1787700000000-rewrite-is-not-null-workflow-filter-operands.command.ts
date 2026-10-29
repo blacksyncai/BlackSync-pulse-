@@ -66,7 +66,8 @@ export class RewriteIsNotNullWorkflowFilterOperandsCommand extends ProvisionedWo
     const workflowVersionObject =
       findFlatEntityByUniversalIdentifier<FlatObjectMetadata>({
         flatEntityMaps: flatObjectMetadataMaps,
-        universalIdentifier: STANDARD_OBJECTS.workflowVersion.universalIdentifier,
+        universalIdentifier:
+          STANDARD_OBJECTS.workflowVersion.universalIdentifier,
       });
 
     if (!isDefined(workflowVersionObject)) {

@@ -9,9 +9,7 @@ import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 // deploy. The 2.31 backfill runs earlier in the sequence than this drop, so
 // balances are in the ledger by the time the column goes.
 @RegisteredInstanceCommand('2.38.0', 1787906740818)
-export class DropBillingCustomerCreditBalanceMicroFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class DropBillingCustomerCreditBalanceMicroFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     if (!(await isCoreTablePresent(queryRunner, 'billingCustomer'))) {
       return;

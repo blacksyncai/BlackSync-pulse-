@@ -91,7 +91,9 @@ describe('SetMessageTextDisplayedMaxRowsCommand', () => {
 
     await runOnWorkspace();
 
-    expect(validateBuildAndRunLegacyWorkspaceMigrationMock).toHaveBeenCalledWith(
+    expect(
+      validateBuildAndRunLegacyWorkspaceMigrationMock,
+    ).toHaveBeenCalledWith(
       expect.objectContaining({
         workspaceId: WORKSPACE_ID,
         applicationUniversalIdentifier:

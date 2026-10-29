@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.39.0', 1788548844925)
-export class AddReadabilityToObjectMetadataFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddReadabilityToObjectMetadataFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `CREATE TYPE "core"."objectMetadata_readability_enum" AS ENUM('OPEN', 'PRIVATE', 'INHERITED', 'APPLICATION', 'SYSTEM')`,

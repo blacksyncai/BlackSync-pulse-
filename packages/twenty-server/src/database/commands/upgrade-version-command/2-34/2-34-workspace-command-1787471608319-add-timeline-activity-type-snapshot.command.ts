@@ -101,8 +101,7 @@ export class AddTimelineActivityTypeSnapshotCommand extends ProvisionedWorkspace
       ]);
 
     const snapshotFieldUniversalIdentifier =
-      TIMELINE_ACTIVITY.fields.timelineActivityTypeSnapshot
-        .universalIdentifier;
+      TIMELINE_ACTIVITY.fields.timelineActivityTypeSnapshot.universalIdentifier;
 
     if (
       isDefined(

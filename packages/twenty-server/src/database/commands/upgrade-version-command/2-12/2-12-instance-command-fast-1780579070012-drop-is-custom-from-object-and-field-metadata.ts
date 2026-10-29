@@ -7,9 +7,7 @@ const TWENTY_STANDARD_APPLICATION_UNIVERSAL_IDENTIFIER =
   '20202020-64aa-4b6f-b003-9c74b97cee20';
 
 @RegisteredInstanceCommand('2.12.0', 1780579070012)
-export class DropIsCustomFromObjectAndFieldMetadataFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class DropIsCustomFromObjectAndFieldMetadataFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       'ALTER TABLE "core"."fieldMetadata" DROP COLUMN IF EXISTS "isCustom"',

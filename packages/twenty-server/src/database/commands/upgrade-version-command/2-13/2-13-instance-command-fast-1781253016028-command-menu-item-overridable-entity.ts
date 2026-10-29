@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.13.0', 1781253016028)
-export class CommandMenuItemOverridableEntityFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class CommandMenuItemOverridableEntityFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       'ALTER TABLE "core"."commandMenuItem" ADD "overrides" jsonb, ADD "isActive" boolean NOT NULL DEFAULT true',

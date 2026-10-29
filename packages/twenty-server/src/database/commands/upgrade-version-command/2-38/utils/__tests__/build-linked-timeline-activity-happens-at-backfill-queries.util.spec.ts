@@ -11,15 +11,17 @@ const MESSAGE_LINKED_TYPE = {
 const CALENDAR_EVENT_LINKED_TYPE = {
   id: 'calendar-event-linked-type-id',
   action: 'linked' as const,
-  objectUniversalIdentifier:
-    STANDARD_OBJECTS.calendarEvent.universalIdentifier,
+  objectUniversalIdentifier: STANDARD_OBJECTS.calendarEvent.universalIdentifier,
 };
 
 describe('buildLinkedTimelineActivityHappensAtBackfillQueries', () => {
   const queries = buildLinkedTimelineActivityHappensAtBackfillQueries({
     schemaName: 'workspace_test',
     batchSize: 5_000,
-    flatTimelineActivityTypes: [MESSAGE_LINKED_TYPE, CALENDAR_EVENT_LINKED_TYPE],
+    flatTimelineActivityTypes: [
+      MESSAGE_LINKED_TYPE,
+      CALENDAR_EVENT_LINKED_TYPE,
+    ],
   });
 
   it('builds one bounded update per linked source object', () => {
@@ -31,9 +33,7 @@ describe('buildLinkedTimelineActivityHappensAtBackfillQueries', () => {
     for (const { updateSql } of queries) {
       expect(updateSql).toContain('LIMIT 5000');
       expect(updateSql).toContain('"workspace_test"');
-      expect(updateSql).toContain(
-        `"timelineActivityTypeId" = ANY($1::uuid[])`,
-      );
+      expect(updateSql).toContain(`"timelineActivityTypeId" = ANY($1::uuid[])`);
     }
   });
 
@@ -80,7 +80,8 @@ describe('buildLinkedTimelineActivityHappensAtBackfillQueries', () => {
           {
             id: 'note-linked-type-id',
             action: 'linked',
-            objectUniversalIdentifier: STANDARD_OBJECTS.note.universalIdentifier,
+            objectUniversalIdentifier:
+              STANDARD_OBJECTS.note.universalIdentifier,
           },
         ],
       }),

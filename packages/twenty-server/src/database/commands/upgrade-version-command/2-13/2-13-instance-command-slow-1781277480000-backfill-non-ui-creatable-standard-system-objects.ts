@@ -27,9 +27,7 @@ const NON_UI_CREATABLE_STANDARD_SYSTEM_OBJECT_NAMES = [
 ];
 
 @RegisteredInstanceCommand('2.13.0', 1781277480000, { type: 'slow' })
-export class BackfillNonUiCreatableStandardSystemObjectsSlowInstanceCommand
-  implements SlowInstanceCommand
-{
+export class BackfillNonUiCreatableStandardSystemObjectsSlowInstanceCommand implements SlowInstanceCommand {
   async runDataMigration(dataSource: DataSource): Promise<void> {
     await dataSource.query(
       `UPDATE "core"."objectMetadata"

@@ -11,9 +11,7 @@ import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 // which should report no diff. The FK name below reproduces TypeORM's default
 // hash for (dpaAgreement.workspaceId) so the entity and this table stay in sync.
 @RegisteredInstanceCommand('2.17.0', 1801000020000)
-export class CreateDpaAgreementCoreTableFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class CreateDpaAgreementCoreTableFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `DO $$ BEGIN CREATE TYPE "core"."dpaAgreement_type_enum" AS ENUM ('CLICK_THROUGH', 'SIGNED'); EXCEPTION WHEN duplicate_object THEN null; END $$`,

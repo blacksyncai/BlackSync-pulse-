@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.22.0', 1783956795000)
-export class AddCalendarEndFieldMetadataIdToViewFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddCalendarEndFieldMetadataIdToViewFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       'ALTER TABLE "core"."view" ADD COLUMN IF NOT EXISTS "calendarEndFieldMetadataId" uuid',

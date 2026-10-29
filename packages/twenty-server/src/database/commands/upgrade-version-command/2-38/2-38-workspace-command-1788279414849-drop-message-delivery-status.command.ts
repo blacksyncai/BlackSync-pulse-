@@ -44,8 +44,7 @@ export class DropMessageDeliveryStatusCommand extends ProvisionedWorkspaceComman
     const deliveryStatusField =
       findFlatEntityByUniversalIdentifier<FlatFieldMetadata>({
         flatEntityMaps: flatFieldMetadataMaps,
-        universalIdentifier:
-          MESSAGE_DELIVERY_STATUS_FIELD_UNIVERSAL_IDENTIFIER,
+        universalIdentifier: MESSAGE_DELIVERY_STATUS_FIELD_UNIVERSAL_IDENTIFIER,
       });
 
     if (!isDefined(deliveryStatusField)) {

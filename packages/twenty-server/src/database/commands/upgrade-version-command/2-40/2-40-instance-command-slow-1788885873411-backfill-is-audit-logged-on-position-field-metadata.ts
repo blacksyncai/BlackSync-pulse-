@@ -12,9 +12,7 @@ import { SlowInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 // never blocks readers; the matched set is one position field per object, and
 // "isAuditLogged" is unindexed so the row updates stay HOT.
 @RegisteredInstanceCommand('2.40.0', 1788885873411, { type: 'slow' })
-export class BackfillIsAuditLoggedOnPositionFieldMetadataSlowInstanceCommand
-  implements SlowInstanceCommand
-{
+export class BackfillIsAuditLoggedOnPositionFieldMetadataSlowInstanceCommand implements SlowInstanceCommand {
   async runDataMigration(dataSource: DataSource): Promise<void> {
     await dataSource.query(
       `UPDATE "core"."fieldMetadata" SET "isAuditLogged" = false WHERE "type" = 'POSITION' AND "isAuditLogged" = true`,

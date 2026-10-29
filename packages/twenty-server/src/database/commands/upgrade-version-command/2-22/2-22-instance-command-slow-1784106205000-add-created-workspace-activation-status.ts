@@ -4,11 +4,8 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { SlowInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/slow-instance-command.interface';
 
 @RegisteredInstanceCommand('2.22.0', 1784106205000, { type: 'slow' })
-export class AddCreatedWorkspaceActivationStatusSlowInstanceCommand
-  implements SlowInstanceCommand
-{
-  async runDataMigration(_dataSource: DataSource): Promise<void> {
-  }
+export class AddCreatedWorkspaceActivationStatusSlowInstanceCommand implements SlowInstanceCommand {
+  async runDataMigration(_dataSource: DataSource): Promise<void> {}
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await this.swapActivationStatusEnum(queryRunner, {

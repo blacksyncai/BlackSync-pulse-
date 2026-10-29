@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.8.0', 1798200000000)
-export class AddSubFieldNameToIndexFieldMetadataFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddSubFieldNameToIndexFieldMetadataFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `ALTER TABLE "core"."indexFieldMetadata"

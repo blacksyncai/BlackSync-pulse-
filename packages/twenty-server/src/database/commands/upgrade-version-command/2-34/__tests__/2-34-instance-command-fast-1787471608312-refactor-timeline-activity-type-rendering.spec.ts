@@ -5,7 +5,8 @@ import { RefactorTimelineActivityTypeRenderingFastInstanceCommand } from 'src/da
 describe('RefactorTimelineActivityTypeRenderingFastInstanceCommand', () => {
   const query = jest.fn();
   const queryRunner = { query } as unknown as QueryRunner;
-  const command = new RefactorTimelineActivityTypeRenderingFastInstanceCommand();
+  const command =
+    new RefactorTimelineActivityTypeRenderingFastInstanceCommand();
 
   beforeEach(() => {
     query.mockReset();

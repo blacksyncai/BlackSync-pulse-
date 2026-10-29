@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.13.0', 1781171103000)
-export class AddArchivedAtToConnectedAccountFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddArchivedAtToConnectedAccountFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       'ALTER TABLE "core"."connectedAccount" ADD COLUMN IF NOT EXISTS "archivedAt" timestamptz',

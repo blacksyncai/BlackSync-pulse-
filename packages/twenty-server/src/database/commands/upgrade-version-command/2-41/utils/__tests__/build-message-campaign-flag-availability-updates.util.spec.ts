@@ -22,7 +22,8 @@ const buildExistingItem = (
 
 describe('buildMessageCampaignFlagAvailabilityUpdates', () => {
   it('moves a campaign action from the email group flag to the campaign flag and keeps the rest of the expression', () => {
-    const { universalIdentifier } = STANDARD_COMMAND_MENU_ITEMS.sendMessageCampaign;
+    const { universalIdentifier } =
+      STANDARD_COMMAND_MENU_ITEMS.sendMessageCampaign;
 
     const updates = buildMessageCampaignFlagAvailabilityUpdates({
       flatCommandMenuItemByUniversalIdentifier: {
@@ -49,7 +50,8 @@ describe('buildMessageCampaignFlagAvailabilityUpdates', () => {
       getSystemNavigationCommandMenuItemUniversalIdentifier({
         objectMetadataApplicationUniversalIdentifier:
           TWENTY_STANDARD_APPLICATION_UNIVERSAL_IDENTIFIER,
-        objectUniversalIdentifier: STANDARD_OBJECTS.messageList.universalIdentifier,
+        objectUniversalIdentifier:
+          STANDARD_OBJECTS.messageList.universalIdentifier,
       });
 
     const updates = buildMessageCampaignFlagAvailabilityUpdates({

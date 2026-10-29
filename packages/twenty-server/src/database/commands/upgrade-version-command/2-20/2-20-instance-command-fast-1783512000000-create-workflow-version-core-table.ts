@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.20.0', 1783512000000)
-export class CreateWorkflowVersionCoreTableFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class CreateWorkflowVersionCoreTableFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `DO $$ BEGIN CREATE TYPE "core"."workflowVersion_status_enum" AS ENUM ('DRAFT', 'ACTIVE', 'DEACTIVATED', 'ARCHIVED'); EXCEPTION WHEN duplicate_object THEN null; END $$`,

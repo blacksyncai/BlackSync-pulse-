@@ -13,9 +13,7 @@ const buildViewField = (
   viewUniversalIdentifier: VIEW_UNIVERSAL_IDENTIFIER,
 });
 
-const buildMaps = (
-  viewFields: ReturnType<typeof buildViewField>[],
-) => ({
+const buildMaps = (viewFields: ReturnType<typeof buildViewField>[]) => ({
   byUniversalIdentifier: Object.fromEntries(
     viewFields.map((viewField) => [viewField.universalIdentifier, viewField]),
   ),

@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.37.0', 1787836741000)
-export class MakeUserEmailCaseInsensitiveFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class MakeUserEmailCaseInsensitiveFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query('CREATE EXTENSION IF NOT EXISTS citext');
     await queryRunner.query(`

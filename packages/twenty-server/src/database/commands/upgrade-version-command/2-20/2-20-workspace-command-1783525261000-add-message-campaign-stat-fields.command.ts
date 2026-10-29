@@ -125,7 +125,9 @@ export class AddMessageCampaignStatFieldsCommand extends ProvisionedWorkspaceCom
 
     const viewFieldsToCreate = CAMPAIGN_VIEW_FIELD_UNIVERSAL_IDENTIFIERS.filter(
       (universalIdentifier) =>
-        !isDefined(flatViewFieldMaps.byUniversalIdentifier[universalIdentifier]),
+        !isDefined(
+          flatViewFieldMaps.byUniversalIdentifier[universalIdentifier],
+        ),
     ).flatMap((universalIdentifier) => {
       const standardViewField =
         findFlatEntityByUniversalIdentifier<FlatViewField>({

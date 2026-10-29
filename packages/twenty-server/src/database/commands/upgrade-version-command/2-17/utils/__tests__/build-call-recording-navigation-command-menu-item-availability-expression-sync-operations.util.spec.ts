@@ -112,7 +112,8 @@ describe('buildCallRecordingNavigationCommandMenuItemAvailabilityExpressionSyncO
           existingFlatCommandMenuItemMaps: buildFlatCommandMenuItemMaps([
             legacyCallRecordingNavigationCommandMenuItem,
           ]),
-          existingFlatObjectMetadataMaps: buildCallRecordingObjectMetadataMaps(),
+          existingFlatObjectMetadataMaps:
+            buildCallRecordingObjectMetadataMaps(),
           now: NOW,
         },
       );
@@ -141,7 +142,8 @@ describe('buildCallRecordingNavigationCommandMenuItemAvailabilityExpressionSyncO
           existingFlatCommandMenuItemMaps: buildFlatCommandMenuItemMaps([
             syncedCallRecordingNavigationCommandMenuItem,
           ]),
-          existingFlatObjectMetadataMaps: buildCallRecordingObjectMetadataMaps(),
+          existingFlatObjectMetadataMaps:
+            buildCallRecordingObjectMetadataMaps(),
           now: NOW,
         },
       );
@@ -162,7 +164,8 @@ describe('buildCallRecordingNavigationCommandMenuItemAvailabilityExpressionSyncO
           existingFlatCommandMenuItemMaps: buildFlatCommandMenuItemMaps([
             customCallRecordingNavigationCommandMenuItem,
           ]),
-          existingFlatObjectMetadataMaps: buildCallRecordingObjectMetadataMaps(),
+          existingFlatObjectMetadataMaps:
+            buildCallRecordingObjectMetadataMaps(),
           now: NOW,
         },
       );
@@ -196,7 +199,8 @@ describe('buildCallRecordingNavigationCommandMenuItemAvailabilityExpressionSyncO
       buildCallRecordingNavigationCommandMenuItemAvailabilityExpressionSyncOperations(
         {
           existingFlatCommandMenuItemMaps: buildFlatCommandMenuItemMaps([]),
-          existingFlatObjectMetadataMaps: buildCallRecordingObjectMetadataMaps(),
+          existingFlatObjectMetadataMaps:
+            buildCallRecordingObjectMetadataMaps(),
           now: NOW,
         },
       );

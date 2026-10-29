@@ -13,9 +13,7 @@ import { SlowInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 // field was deleted while these rows survived, since their FK only cascades on the
 // indexed field). They are dead data, so we delete them rather than abort the upgrade.
 @RegisteredInstanceCommand('2.18.0', 1810000003000, { type: 'slow' })
-export class BackfillTsVectorFieldMetadataIdOnSearchFieldMetadataSlowInstanceCommand
-  implements SlowInstanceCommand
-{
+export class BackfillTsVectorFieldMetadataIdOnSearchFieldMetadataSlowInstanceCommand implements SlowInstanceCommand {
   private readonly logger = new Logger(
     BackfillTsVectorFieldMetadataIdOnSearchFieldMetadataSlowInstanceCommand.name,
   );

@@ -8,9 +8,7 @@ import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interf
 // also have no owner, which is what lets the first member who makes one private
 // claim it.
 @RegisteredInstanceCommand('2.42.0', 1789893300000)
-export class AddWorkflowVisibilityFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddWorkflowVisibilityFastInstanceCommand implements FastInstanceCommand {
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `ALTER TABLE "core"."workflow" ADD COLUMN IF NOT EXISTS "visibility" varchar NOT NULL DEFAULT 'WORKSPACE'`,

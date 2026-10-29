@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { SlowInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/slow-instance-command.interface';
 
 @RegisteredInstanceCommand('2.19.0', 1783073776591, { type: 'slow' })
-export class BackfillDisplayFieldsOnApplicationRegistrationSlowInstanceCommand
-  implements SlowInstanceCommand
-{
+export class BackfillDisplayFieldsOnApplicationRegistrationSlowInstanceCommand implements SlowInstanceCommand {
   async runDataMigration(dataSource: DataSource): Promise<void> {
     await dataSource.query(
       `UPDATE "core"."applicationRegistration"

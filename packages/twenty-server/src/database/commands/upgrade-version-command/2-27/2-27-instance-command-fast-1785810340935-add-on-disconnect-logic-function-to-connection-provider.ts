@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.27.0', 1785810340935)
-export class AddOnDisconnectLogicFunctionToConnectionProviderFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddOnDisconnectLogicFunctionToConnectionProviderFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       'ALTER TABLE "core"."connectionProvider" ADD COLUMN IF NOT EXISTS "onDisconnectLogicFunctionUniversalIdentifier" uuid',

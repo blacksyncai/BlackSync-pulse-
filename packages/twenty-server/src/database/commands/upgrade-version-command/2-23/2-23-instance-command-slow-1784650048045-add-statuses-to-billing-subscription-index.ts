@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { SlowInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/slow-instance-command.interface';
 
 @RegisteredInstanceCommand('2.23.0', 1784650048045, { type: 'slow' })
-export class AddStatusesToBillingSubscriptionIndexSlowInstanceCommand
-  implements SlowInstanceCommand
-{
+export class AddStatusesToBillingSubscriptionIndexSlowInstanceCommand implements SlowInstanceCommand {
   async runDataMigration(_dataSource: DataSource): Promise<void> {}
 
   public async up(queryRunner: QueryRunner): Promise<void> {

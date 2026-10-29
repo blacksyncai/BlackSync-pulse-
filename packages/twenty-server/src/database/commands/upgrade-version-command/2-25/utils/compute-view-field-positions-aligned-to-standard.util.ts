@@ -20,7 +20,9 @@ export const computeViewFieldPositionsAlignedToStandard = ({
   existingViewFields: ViewFieldPosition[];
   standardPositionByUniversalIdentifier: Record<string, number>;
 }): ViewFieldPosition[] => {
-  const standardPositions = Object.values(standardPositionByUniversalIdentifier);
+  const standardPositions = Object.values(
+    standardPositionByUniversalIdentifier,
+  );
 
   if (standardPositions.length === 0) {
     return [];
@@ -31,7 +33,8 @@ export const computeViewFieldPositionsAlignedToStandard = ({
   const customUniversalIdentifiers = existingViewFields
     .filter(
       ({ universalIdentifier }) =>
-        standardPositionByUniversalIdentifier[universalIdentifier] === undefined,
+        standardPositionByUniversalIdentifier[universalIdentifier] ===
+        undefined,
     )
     .sort((a, b) => a.position - b.position)
     .map(({ universalIdentifier }) => universalIdentifier);

@@ -10,9 +10,7 @@ import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 // which also reported pre-existing drift on other billing tables, left alone
 // here on purpose.
 @RegisteredInstanceCommand('2.31.0', 1786532184000)
-export class CreateBillingCreditGrantTableFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class CreateBillingCreditGrantTableFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Billing entities only exist when billing is enabled, so an instance
     // without billing must not grow a billing table its entity set has no

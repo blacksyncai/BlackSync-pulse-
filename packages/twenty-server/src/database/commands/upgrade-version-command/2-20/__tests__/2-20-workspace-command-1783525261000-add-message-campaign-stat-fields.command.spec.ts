@@ -33,7 +33,10 @@ const CAMPAIGN_VIEW_UNIVERSAL_IDENTIFIER =
 const CAMPAIGN_FIELD_UNIVERSAL_IDENTIFIER_BY_NAME: Record<string, string> =
   Object.fromEntries(
     Object.entries(CAMPAIGN.fields).map(
-      ([fieldName, { universalIdentifier }]) => [fieldName, universalIdentifier],
+      ([fieldName, { universalIdentifier }]) => [
+        fieldName,
+        universalIdentifier,
+      ],
     ),
   );
 
@@ -45,16 +48,16 @@ const CAMPAIGN_VIEW_FIELDS = Object.entries(
   CAMPAIGN.views.allMessageCampaigns.viewFields,
 ).map(([fieldName, { universalIdentifier }]) => ({
   universalIdentifier,
-  fieldUniversalIdentifier: CAMPAIGN_FIELD_UNIVERSAL_IDENTIFIER_BY_NAME[
-    fieldName
-  ],
+  fieldUniversalIdentifier:
+    CAMPAIGN_FIELD_UNIVERSAL_IDENTIFIER_BY_NAME[fieldName],
 }));
 
 const CAMPAIGN_VIEW_FIELD_UNIVERSAL_IDENTIFIERS = CAMPAIGN_VIEW_FIELDS.map(
   ({ universalIdentifier }) => universalIdentifier,
 );
 
-const NAME_FIELD_UNIVERSAL_IDENTIFIER = CAMPAIGN.fields.name.universalIdentifier;
+const NAME_FIELD_UNIVERSAL_IDENTIFIER =
+  CAMPAIGN.fields.name.universalIdentifier;
 const NAME_VIEW_FIELD_UNIVERSAL_IDENTIFIER =
   CAMPAIGN.views.allMessageCampaigns.viewFields.name.universalIdentifier;
 

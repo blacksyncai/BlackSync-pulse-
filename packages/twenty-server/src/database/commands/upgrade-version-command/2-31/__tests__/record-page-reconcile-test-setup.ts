@@ -7,10 +7,7 @@ import {
   getSystemViewUniversalIdentifier,
   getSystemViewFieldGroupUniversalIdentifier,
 } from 'twenty-shared/application';
-import {
-  PageLayoutType,
-  ViewKey,
-} from 'twenty-shared/types';
+import { PageLayoutType, ViewKey } from 'twenty-shared/types';
 
 import { WidgetConfigurationType } from 'src/engine/metadata-modules/page-layout-widget/enums/widget-configuration-type.type';
 

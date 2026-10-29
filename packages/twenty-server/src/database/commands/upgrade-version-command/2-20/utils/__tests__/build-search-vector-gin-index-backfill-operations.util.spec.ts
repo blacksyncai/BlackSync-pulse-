@@ -1,7 +1,4 @@
-import {
-  FieldMetadataType,
-  IndexType,
-} from 'twenty-shared/types';
+import { FieldMetadataType, IndexType } from 'twenty-shared/types';
 
 import { buildSearchVectorGinIndexBackfillOperations } from 'src/database/commands/upgrade-version-command/2-20/utils/build-search-vector-gin-index-backfill-operations.util';
 import { type FlatEntityMaps } from 'src/engine/metadata-modules/flat-entity/types/flat-entity-maps.type';

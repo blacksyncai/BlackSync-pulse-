@@ -7,9 +7,7 @@ import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interf
 // paired slow command copies each workspace's earlier picks into them and drops
 // the old columns, every workspace reads as automatic selection on Fast.
 @RegisteredInstanceCommand('2.40.0', 1789000000000)
-export class AddAiModelTiersToWorkspaceFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddAiModelTiersToWorkspaceFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `ALTER TABLE "core"."workspace" ADD "aiChatModelTier" character varying NOT NULL DEFAULT 'fast'`,

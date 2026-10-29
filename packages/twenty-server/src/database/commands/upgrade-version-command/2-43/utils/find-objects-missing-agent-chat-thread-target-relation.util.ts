@@ -145,7 +145,9 @@ export const findObjectsMissingAgentChatThreadTargetRelation = ({
 
     const forwardFieldName = targetFlatObjectMetadata.namePlural;
 
-    if (sourceFlatFieldMetadatas.some(({ name }) => name === forwardFieldName)) {
+    if (
+      sourceFlatFieldMetadatas.some(({ name }) => name === forwardFieldName)
+    ) {
       pushUnprovisionable(
         `field "${forwardFieldName}" already exists on ${sourceFlatObjectMetadata.nameSingular}`,
       );

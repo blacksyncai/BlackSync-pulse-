@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.25.0', 1784904030252)
-export class AddMessageChannelDisplayNameFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddMessageChannelDisplayNameFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       'ALTER TABLE "core"."messageChannel" ADD COLUMN IF NOT EXISTS "displayName" character varying',

@@ -101,7 +101,11 @@ export class MoveAgentChatThreadsToRecordModelCommand extends ProvisionedWorkspa
 
     if (shouldMoveChats) {
       const movedCount = await this.storage.run(workspaceId, ({ manager }) =>
-        moveArchivedChatThreadsToSoftDelete({ manager, workspaceId, direction }),
+        moveArchivedChatThreadsToSoftDelete({
+          manager,
+          workspaceId,
+          direction,
+        }),
       );
 
       this.logger.log(

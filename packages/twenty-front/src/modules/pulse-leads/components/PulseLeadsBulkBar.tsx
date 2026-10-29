@@ -1,5 +1,9 @@
 import { type LeadStatusOption } from '@/pulse-leads/hooks/useLeadStatusOptions';
 import { usePulseLeadActions } from '@/pulse-leads/hooks/usePulseLeadActions';
+import {
+  useOutreachActions,
+  useSequences,
+} from '@/pulse-outreach/hooks/usePulseOutreach';
 import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
@@ -74,6 +78,8 @@ export const PulseLeadsBulkBar = ({
   const { enqueueToast } = useToast();
   const { setStatus, assignToMe, addTaskToLeads, deleteLeads } =
     usePulseLeadActions();
+  const { sequences } = useSequences();
+  const { enroll } = useOutreachActions();
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
   const [isWorking, setIsWorking] = useState(false);
@@ -158,6 +164,40 @@ export const PulseLeadsBulkBar = ({
         <button type="button" onClick={() => setIsAddingTask(true)}>
           {t`Add task`}
         </button>
+      )}
+      {sequences.length > 0 && (
+        <select
+          aria-label={t`Add to sequence`}
+          value=""
+          disabled={isWorking}
+          onChange={(event) => {
+            const sequenceId = event.target.value;
+
+            void run(
+              async () => {
+                const result = await enroll({
+                  sequenceId,
+                  companyIds: selectedIds,
+                });
+
+                enqueueToast({
+                  variant: 'info',
+                  children: t`${result?.enrolled ?? 0} added, ${result?.missingEmail ?? 0} without email, ${result?.alreadyEnrolled ?? 0} already in it`,
+                });
+              },
+              t`Sequence updated`,
+            );
+          }}
+        >
+          <option value="" disabled>
+            {t`Add to sequence...`}
+          </option>
+          {sequences.map((sequence) => (
+            <option key={sequence.id} value={sequence.id}>
+              {sequence.name}
+            </option>
+          ))}
+        </select>
       )}
       <button
         type="button"

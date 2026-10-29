@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.27.0', 1785518325511)
-export class CreateUserSessionCoreTableFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class CreateUserSessionCoreTableFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `CREATE TABLE IF NOT EXISTS "core"."userSession" (

@@ -37,7 +37,8 @@ export const buildViewFieldsAlignedToStandardPositions = <
       .filter(isDefined)
       .filter(
         (viewField) =>
-          viewField.viewUniversalIdentifier === existingView.universalIdentifier,
+          viewField.viewUniversalIdentifier ===
+          existingView.universalIdentifier,
       )
       .map(({ universalIdentifier, position }) => [
         universalIdentifier,

@@ -11,9 +11,7 @@ import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interf
 // the 2.21 command landed after the 2.22 bump and is skipped forever on
 // instances whose cursor is already past that slot.
 @RegisteredInstanceCommand('2.23.0', 1784823473532)
-export class AddLogoFileIdToApplicationRegistration2_23FastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddLogoFileIdToApplicationRegistration2_23FastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await ensureApplicationRegistrationLogoFileIdColumn((sql) =>
       queryRunner.query(sql),

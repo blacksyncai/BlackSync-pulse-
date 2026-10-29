@@ -67,10 +67,9 @@ export class EncryptSensitiveConfigStorageSlowInstanceCommand implements SlowIns
           continue;
         }
 
-        const encrypted =
-          this.secretEncryptionService.encryptVersioned(
-            plaintext as PlaintextString,
-          );
+        const encrypted = this.secretEncryptionService.encryptVersioned(
+          plaintext as PlaintextString,
+        );
 
         await dataSource.query(
           `UPDATE "core"."keyValuePair"

@@ -68,7 +68,10 @@ export class BackfillMessageListMembersJunctionTargetCommand extends Provisioned
     const currentSettings = membersFlatFieldMetadata.settings;
 
     if (
-      !isFieldMetadataSettingsOfType(currentSettings, FieldMetadataType.RELATION)
+      !isFieldMetadataSettingsOfType(
+        currentSettings,
+        FieldMetadataType.RELATION,
+      )
     ) {
       this.logger.warn(
         `messageList.members has no relation settings for workspace ${workspaceId}, skipping`,

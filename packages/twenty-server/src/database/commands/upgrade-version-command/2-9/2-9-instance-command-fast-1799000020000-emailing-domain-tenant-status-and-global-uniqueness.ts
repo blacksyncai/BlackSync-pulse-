@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.9.0', 1799000020000)
-export class EmailingDomainTenantStatusAndGlobalUniquenessFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class EmailingDomainTenantStatusAndGlobalUniquenessFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       "CREATE TYPE \"core\".\"emailingDomain_tenantstatus_enum\" AS ENUM('ACTIVE', 'PAUSED', 'PERMANENTLY_SUSPENDED')",

@@ -207,9 +207,7 @@ export class NormalizeCompanyDomainNamesCommand extends ProvisionedWorkspaceComm
       return new Set();
     }
 
-    const rows = await dataSource.query<
-      { domainNamePrimaryLinkUrl: string }[]
-    >(
+    const rows = await dataSource.query<{ domainNamePrimaryLinkUrl: string }[]>(
       `
 SELECT company."domainNamePrimaryLinkUrl"
 FROM "${schemaName}"."company" company

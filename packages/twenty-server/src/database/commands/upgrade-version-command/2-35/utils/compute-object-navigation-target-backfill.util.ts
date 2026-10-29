@@ -30,7 +30,8 @@ export const computeObjectNavigationTargetBackfill = ({
     flatCommandMenuItemMaps.byUniversalIdentifier,
   ).filter(isDefined)) {
     if (
-      flatCommandMenuItem.engineComponentKey !== EngineComponentKey.NAVIGATION ||
+      flatCommandMenuItem.engineComponentKey !==
+        EngineComponentKey.NAVIGATION ||
       isDefined(flatCommandMenuItem.navigationTargetObjectMetadataId) ||
       !isObjectMetadataCommandMenuItemPayload(flatCommandMenuItem.payload)
     ) {

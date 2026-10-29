@@ -89,6 +89,12 @@ const PulseCustomizePage = lazy(() =>
   })),
 );
 
+const PulseOutreachPage = lazy(() =>
+  import('~/pages/pulse/PulseOutreachPage').then((module) => ({
+    default: module.PulseOutreachPage,
+  })),
+);
+
 const MobileHomePage = lazy(() =>
   import('~/pages/mobile-home/MobileHomePage').then((module) => ({
     default: module.MobileHomePage,
@@ -214,6 +220,14 @@ export const createWorkspaceRouteObjects = ({
       element: (
         <LazyRoute>
           <PulseCustomizePage />
+        </LazyRoute>
+      ),
+    },
+    {
+      path: AppPath.PulseOutreach,
+      element: (
+        <LazyRoute>
+          <PulseOutreachPage />
         </LazyRoute>
       ),
     },

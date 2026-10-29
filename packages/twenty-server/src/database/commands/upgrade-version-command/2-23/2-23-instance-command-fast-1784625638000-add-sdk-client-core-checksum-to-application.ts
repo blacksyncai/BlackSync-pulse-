@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.23.0', 1784625638000)
-export class AddSdkClientCoreChecksumToApplicationFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddSdkClientCoreChecksumToApplicationFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       'ALTER TABLE "core"."application" ADD COLUMN IF NOT EXISTS "sdkClientCoreChecksum" text',

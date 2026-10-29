@@ -23,8 +23,7 @@ const SCHEDULED_AT_FIELD_UNIVERSAL_IDENTIFIER =
   CAMPAIGN.fields.scheduledAt.universalIdentifier;
 
 const SCHEDULED_AT_VIEW_FIELD_UNIVERSAL_IDENTIFIERS = [
-  CAMPAIGN.views.allMessageCampaigns.viewFields.scheduledAt
-    .universalIdentifier,
+  CAMPAIGN.views.allMessageCampaigns.viewFields.scheduledAt.universalIdentifier,
   CAMPAIGN.views.messageCampaignRecordPageFields.viewFields.scheduledAt
     .universalIdentifier,
 ];
@@ -98,26 +97,24 @@ export class AddMessageCampaignScheduledAtCommand extends ProvisionedWorkspaceCo
         twentyStandardApplicationId: twentyStandardFlatApplication.id,
       });
 
-    const fieldsToCreate = getStandardFlatEntitiesToCreateOrThrow<
-      FlatFieldMetadata
-    >({
-      standardFlatEntityMaps: standardAllFlatEntityMaps.flatFieldMetadataMaps,
-      existingFlatEntityMaps: flatFieldMetadataMaps,
-      universalIdentifiers: [SCHEDULED_AT_FIELD_UNIVERSAL_IDENTIFIER],
-    });
+    const fieldsToCreate =
+      getStandardFlatEntitiesToCreateOrThrow<FlatFieldMetadata>({
+        standardFlatEntityMaps: standardAllFlatEntityMaps.flatFieldMetadataMaps,
+        existingFlatEntityMaps: flatFieldMetadataMaps,
+        universalIdentifiers: [SCHEDULED_AT_FIELD_UNIVERSAL_IDENTIFIER],
+      });
 
     const isViewProvisionedInWorkspace = ({
       viewUniversalIdentifier,
     }: FlatViewField) =>
       isDefined(flatViewMaps.byUniversalIdentifier[viewUniversalIdentifier]);
 
-    const viewFieldsToCreate = getStandardFlatEntitiesToCreateOrThrow<
-      FlatViewField
-    >({
-      standardFlatEntityMaps: standardAllFlatEntityMaps.flatViewFieldMaps,
-      existingFlatEntityMaps: flatViewFieldMaps,
-      universalIdentifiers: SCHEDULED_AT_VIEW_FIELD_UNIVERSAL_IDENTIFIERS,
-    }).filter(isViewProvisionedInWorkspace);
+    const viewFieldsToCreate =
+      getStandardFlatEntitiesToCreateOrThrow<FlatViewField>({
+        standardFlatEntityMaps: standardAllFlatEntityMaps.flatViewFieldMaps,
+        existingFlatEntityMaps: flatViewFieldMaps,
+        universalIdentifiers: SCHEDULED_AT_VIEW_FIELD_UNIVERSAL_IDENTIFIERS,
+      }).filter(isViewProvisionedInWorkspace);
 
     const commandMenuItemsToUpdate =
       buildMessageCampaignSchedulingAvailabilityUpdates({
@@ -243,7 +240,6 @@ export class AddMessageCampaignScheduledAtCommand extends ProvisionedWorkspaceCo
       }
     }
   }
-
 
   private async runViewFieldUpdates({
     workspaceId,

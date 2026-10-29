@@ -400,7 +400,9 @@ export class SyncMessageListRecordPageCommand extends ProvisionedWorkspaceComman
     standardApplicationId: string;
   }): RecordPageOperations {
     const homeTab =
-      flatPageLayoutTabMaps.byUniversalIdentifier[HOME_TAB_UNIVERSAL_IDENTIFIER];
+      flatPageLayoutTabMaps.byUniversalIdentifier[
+        HOME_TAB_UNIVERSAL_IDENTIFIER
+      ];
 
     if (!isDefined(homeTab)) {
       this.logger.log(
@@ -422,7 +424,8 @@ export class SyncMessageListRecordPageCommand extends ProvisionedWorkspaceComman
     }
 
     const isMembersTabAvailable =
-      !isDefined(existingMembersTab) || !isDefined(existingMembersTab.deletedAt);
+      !isDefined(existingMembersTab) ||
+      !isDefined(existingMembersTab.deletedAt);
 
     const pageLayoutTabsToCreate = isMembersTabAvailable
       ? getStandardFlatEntitiesToCreateOrThrow<FlatPageLayoutTab>({

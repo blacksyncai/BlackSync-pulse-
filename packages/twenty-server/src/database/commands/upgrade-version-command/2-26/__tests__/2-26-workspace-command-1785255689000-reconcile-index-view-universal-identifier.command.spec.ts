@@ -28,13 +28,15 @@ const FIELD_UNIVERSAL_IDENTIFIER = '20202020-0000-4000-8000-0000000000cc';
 
 const DERIVED_STANDARD_VIEW_UNIVERSAL_IDENTIFIER =
   getSystemViewUniversalIdentifier({
-    objectMetadataApplicationUniversalIdentifier: STANDARD_APPLICATION_UNIVERSAL_IDENTIFIER,
+    objectMetadataApplicationUniversalIdentifier:
+      STANDARD_APPLICATION_UNIVERSAL_IDENTIFIER,
     objectUniversalIdentifier: STANDARD_OBJECT_UNIVERSAL_IDENTIFIER,
     viewKey: SYSTEM_VIEW_KEYS.INDEX,
   });
 const DERIVED_STANDARD_VIEW_FIELD_UNIVERSAL_IDENTIFIER =
   getSystemViewFieldUniversalIdentifier({
-    fieldMetadataApplicationUniversalIdentifier: STANDARD_APPLICATION_UNIVERSAL_IDENTIFIER,
+    fieldMetadataApplicationUniversalIdentifier:
+      STANDARD_APPLICATION_UNIVERSAL_IDENTIFIER,
     viewUniversalIdentifier: DERIVED_STANDARD_VIEW_UNIVERSAL_IDENTIFIER,
     fieldMetadataUniversalIdentifier: FIELD_UNIVERSAL_IDENTIFIER,
   });
@@ -260,7 +262,8 @@ describe('ReconcileIndexViewUniversalIdentifierCommand', () => {
   it('re-owns a custom object INDEX view onto the workspace-custom derivation', async () => {
     const derivedCustomViewUniversalIdentifier =
       getSystemViewUniversalIdentifier({
-        objectMetadataApplicationUniversalIdentifier: CUSTOM_APPLICATION_UNIVERSAL_IDENTIFIER,
+        objectMetadataApplicationUniversalIdentifier:
+          CUSTOM_APPLICATION_UNIVERSAL_IDENTIFIER,
         objectUniversalIdentifier: CUSTOM_OBJECT_UNIVERSAL_IDENTIFIER,
         viewKey: SYSTEM_VIEW_KEYS.INDEX,
       });
@@ -343,7 +346,8 @@ describe('ReconcileIndexViewUniversalIdentifierCommand', () => {
           id: 'drifted-view-id',
           universalIdentifier: 'drifted-view-uid',
           key: ViewKey.INDEX,
-          objectMetadataUniversalIdentifier: EXTERNAL_OBJECT_UNIVERSAL_IDENTIFIER,
+          objectMetadataUniversalIdentifier:
+            EXTERNAL_OBJECT_UNIVERSAL_IDENTIFIER,
         }),
       ],
     });
@@ -366,7 +370,8 @@ describe('ReconcileIndexViewUniversalIdentifierCommand', () => {
           universalIdentifier: 'stamped-drifted-view-uid',
           key: ViewKey.INDEX,
           isSystemSideEffect: true,
-          objectMetadataUniversalIdentifier: EXTERNAL_OBJECT_UNIVERSAL_IDENTIFIER,
+          objectMetadataUniversalIdentifier:
+            EXTERNAL_OBJECT_UNIVERSAL_IDENTIFIER,
         }),
       ],
     });
@@ -395,7 +400,8 @@ describe('ReconcileIndexViewUniversalIdentifierCommand', () => {
           id: 'legacy-caller-view-id',
           universalIdentifier: 'legacy-caller-view-uid',
           key: ViewKey.INDEX,
-          applicationUniversalIdentifier: CUSTOM_APPLICATION_UNIVERSAL_IDENTIFIER,
+          applicationUniversalIdentifier:
+            CUSTOM_APPLICATION_UNIVERSAL_IDENTIFIER,
         }),
       ],
     });

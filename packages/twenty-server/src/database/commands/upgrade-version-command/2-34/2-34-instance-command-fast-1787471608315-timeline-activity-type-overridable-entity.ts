@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.34.0', 1787471608315)
-export class TimelineActivityTypeOverridableEntityFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class TimelineActivityTypeOverridableEntityFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       'ALTER TABLE "core"."timelineActivityType" ADD "overrides" jsonb, ADD "isActive" boolean NOT NULL DEFAULT true',

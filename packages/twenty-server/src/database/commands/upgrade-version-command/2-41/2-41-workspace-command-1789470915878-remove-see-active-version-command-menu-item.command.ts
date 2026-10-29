@@ -47,12 +47,11 @@ export class RemoveSeeActiveVersionCommandMenuItemCommand extends ProvisionedWor
         'flatFrontComponentMaps',
       ]);
 
-    const itemToDelete = findFlatEntityByUniversalIdentifier<FlatCommandMenuItem>(
-      {
+    const itemToDelete =
+      findFlatEntityByUniversalIdentifier<FlatCommandMenuItem>({
         flatEntityMaps: flatCommandMenuItemMaps,
         universalIdentifier: SEE_ACTIVE_VERSION_WORKFLOW_UNIVERSAL_IDENTIFIER,
-      },
-    );
+      });
 
     if (!isDefined(itemToDelete)) {
       this.logger.log(

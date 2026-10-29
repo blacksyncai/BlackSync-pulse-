@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.39.0', 1788701640813)
-export class AddCommandMenuItemConditionalPinnedExpressionFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddCommandMenuItemConditionalPinnedExpressionFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       'ALTER TABLE "core"."commandMenuItem" ADD COLUMN IF NOT EXISTS "conditionalPinnedExpression" character varying',

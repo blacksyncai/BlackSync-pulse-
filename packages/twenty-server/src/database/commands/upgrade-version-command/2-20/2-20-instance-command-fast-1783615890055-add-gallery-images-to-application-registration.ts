@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.20.0', 1783615890055)
-export class AddGalleryImagesToApplicationRegistrationFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddGalleryImagesToApplicationRegistrationFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       'ALTER TABLE "core"."applicationRegistration" ADD COLUMN IF NOT EXISTS "galleryImages" jsonb',

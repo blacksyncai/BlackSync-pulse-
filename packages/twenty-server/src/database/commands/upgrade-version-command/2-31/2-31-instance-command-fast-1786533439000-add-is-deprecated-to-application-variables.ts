@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.31.0', 1786533439000)
-export class AddIsDeprecatedToApplicationVariablesFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddIsDeprecatedToApplicationVariablesFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `ALTER TABLE "core"."applicationVariable" ADD COLUMN IF NOT EXISTS "isDeprecated" boolean NOT NULL DEFAULT false`,

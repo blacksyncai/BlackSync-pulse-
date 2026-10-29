@@ -26,9 +26,7 @@ const PREFERENCE_KEY_MAP = {
 } as const;
 
 @RegisteredInstanceCommand('2.9.0', 1799000010000, { type: 'slow' })
-export class MigrateAiModelPreferencesSlowInstanceCommand
-  implements SlowInstanceCommand
-{
+export class MigrateAiModelPreferencesSlowInstanceCommand implements SlowInstanceCommand {
   private readonly logger = new Logger(
     MigrateAiModelPreferencesSlowInstanceCommand.name,
   );

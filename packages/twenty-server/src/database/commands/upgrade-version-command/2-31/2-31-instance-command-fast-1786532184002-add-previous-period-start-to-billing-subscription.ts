@@ -8,9 +8,7 @@ import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 // and then to calendar arithmetic until each subscription's next transition
 // fills it in.
 @RegisteredInstanceCommand('2.31.0', 1786532184002)
-export class AddPreviousPeriodStartToBillingSubscriptionFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddPreviousPeriodStartToBillingSubscriptionFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const isBillingSchemaPresent = await queryRunner.query(
       `SELECT 1 FROM pg_tables WHERE schemaname = 'core' AND tablename = 'billingSubscription'`,

@@ -9,9 +9,7 @@ import { SlowInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 const V2_ONBOARDING_RELEASE_DATE = '2026-07-01';
 
 @RegisteredInstanceCommand('2.23.0', 1784286705000, { type: 'slow' })
-export class BackfillCreatedWorkspaceActivationStatusSlowInstanceCommand
-  implements SlowInstanceCommand
-{
+export class BackfillCreatedWorkspaceActivationStatusSlowInstanceCommand implements SlowInstanceCommand {
   private readonly logger = new Logger(
     BackfillCreatedWorkspaceActivationStatusSlowInstanceCommand.name,
   );

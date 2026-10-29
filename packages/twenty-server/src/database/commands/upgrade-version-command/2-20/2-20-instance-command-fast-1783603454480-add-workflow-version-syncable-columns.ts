@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.20.0', 1783603454480)
-export class AddWorkflowVersionSyncableColumnsFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddWorkflowVersionSyncableColumnsFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `ALTER TABLE "core"."workflowVersion" ADD COLUMN IF NOT EXISTS "universalIdentifier" uuid NOT NULL`,

@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.38.0', 1788272351966)
-export class RenameEmailingDomainPermanentlySuspendedToSandboxFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class RenameEmailingDomainPermanentlySuspendedToSandboxFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     if (!(await this.hasEnumLabel(queryRunner, 'PERMANENTLY_SUSPENDED'))) {
       return;

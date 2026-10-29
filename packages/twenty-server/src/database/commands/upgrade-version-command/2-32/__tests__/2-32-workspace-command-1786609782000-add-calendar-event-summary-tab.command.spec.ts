@@ -39,7 +39,9 @@ const CALL_RECORDING_TAB_UNIVERSAL_IDENTIFIER =
 
 const buildByUniversalIdentifierMap = <
   TFlatEntity extends { universalIdentifier: string },
->(flatEntities: TFlatEntity[]) => ({
+>(
+  flatEntities: TFlatEntity[],
+) => ({
   byUniversalIdentifier: Object.fromEntries(
     flatEntities.map((flatEntity) => [
       flatEntity.universalIdentifier,

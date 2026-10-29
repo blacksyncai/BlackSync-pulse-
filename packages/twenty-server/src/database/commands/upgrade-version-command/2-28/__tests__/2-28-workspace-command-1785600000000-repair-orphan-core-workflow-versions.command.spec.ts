@@ -54,12 +54,14 @@ const setup = ({
   } as unknown as QueryRunner;
 
   const count = objectMissing
-    ? jest.fn().mockRejectedValue(
-        new TwentyOrmException(
-          'Object "workflowVersion" does not exist in this workspace',
-          TwentyOrmExceptionCode.UNKNOWN_OBJECT,
-        ),
-      )
+    ? jest
+        .fn()
+        .mockRejectedValue(
+          new TwentyOrmException(
+            'Object "workflowVersion" does not exist in this workspace',
+            TwentyOrmExceptionCode.UNKNOWN_OBJECT,
+          ),
+        )
     : jest.fn().mockResolvedValue(0);
 
   const dataSource = {

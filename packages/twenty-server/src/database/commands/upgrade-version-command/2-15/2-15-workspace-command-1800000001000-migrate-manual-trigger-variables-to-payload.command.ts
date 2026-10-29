@@ -45,7 +45,8 @@ export class MigrateManualTriggerVariablesToPayloadCommand extends ProvisionedWo
     const workflowVersionObject =
       findFlatEntityByUniversalIdentifier<FlatObjectMetadata>({
         flatEntityMaps: flatObjectMetadataMaps,
-        universalIdentifier: STANDARD_OBJECTS.workflowVersion.universalIdentifier,
+        universalIdentifier:
+          STANDARD_OBJECTS.workflowVersion.universalIdentifier,
       });
 
     if (!isDefined(workflowVersionObject)) {
@@ -57,7 +58,8 @@ export class MigrateManualTriggerVariablesToPayloadCommand extends ProvisionedWo
     }
 
     const workflowVersionRepository =
-      this.workspaceOrmManager.getRepository<WorkflowVersionWorkspaceEntity>('workflowVersion',
+      this.workspaceOrmManager.getRepository<WorkflowVersionWorkspaceEntity>(
+        'workflowVersion',
         { shouldBypassPermissionChecks: true },
       );
 
@@ -106,7 +108,8 @@ export class MigrateManualTriggerVariablesToPayloadCommand extends ProvisionedWo
     const availabilityType = trigger.settings?.availability?.type;
 
     return (
-      availabilityType === 'SINGLE_RECORD' || availabilityType === 'BULK_RECORDS'
+      availabilityType === 'SINGLE_RECORD' ||
+      availabilityType === 'BULK_RECORDS'
     );
   }
 }

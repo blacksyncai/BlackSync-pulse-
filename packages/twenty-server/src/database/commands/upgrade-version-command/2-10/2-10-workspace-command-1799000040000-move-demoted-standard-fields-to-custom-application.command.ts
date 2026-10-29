@@ -85,10 +85,7 @@ export class MoveDemotedStandardFieldsToCustomApplicationCommand extends Provisi
 
     const fieldsToReown: { id: string; label: string }[] = [];
 
-    for (const {
-      universalIdentifier,
-      label,
-    } of DEMOTED_STANDARD_FIELDS) {
+    for (const { universalIdentifier, label } of DEMOTED_STANDARD_FIELDS) {
       const flatFieldMetadata =
         findFlatEntityByUniversalIdentifier<FlatFieldMetadata>({
           flatEntityMaps: flatFieldMetadataMaps,

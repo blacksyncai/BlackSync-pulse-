@@ -6,10 +6,14 @@ import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 @RegisteredInstanceCommand('2.42.0', 1790088525621)
 export class AddApplicationGrantedCapabilitiesFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query('ALTER TABLE "core"."application" ADD "grantedCapabilities" character varying array NOT NULL DEFAULT \'{}\'');
+    await queryRunner.query(
+      'ALTER TABLE "core"."application" ADD "grantedCapabilities" character varying array NOT NULL DEFAULT \'{}\'',
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query('ALTER TABLE "core"."application" DROP COLUMN "grantedCapabilities"');
+    await queryRunner.query(
+      'ALTER TABLE "core"."application" DROP COLUMN "grantedCapabilities"',
+    );
   }
 }

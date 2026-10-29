@@ -49,9 +49,10 @@ export class ConfigureTimelineActivityHappensAtCommand extends ProvisionedWorksp
         { workspaceId },
       );
 
-    const happensAtValueClauses = STANDARD_TIMELINE_ACTIVITY_HAPPENS_AT_2_38.map(
-      (_, index) => `($${index * 2 + 3}::uuid, $${index * 2 + 4}::uuid)`,
-    ).join(', ');
+    const happensAtValueClauses =
+      STANDARD_TIMELINE_ACTIVITY_HAPPENS_AT_2_38.map(
+        (_, index) => `($${index * 2 + 3}::uuid, $${index * 2 + 4}::uuid)`,
+      ).join(', ');
     const happensAtParameters =
       STANDARD_TIMELINE_ACTIVITY_HAPPENS_AT_2_38.flatMap((definition) => [
         definition.universalIdentifier,

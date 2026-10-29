@@ -171,12 +171,15 @@ export class BackfillMissingSystemRelationIndexesCommand extends ProvisionedWork
       const { applicationUniversalIdentifier } =
         missingIndex.universalFlatIndexMetadata;
 
-      missingIndexesByApplicationUniversalIdentifier.set(applicationUniversalIdentifier, [
-        ...(missingIndexesByApplicationUniversalIdentifier.get(
-          applicationUniversalIdentifier,
-        ) ?? []),
-        missingIndex,
-      ]);
+      missingIndexesByApplicationUniversalIdentifier.set(
+        applicationUniversalIdentifier,
+        [
+          ...(missingIndexesByApplicationUniversalIdentifier.get(
+            applicationUniversalIdentifier,
+          ) ?? []),
+          missingIndex,
+        ],
+      );
     }
 
     for (const [

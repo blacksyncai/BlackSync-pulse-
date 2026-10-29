@@ -14,7 +14,9 @@ describe('isEmptyUnprovisionedAgentHistoryWorkspace', () => {
   const dataSource = {
     createQueryRunner: () => runner,
   } as unknown as DataSource;
-  const agentHistoryStorageService = new AgentHistoryUpgradeStorageService(dataSource);
+  const agentHistoryStorageService = new AgentHistoryUpgradeStorageService(
+    dataSource,
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();

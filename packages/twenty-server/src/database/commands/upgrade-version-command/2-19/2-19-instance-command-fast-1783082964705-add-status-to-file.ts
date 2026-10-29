@@ -19,7 +19,9 @@ export class AddStatusToFileFastInstanceCommand implements FastInstanceCommand {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`DROP INDEX IF EXISTS "core"."IDX_FILE_STATUS"`);
-    await queryRunner.query(`ALTER TABLE "core"."file" DROP COLUMN IF EXISTS "status"`);
+    await queryRunner.query(
+      `ALTER TABLE "core"."file" DROP COLUMN IF EXISTS "status"`,
+    );
     await queryRunner.query(`DROP TYPE IF EXISTS "core"."file_status_enum"`);
   }
 }

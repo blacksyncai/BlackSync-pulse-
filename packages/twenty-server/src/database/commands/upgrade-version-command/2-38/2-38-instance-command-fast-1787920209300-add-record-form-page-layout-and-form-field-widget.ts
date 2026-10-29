@@ -12,9 +12,7 @@ const WIDGET_TYPES_BEFORE =
 const WIDGET_TYPES_AFTER = `${WIDGET_TYPES_BEFORE}, 'FORM_FIELD'`;
 
 @RegisteredInstanceCommand('2.38.0', 1787920209300)
-export class AddRecordFormPageLayoutAndFormFieldWidgetFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddRecordFormPageLayoutAndFormFieldWidgetFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await this.replacePageLayoutTypeEnum(queryRunner, PAGE_LAYOUT_TYPES_AFTER);
     await this.replaceWidgetTypeEnum(queryRunner, WIDGET_TYPES_AFTER);
@@ -73,6 +71,8 @@ export class AddRecordFormPageLayoutAndFormFieldWidgetFastInstanceCommand
     await queryRunner.query(
       `ALTER TABLE "core"."pageLayoutWidget" ALTER COLUMN "type" SET DEFAULT 'VIEW'`,
     );
-    await queryRunner.query('DROP TYPE "core"."pageLayoutWidget_type_enum_old"');
+    await queryRunner.query(
+      'DROP TYPE "core"."pageLayoutWidget_type_enum_old"',
+    );
   }
 }

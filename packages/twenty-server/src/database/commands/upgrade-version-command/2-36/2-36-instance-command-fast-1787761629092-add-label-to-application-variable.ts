@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.36.0', 1787761629092)
-export class AddLabelToApplicationVariableFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddLabelToApplicationVariableFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `ALTER TABLE "core"."applicationVariable" ADD COLUMN IF NOT EXISTS "label" text NOT NULL DEFAULT ''`,

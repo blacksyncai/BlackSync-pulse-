@@ -80,7 +80,9 @@ export class BackfillRecordFormCommand extends ProvisionedWorkspaceCommandRunner
     );
 
     if (totalCreateCount === 0) {
-      this.logger.log(`No record form to backfill for workspace ${workspaceId}`);
+      this.logger.log(
+        `No record form to backfill for workspace ${workspaceId}`,
+      );
 
       return;
     }

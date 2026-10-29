@@ -7,9 +7,7 @@ import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interf
 // the 2.21 sequence append-only, so it may re-run on instances that already
 // applied it under the previous name.
 @RegisteredInstanceCommand('2.21.0', 1783945979243)
-export class AddLogoFileIdToApplicationRegistrationFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddLogoFileIdToApplicationRegistrationFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       'ALTER TABLE "core"."applicationRegistration" ADD COLUMN IF NOT EXISTS "logoFileId" uuid',

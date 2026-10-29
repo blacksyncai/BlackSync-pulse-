@@ -40,13 +40,17 @@ export class BackfillWorkflowExecutionCoreIdsCommand extends ProvisionedWorkspac
       const schema = getWorkspaceSchemaName(workspaceId);
 
       if (!(await queryRunner.hasTable(`${schema}.workflowVersion`))) {
-        this.logger.log(`Workflow version table absent in workspace ${workspaceId}, skipping backfill`);
+        this.logger.log(
+          `Workflow version table absent in workspace ${workspaceId}, skipping backfill`,
+        );
 
         return;
       }
 
       if (!(await this.hasRequiredColumns(queryRunner, schema))) {
-        throw new Error(`Workflow execution schema is not ready in workspace ${workspaceId}`);
+        throw new Error(
+          `Workflow execution schema is not ready in workspace ${workspaceId}`,
+        );
       }
 
       await queryRunner.startTransaction();
@@ -296,7 +300,9 @@ export class BackfillWorkflowExecutionCoreIdsCommand extends ProvisionedWorkspac
 
       if (options.dryRun) {
         await queryRunner.rollbackTransaction();
-        this.logger.log(`[DRY RUN] Workflow execution mappings validated in workspace ${workspaceId}`);
+        this.logger.log(
+          `[DRY RUN] Workflow execution mappings validated in workspace ${workspaceId}`,
+        );
       } else {
         await queryRunner.commitTransaction();
         await this.workspaceCacheService.invalidateAndRecompute(workspaceId, [
@@ -304,7 +310,9 @@ export class BackfillWorkflowExecutionCoreIdsCommand extends ProvisionedWorkspac
           'flatWorkflowVersionMaps',
           'workflowAutomatedTriggerMaps',
         ]);
-        this.logger.log(`Workflow execution mappings backfilled in workspace ${workspaceId}`);
+        this.logger.log(
+          `Workflow execution mappings backfilled in workspace ${workspaceId}`,
+        );
       }
     } catch (error) {
       if (queryRunner.isTransactionActive) {

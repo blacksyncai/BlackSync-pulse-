@@ -6,9 +6,7 @@ import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 const TABLES = ['objectMetadata', 'fieldMetadata'] as const;
 
 @RegisteredInstanceCommand('2.19.0', 1782986475000)
-export class AddMetadataOverridesColumnFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddMetadataOverridesColumnFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     for (const table of TABLES) {
       await queryRunner.query(

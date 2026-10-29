@@ -58,13 +58,14 @@ const MEMBERS_VIEW_FILTER_UNIVERSAL_IDENTIFIER =
 const MEMBERS_VIEW_ID = '20202020-0000-0000-0000-000000000010';
 const OTHER_VIEW_ID = '20202020-0000-0000-0000-000000000099';
 
-const STANDARD_MEMBERS_VIEW_FIELDS = MEMBERS_VIEW_FIELD_UNIVERSAL_IDENTIFIERS.map(
-  (universalIdentifier, position) => ({
-    universalIdentifier,
-    viewUniversalIdentifier: MEMBERS_VIEW_UNIVERSAL_IDENTIFIER,
-    position,
-  }),
-);
+const STANDARD_MEMBERS_VIEW_FIELDS =
+  MEMBERS_VIEW_FIELD_UNIVERSAL_IDENTIFIERS.map(
+    (universalIdentifier, position) => ({
+      universalIdentifier,
+      viewUniversalIdentifier: MEMBERS_VIEW_UNIVERSAL_IDENTIFIER,
+      position,
+    }),
+  );
 const STANDARD_MEMBERS_VIEW_FILTER = {
   universalIdentifier: MEMBERS_VIEW_FILTER_UNIVERSAL_IDENTIFIER,
   viewUniversalIdentifier: MEMBERS_VIEW_UNIVERSAL_IDENTIFIER,
@@ -325,7 +326,9 @@ describe('SyncMessageListRecordPageCommand', () => {
           ? [
               {
                 universalIdentifier: LIST.universalIdentifier,
-                viewUniversalIdentifiers: [LIST_INDEX_VIEW_UNIVERSAL_IDENTIFIER],
+                viewUniversalIdentifiers: [
+                  LIST_INDEX_VIEW_UNIVERSAL_IDENTIFIER,
+                ],
               },
               { universalIdentifier: LIST_MEMBER.universalIdentifier },
             ]
@@ -380,7 +383,10 @@ describe('SyncMessageListRecordPageCommand', () => {
   it('creates the metadata and the members tab, and turns the home members widget into a mobile table', async () => {
     mockWorkspaceCache({
       existingViewFields: [
-        { universalIdentifier: NAME_VIEW_FIELD_UNIVERSAL_IDENTIFIER, position: 0 },
+        {
+          universalIdentifier: NAME_VIEW_FIELD_UNIVERSAL_IDENTIFIER,
+          position: 0,
+        },
         { universalIdentifier: 'other-column', position: 3 },
         {
           universalIdentifier: 'removed-column',
@@ -535,7 +541,9 @@ describe('SyncMessageListRecordPageCommand', () => {
 
     await runOnWorkspace();
 
-    expect(validateBuildAndRunLegacyWorkspaceMigrationMock).not.toHaveBeenCalled();
+    expect(
+      validateBuildAndRunLegacyWorkspaceMigrationMock,
+    ).not.toHaveBeenCalled();
   });
 
   it('leaves a widget embedding another view untouched', async () => {
@@ -546,9 +554,8 @@ describe('SyncMessageListRecordPageCommand', () => {
         buildFieldsWidget(),
         buildHomeMembersWidget({
           configuration: buildTableConfiguration(OTHER_VIEW_ID),
-          universalConfiguration: buildTableUniversalConfiguration(
-            OTHER_VIEW_ID,
-          ),
+          universalConfiguration:
+            buildTableUniversalConfiguration(OTHER_VIEW_ID),
         }),
         buildMembersTabWidget(),
       ],
@@ -556,7 +563,9 @@ describe('SyncMessageListRecordPageCommand', () => {
 
     await runOnWorkspace();
 
-    expect(validateBuildAndRunLegacyWorkspaceMigrationMock).not.toHaveBeenCalled();
+    expect(
+      validateBuildAndRunLegacyWorkspaceMigrationMock,
+    ).not.toHaveBeenCalled();
   });
 
   it('does not embed or refill a soft-deleted members view', async () => {
@@ -666,7 +675,9 @@ describe('SyncMessageListRecordPageCommand', () => {
 
     await runOnWorkspace();
 
-    expect(validateBuildAndRunLegacyWorkspaceMigrationMock).not.toHaveBeenCalled();
+    expect(
+      validateBuildAndRunLegacyWorkspaceMigrationMock,
+    ).not.toHaveBeenCalled();
   });
 
   it('does not write metadata in dry-run mode', async () => {
@@ -674,7 +685,9 @@ describe('SyncMessageListRecordPageCommand', () => {
 
     await runOnWorkspace(true);
 
-    expect(validateBuildAndRunLegacyWorkspaceMigrationMock).not.toHaveBeenCalled();
+    expect(
+      validateBuildAndRunLegacyWorkspaceMigrationMock,
+    ).not.toHaveBeenCalled();
   });
 
   it('skips workspaces without the message list objects', async () => {
@@ -682,6 +695,8 @@ describe('SyncMessageListRecordPageCommand', () => {
 
     await runOnWorkspace();
 
-    expect(validateBuildAndRunLegacyWorkspaceMigrationMock).not.toHaveBeenCalled();
+    expect(
+      validateBuildAndRunLegacyWorkspaceMigrationMock,
+    ).not.toHaveBeenCalled();
   });
 });

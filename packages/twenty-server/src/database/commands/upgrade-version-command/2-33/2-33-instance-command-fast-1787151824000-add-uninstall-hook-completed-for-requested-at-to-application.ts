@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.33.0', 1787151824000)
-export class AddUninstallHookCompletedForRequestedAtToApplicationFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddUninstallHookCompletedForRequestedAtToApplicationFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       'ALTER TABLE "core"."application" ADD COLUMN IF NOT EXISTS "uninstallHookCompletedForRequestedAt" TIMESTAMP WITH TIME ZONE',

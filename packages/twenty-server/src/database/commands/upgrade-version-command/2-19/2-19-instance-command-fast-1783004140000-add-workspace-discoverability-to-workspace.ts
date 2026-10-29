@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.19.0', 1783004140000)
-export class AddWorkspaceDiscoverabilityToWorkspaceFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddWorkspaceDiscoverabilityToWorkspaceFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `DO $$ BEGIN

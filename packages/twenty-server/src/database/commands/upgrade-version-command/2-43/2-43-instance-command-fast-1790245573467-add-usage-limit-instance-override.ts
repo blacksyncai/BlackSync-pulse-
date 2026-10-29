@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.43.0', 1790245573467)
-export class AddUsageLimitInstanceOverrideFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddUsageLimitInstanceOverrideFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       'ALTER TABLE "core"."usageLimit" ADD "isInstanceOverride" boolean NOT NULL DEFAULT false',

@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.23.0', 1784620626405)
-export class AddKanbanAndCalendarWidgetViewTypesFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddKanbanAndCalendarWidgetViewTypesFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `ALTER TYPE "core"."view_type_enum" ADD VALUE IF NOT EXISTS 'KANBAN_WIDGET' AFTER 'TABLE_WIDGET'`,

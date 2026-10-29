@@ -14,9 +14,7 @@ describe('buildTimelineActivityTypeSnapshotBackfillQuery', () => {
     expect(query.sql).toContain(
       'WHERE timeline_activity."timelineActivityTypeSnapshot" IS NULL',
     );
-    expect(query.sql).toContain(
-      'timeline_activity."id" > $1::uuid',
-    );
+    expect(query.sql).toContain('timeline_activity."id" > $1::uuid');
     expect(query.sql).toContain('ORDER BY timeline_activity."id"');
     expect(query.sql).toContain('LIMIT $2');
     expect(query.sql).toContain('RETURNING timeline_activity."id"');

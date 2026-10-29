@@ -30,9 +30,7 @@ const hasLegacyWorkspaceModelColumns = async (
 // workspace edited in the new UI before this ran keeps what it chose. Guarded
 // on the old columns so a re-run after the schema step is a no-op.
 @RegisteredInstanceCommand('2.40.0', 1789000000001, { type: 'slow' })
-export class MigrateWorkspaceModelsToTiersSlowInstanceCommand
-  implements SlowInstanceCommand
-{
+export class MigrateWorkspaceModelsToTiersSlowInstanceCommand implements SlowInstanceCommand {
   async runDataMigration(dataSource: DataSource): Promise<void> {
     if (
       !(await hasLegacyWorkspaceModelColumns((sql) => dataSource.query(sql)))

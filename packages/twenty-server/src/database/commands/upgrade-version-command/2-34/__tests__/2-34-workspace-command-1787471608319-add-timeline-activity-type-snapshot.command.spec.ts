@@ -8,8 +8,7 @@ import { type WorkspaceMigrationValidateBuildAndRunService } from 'src/engine/wo
 
 const WORKSPACE_ID = '00000000-0000-4000-8000-000000000001';
 const APPLICATION_ID = '00000000-0000-4000-8000-000000000002';
-const APPLICATION_UNIVERSAL_IDENTIFIER =
-  '00000000-0000-4000-8000-000000000003';
+const APPLICATION_UNIVERSAL_IDENTIFIER = '00000000-0000-4000-8000-000000000003';
 describe('AddTimelineActivityTypeSnapshotCommand', () => {
   it('repairs rolling-upgrade rows while compatibility fields stay nullable', async () => {
     const validateBuildAndRunWorkspaceMigration = jest
@@ -38,8 +37,7 @@ describe('AddTimelineActivityTypeSnapshotCommand', () => {
             linked: {
               id: '00000000-0000-4000-8000-000000000008',
               applicationId: APPLICATION_ID,
-              universalIdentifier:
-                '00000000-0000-4000-8000-000000000009',
+              universalIdentifier: '00000000-0000-4000-8000-000000000009',
               name: 'recordLinked',
               label: 'was linked by',
               action: 'linked',
@@ -97,8 +95,7 @@ describe('AddTimelineActivityTypeSnapshotCommand', () => {
   });
 
   it('uses the last updated identifier to keyset large snapshot backfills', async () => {
-    const lastTimelineActivityId =
-      'ffffffff-ffff-4fff-8fff-ffffffffffff';
+    const lastTimelineActivityId = 'ffffffff-ffff-4fff-8fff-ffffffffffff';
     const query = jest
       .fn()
       .mockResolvedValueOnce([[], 0])

@@ -15,9 +15,7 @@ const TABLES_WITH_IS_SYSTEM_SIDE_EFFECT = [
 ] as const;
 
 @RegisteredInstanceCommand('2.15.0', 1781600000000)
-export class AddIsSystemSideEffectFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddIsSystemSideEffectFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     for (const table of TABLES_WITH_IS_SYSTEM_SIDE_EFFECT) {
       await queryRunner.query(

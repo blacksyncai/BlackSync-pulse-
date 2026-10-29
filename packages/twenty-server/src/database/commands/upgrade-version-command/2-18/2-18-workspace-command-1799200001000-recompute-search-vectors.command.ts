@@ -63,15 +63,14 @@ export class RecomputeSearchVectorsCommand extends ProvisionedWorkspaceCommandRu
       return;
     }
 
-    const actions: UniversalUpdateFieldAction[] = tsVectorFlatFieldMetadatas.map(
-      (flatFieldMetadata) => ({
+    const actions: UniversalUpdateFieldAction[] =
+      tsVectorFlatFieldMetadatas.map((flatFieldMetadata) => ({
         type: WORKSPACE_MIGRATION_ACTION_TYPE.update,
         metadataName: 'fieldMetadata',
         universalIdentifier: flatFieldMetadata.universalIdentifier,
         update: { universalSettings: null },
         rebuildSearchVector: true,
-      }),
-    );
+      }));
 
     await this.workspaceMigrationRunnerService.run({
       workspaceMigration: {

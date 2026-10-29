@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.42.0', 1789920900000)
-export class AddIsRequiredToApplicationVariablesFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddIsRequiredToApplicationVariablesFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `ALTER TABLE "core"."applicationVariable" ADD COLUMN IF NOT EXISTS "isRequired" boolean NOT NULL DEFAULT false`,

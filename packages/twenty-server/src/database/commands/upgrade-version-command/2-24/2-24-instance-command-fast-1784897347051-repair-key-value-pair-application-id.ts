@@ -9,9 +9,7 @@ import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interf
 // cursor, leaving core.keyValuePair without applicationId. The DDL mirrors that
 // command and is fully idempotent, so it is a no-op on healthy instances.
 @RegisteredInstanceCommand('2.24.0', 1784897347051)
-export class RepairKeyValuePairApplicationIdFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class RepairKeyValuePairApplicationIdFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `ALTER TYPE "core"."keyValuePair_type_enum" ADD VALUE IF NOT EXISTS 'APPLICATION_VARIABLE'`,

@@ -37,7 +37,12 @@ type TargetLegSpecification = {
   indexedAtPosition?: 0 | 1;
 };
 
-const addAll = <TFlatEntity extends FlatObjectMetadata | FlatFieldMetadata | FlatIndexMetadata>(
+const addAll = <
+  TFlatEntity extends
+    | FlatObjectMetadata
+    | FlatFieldMetadata
+    | FlatIndexMetadata,
+>(
   flatEntities: TFlatEntity[],
 ): FlatEntityMaps<TFlatEntity> =>
   flatEntities.reduce<FlatEntityMaps<TFlatEntity>>(

@@ -50,17 +50,15 @@ export class BackfillWorkflowVersionCoreLinksCommand extends ProvisionedWorkspac
 
     try {
       workspaceWorkflowVersions =
-        await this.workspaceOrmManager.executeInWorkspaceContext(
-          async () => {
-            const workflowVersionRepository =
-              this.workspaceOrmManager.getRepository<WorkflowVersionWorkspaceEntity>('workflowVersion',
-                { shouldBypassPermissionChecks: true },
-              );
+        await this.workspaceOrmManager.executeInWorkspaceContext(async () => {
+          const workflowVersionRepository =
+            this.workspaceOrmManager.getRepository<WorkflowVersionWorkspaceEntity>(
+              'workflowVersion',
+              { shouldBypassPermissionChecks: true },
+            );
 
-            return workflowVersionRepository.find();
-          },
-          buildSystemAuthContext(workspaceId),
-        );
+          return workflowVersionRepository.find();
+        }, buildSystemAuthContext(workspaceId));
     } catch (error) {
       if (isWorkspaceObjectNotFoundError(error)) {
         this.logger.log(

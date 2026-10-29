@@ -173,9 +173,7 @@ describe('ReconcileStandardSkillsCommand', () => {
 
     expect(updatedSkill?.isSystem).toBe(true);
     expect(updatedSkill?.isActive).toBe(false);
-    expect(updatedSkill?.id).toBe(
-      `id-${VIEW_BUILDING_UNIVERSAL_IDENTIFIER}`,
-    );
+    expect(updatedSkill?.id).toBe(`id-${VIEW_BUILDING_UNIVERSAL_IDENTIFIER}`);
   });
 
   it('queues no migration when the workspace already matches the catalog', async () => {
@@ -185,10 +183,9 @@ describe('ReconcileStandardSkillsCommand', () => {
     }));
 
     const { command, validateBuildAndRunLegacyWorkspaceMigration } = setup({
-      existingSkills:
-        alreadyMatchingSkills as unknown as ReturnType<
-          typeof buildExistingSkill
-        >[],
+      existingSkills: alreadyMatchingSkills as unknown as ReturnType<
+        typeof buildExistingSkill
+      >[],
     });
 
     await command.runOnWorkspace({

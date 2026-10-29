@@ -6,10 +6,14 @@ import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 @RegisteredInstanceCommand('2.34.0', 1787471608312)
 export class RefactorTimelineActivityTypeRenderingFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query('ALTER TABLE "core"."timelineActivityType" ADD "frontComponentUniversalIdentifier" uuid');
+    await queryRunner.query(
+      'ALTER TABLE "core"."timelineActivityType" ADD "frontComponentUniversalIdentifier" uuid',
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query('ALTER TABLE "core"."timelineActivityType" DROP COLUMN "frontComponentUniversalIdentifier"');
+    await queryRunner.query(
+      'ALTER TABLE "core"."timelineActivityType" DROP COLUMN "frontComponentUniversalIdentifier"',
+    );
   }
 }

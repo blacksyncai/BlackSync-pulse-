@@ -32,13 +32,14 @@ export class MakeWorkflowRunProjectionRelationsNullableCommand extends Provision
     }
 
     const schema = getWorkspaceSchemaName(workspaceId);
-    const [table] = await dataSource.query(
-      'SELECT to_regclass($1) AS name',
-      [`"${schema}"."workflowRun"`],
-    );
+    const [table] = await dataSource.query('SELECT to_regclass($1) AS name', [
+      `"${schema}"."workflowRun"`,
+    ]);
 
     if (!isDefined(table?.name)) {
-      this.logger.log(`Workflow run table absent in workspace ${workspaceId}, skipping projection relations`);
+      this.logger.log(
+        `Workflow run table absent in workspace ${workspaceId}, skipping projection relations`,
+      );
 
       return;
     }
@@ -59,7 +60,10 @@ export class MakeWorkflowRunProjectionRelationsNullableCommand extends Provision
       [workspaceId],
     );
     await this.workspaceMigrationRunnerService.invalidateCache({
-      allFlatEntityMapsKeys: ['flatFieldMetadataMaps', 'flatObjectMetadataMaps'],
+      allFlatEntityMapsKeys: [
+        'flatFieldMetadataMaps',
+        'flatObjectMetadataMaps',
+      ],
       workspaceId,
     });
   }

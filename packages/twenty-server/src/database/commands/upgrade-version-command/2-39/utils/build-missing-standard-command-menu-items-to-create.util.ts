@@ -47,7 +47,9 @@ export const buildMissingStandardCommandMenuItemsToCreate = ({
       const definition = STANDARD_COMMAND_MENU_ITEMS[commandMenuItemName];
 
       const isAlreadyProvisioned = isDefined(
-        flatCommandMenuItemByUniversalIdentifier[definition.universalIdentifier],
+        flatCommandMenuItemByUniversalIdentifier[
+          definition.universalIdentifier
+        ],
       );
 
       const hasAvailabilityObject =

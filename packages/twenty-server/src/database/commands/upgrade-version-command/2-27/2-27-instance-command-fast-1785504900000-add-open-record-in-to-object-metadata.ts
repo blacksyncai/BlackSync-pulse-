@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.27.0', 1785504900000)
-export class AddOpenRecordInToObjectMetadataFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddOpenRecordInToObjectMetadataFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `CREATE TYPE "core"."objectMetadata_openrecordin_enum" AS ENUM('SIDE_PANEL', 'RECORD_PAGE', 'USER_CHOICE')`,

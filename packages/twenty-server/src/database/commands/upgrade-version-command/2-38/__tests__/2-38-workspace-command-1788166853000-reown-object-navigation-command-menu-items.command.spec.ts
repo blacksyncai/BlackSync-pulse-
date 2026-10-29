@@ -8,19 +8,19 @@ import { type WorkspaceCacheService } from 'src/engine/workspace-cache/services/
 import { type WorkspaceMigrationRunnerService } from 'src/engine/workspace-manager/workspace-migration/workspace-migration-runner/services/workspace-migration-runner.service';
 
 const WORKSPACE_ID = '20202020-0000-4000-8000-000000000001';
-const APPLICATION_UNIVERSAL_IDENTIFIER =
-  '20202020-0000-4000-8000-0000000000ad';
+const APPLICATION_UNIVERSAL_IDENTIFIER = '20202020-0000-4000-8000-0000000000ad';
 const OBJECT_ID = '20202020-0000-4000-8000-0000000000b1';
 const OBJECT_UNIVERSAL_IDENTIFIER = '20202020-0000-4000-8000-0000000000bb';
 
-const DERIVED_UNIVERSAL_IDENTIFIER = getSystemNavigationCommandMenuItemUniversalIdentifier({
-  objectMetadataApplicationUniversalIdentifier: APPLICATION_UNIVERSAL_IDENTIFIER,
-  objectUniversalIdentifier: OBJECT_UNIVERSAL_IDENTIFIER,
-});
+const DERIVED_UNIVERSAL_IDENTIFIER =
+  getSystemNavigationCommandMenuItemUniversalIdentifier({
+    objectMetadataApplicationUniversalIdentifier:
+      APPLICATION_UNIVERSAL_IDENTIFIER,
+    objectUniversalIdentifier: OBJECT_UNIVERSAL_IDENTIFIER,
+  });
 
-const LEGACY_UNIVERSAL_IDENTIFIER = getLegacyNavigationCommandUniversalIdentifier(
-  OBJECT_UNIVERSAL_IDENTIFIER,
-);
+const LEGACY_UNIVERSAL_IDENTIFIER =
+  getLegacyNavigationCommandUniversalIdentifier(OBJECT_UNIVERSAL_IDENTIFIER);
 
 type WorkspaceCommandMenuItem = {
   id: string;
@@ -38,7 +38,8 @@ const buildFlatCommandMenuItem = (
   engineComponentKey: EngineComponentKey.NAVIGATION,
   applicationUniversalIdentifier: APPLICATION_UNIVERSAL_IDENTIFIER,
   payload: { objectMetadataItemId: OBJECT_ID },
-  navigationTargetObjectMetadataUniversalIdentifier: OBJECT_UNIVERSAL_IDENTIFIER,
+  navigationTargetObjectMetadataUniversalIdentifier:
+    OBJECT_UNIVERSAL_IDENTIFIER,
   isSystemSideEffect: true,
   ...commandMenuItem,
 });

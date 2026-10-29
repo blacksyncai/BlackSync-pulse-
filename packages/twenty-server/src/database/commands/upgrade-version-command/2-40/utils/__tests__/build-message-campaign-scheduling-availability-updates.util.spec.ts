@@ -62,7 +62,12 @@ describe('buildMessageCampaignSchedulingAvailabilityUpdates', () => {
       now: NOW,
     });
 
-    expect(updates.map(({ conditionalAvailabilityExpression }) => conditionalAvailabilityExpression)).toEqual(
+    expect(
+      updates.map(
+        ({ conditionalAvailabilityExpression }) =>
+          conditionalAvailabilityExpression,
+      ),
+    ).toEqual(
       expect.arrayContaining([
         sendCommand.conditionalAvailabilityExpression,
         testCommand.conditionalAvailabilityExpression,

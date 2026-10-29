@@ -92,7 +92,9 @@ export class BackfillDeterministicPermissionUniversalIdentifiersCommand extends 
     ) => flatEntity.applicationId === workspaceCustomFlatApplication.id;
 
     const objectPermissionUpdates = computeUniversalIdentifierUpdates({
-      flatEntities: Object.values(flatObjectPermissionMaps.byUniversalIdentifier)
+      flatEntities: Object.values(
+        flatObjectPermissionMaps.byUniversalIdentifier,
+      )
         .filter(isDefined)
         .filter(isOwnedByWorkspaceCustomApplication),
       getUniversalIdentifier: (flatObjectPermission) =>
@@ -127,7 +129,8 @@ export class BackfillDeterministicPermissionUniversalIdentifiersCommand extends 
         getRolePermissionFlagUniversalIdentifier({
           applicationUniversalIdentifier:
             flatRolePermissionFlag.applicationUniversalIdentifier,
-          roleUniversalIdentifier: flatRolePermissionFlag.roleUniversalIdentifier,
+          roleUniversalIdentifier:
+            flatRolePermissionFlag.roleUniversalIdentifier,
           permissionFlagUniversalIdentifier:
             flatRolePermissionFlag.permissionFlagUniversalIdentifier,
         }),

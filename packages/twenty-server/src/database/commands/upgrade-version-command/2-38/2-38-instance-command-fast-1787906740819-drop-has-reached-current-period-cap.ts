@@ -8,9 +8,7 @@ import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 // BillingSubscriptionItemResolver; the column has been neither read nor written
 // since 2.32 and was only kept so a rollback to 2.31 still ran.
 @RegisteredInstanceCommand('2.38.0', 1787906740819)
-export class DropHasReachedCurrentPeriodCapFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class DropHasReachedCurrentPeriodCapFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     if (!(await isCoreTablePresent(queryRunner, 'billingSubscriptionItem'))) {
       return;

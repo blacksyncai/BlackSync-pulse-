@@ -5,8 +5,7 @@ import { ADD_CALENDAR_END_FIELD_METADATA_ID_TO_VIEW_UPGRADE_COMMAND_NAME } from 
 import { getRegisteredInstanceCommandMetadata } from 'src/engine/core-modules/upgrade/decorators/registered-instance-command.decorator';
 
 describe('AddCalendarEndFieldMetadataIdToViewFastInstanceCommand', () => {
-  const command =
-    new AddCalendarEndFieldMetadataIdToViewFastInstanceCommand();
+  const command = new AddCalendarEndFieldMetadataIdToViewFastInstanceCommand();
 
   it('is registered against the current version with a matching name', () => {
     const metadata = getRegisteredInstanceCommandMetadata(

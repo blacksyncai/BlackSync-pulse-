@@ -45,16 +45,15 @@ export class AlignMessageCampaignCommandsCommand extends ProvisionedWorkspaceCom
         now,
       });
 
-    const commandMenuItemsToCreate = buildMissingStandardCommandMenuItemsToCreate(
-      {
+    const commandMenuItemsToCreate =
+      buildMissingStandardCommandMenuItemsToCreate({
         commandMenuItemNames: ['cancelMessageCampaign'],
         flatCommandMenuItemByUniversalIdentifier:
           flatCommandMenuItemMaps.byUniversalIdentifier,
         flatObjectMetadataMaps,
         workspaceId,
         now,
-      },
-    );
+      });
 
     if (
       commandMenuItemsToUpdate.length === 0 &&

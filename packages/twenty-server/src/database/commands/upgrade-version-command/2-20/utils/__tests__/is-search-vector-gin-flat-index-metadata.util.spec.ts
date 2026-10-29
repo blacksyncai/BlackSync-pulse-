@@ -1,7 +1,4 @@
-import {
-  FieldMetadataType,
-  IndexType,
-} from 'twenty-shared/types';
+import { FieldMetadataType, IndexType } from 'twenty-shared/types';
 
 import { isSearchVectorGinFlatIndexMetadata } from 'src/database/commands/upgrade-version-command/2-20/utils/is-search-vector-gin-flat-index-metadata.util';
 import { type FlatEntityMaps } from 'src/engine/metadata-modules/flat-entity/types/flat-entity-maps.type';
@@ -91,7 +88,9 @@ describe('isSearchVectorGinFlatIndexMetadata', () => {
       applicationUniversalIdentifier: 'application-uid',
       indexType: IndexType.GIN,
       flatIndexFieldMetadatas: [
-        buildFlatIndexFieldMetadata({ fieldMetadataId: SEARCH_VECTOR_FIELD_ID }),
+        buildFlatIndexFieldMetadata({
+          fieldMetadataId: SEARCH_VECTOR_FIELD_ID,
+        }),
       ],
     });
 
@@ -131,7 +130,9 @@ describe('isSearchVectorGinFlatIndexMetadata', () => {
       applicationUniversalIdentifier: 'application-uid',
       indexType: IndexType.BTREE,
       flatIndexFieldMetadatas: [
-        buildFlatIndexFieldMetadata({ fieldMetadataId: SEARCH_VECTOR_FIELD_ID }),
+        buildFlatIndexFieldMetadata({
+          fieldMetadataId: SEARCH_VECTOR_FIELD_ID,
+        }),
       ],
     });
 
@@ -173,7 +174,9 @@ describe('isSearchVectorGinFlatIndexMetadata', () => {
       applicationUniversalIdentifier: 'application-uid',
       indexType: IndexType.GIN,
       flatIndexFieldMetadatas: [
-        buildFlatIndexFieldMetadata({ fieldMetadataId: SEARCH_VECTOR_FIELD_ID }),
+        buildFlatIndexFieldMetadata({
+          fieldMetadataId: SEARCH_VECTOR_FIELD_ID,
+        }),
         buildFlatIndexFieldMetadata({ fieldMetadataId: TEXT_FIELD_ID }),
       ],
     });

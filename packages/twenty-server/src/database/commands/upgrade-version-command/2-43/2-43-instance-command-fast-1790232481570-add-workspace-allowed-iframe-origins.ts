@@ -6,10 +6,14 @@ import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 @RegisteredInstanceCommand('2.43.0', 1790232481570)
 export class AddWorkspaceAllowedIframeOriginsFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query('ALTER TABLE "core"."workspace" ADD "allowedIframeOrigins" character varying array NOT NULL DEFAULT \'{}\'');
+    await queryRunner.query(
+      'ALTER TABLE "core"."workspace" ADD "allowedIframeOrigins" character varying array NOT NULL DEFAULT \'{}\'',
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query('ALTER TABLE "core"."workspace" DROP COLUMN "allowedIframeOrigins"');
+    await queryRunner.query(
+      'ALTER TABLE "core"."workspace" DROP COLUMN "allowedIframeOrigins"',
+    );
   }
 }

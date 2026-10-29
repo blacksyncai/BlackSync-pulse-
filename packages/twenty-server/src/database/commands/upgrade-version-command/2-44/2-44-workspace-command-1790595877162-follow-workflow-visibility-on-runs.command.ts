@@ -159,9 +159,7 @@ export class FollowWorkflowVisibilityOnRunsCommand extends ProvisionedWorkspaceC
     }
   }
 
-  private async grantWorkflowRunVisibility(
-    workspaceId: string,
-  ): Promise<void> {
+  private async grantWorkflowRunVisibility(workspaceId: string): Promise<void> {
     const schemaName = escapeIdentifier(getWorkspaceSchemaName(workspaceId));
     const parameters = [
       workspaceId,

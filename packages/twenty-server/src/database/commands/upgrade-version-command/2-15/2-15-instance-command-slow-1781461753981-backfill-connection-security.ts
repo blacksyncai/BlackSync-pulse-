@@ -11,9 +11,7 @@ import { SlowInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 // host (-> SSL_TLS). STARTTLS stays opportunistic so no account is forced onto
 // a stricter handshake than it already used.
 @RegisteredInstanceCommand('2.15.0', 1781461753981, { type: 'slow' })
-export class BackfillConnectionSecuritySlowInstanceCommand
-  implements SlowInstanceCommand
-{
+export class BackfillConnectionSecuritySlowInstanceCommand implements SlowInstanceCommand {
   async runDataMigration(dataSource: DataSource): Promise<void> {
     await dataSource.query(
       `UPDATE "core"."connectedAccount"

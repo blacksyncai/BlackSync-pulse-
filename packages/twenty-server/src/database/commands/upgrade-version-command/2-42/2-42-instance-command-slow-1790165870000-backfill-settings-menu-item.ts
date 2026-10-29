@@ -21,9 +21,7 @@ const LEGACY_SETTINGS_MENU_ITEM_POSITION = 0;
 const LEGACY_SETTINGS_MENU_ITEM_SCOPE = 'WORKSPACE';
 
 @RegisteredInstanceCommand('2.42.0', 1790165870000, { type: 'slow' })
-export class BackfillSettingsMenuItemSlowInstanceCommand
-  implements SlowInstanceCommand
-{
+export class BackfillSettingsMenuItemSlowInstanceCommand implements SlowInstanceCommand {
   async runDataMigration(dataSource: DataSource): Promise<void> {
     const legacySettingsTabRows: LegacySettingsTabRow[] =
       await dataSource.query(`

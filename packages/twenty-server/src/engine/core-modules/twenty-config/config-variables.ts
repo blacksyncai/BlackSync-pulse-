@@ -1968,6 +1968,15 @@ export class ConfigVariables {
   DEEPGRAM_API_KEY: string;
 
   @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.PLIVO_CONFIG,
+    description:
+      'Domain verified in Resend. Members whose email is on it send as themselves; others send from EMAIL_FROM_ADDRESS with replies going to them',
+    type: ConfigVariableType.STRING,
+  })
+  @IsOptional()
+  RESEND_FROM_DOMAIN: string;
+
+  @ConfigVariablesMetadata({
     group: ConfigVariablesGroup.CLOUDFLARE_CONFIG,
     isSensitive: true,
     description: 'API key for Cloudflare integration',

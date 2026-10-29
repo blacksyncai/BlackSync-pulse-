@@ -52,9 +52,7 @@ const FIELDS_WIDGET_UNIVERSAL_IDENTIFIER =
 const STANDARD_MAPS = jest
   .requireActual<
     typeof import('src/engine/workspace-manager/twenty-standard-application/utils/twenty-standard-application-all-flat-entity-maps.constant')
-  >(
-    'src/engine/workspace-manager/twenty-standard-application/utils/twenty-standard-application-all-flat-entity-maps.constant',
-  )
+  >('src/engine/workspace-manager/twenty-standard-application/utils/twenty-standard-application-all-flat-entity-maps.constant')
   .computeTwentyStandardApplicationAllFlatEntityMaps({
     now: '2026-09-23T00:00:00.000Z',
     workspaceId: WORKSPACE_ID,

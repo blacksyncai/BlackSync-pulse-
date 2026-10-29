@@ -48,60 +48,156 @@ export class AddCoreForeignKeyIndexesSlowInstanceCommand implements SlowInstance
       await queryRunner.query(query);
     }
 
-    await queryRunner.query('ALTER TABLE "core"."file" DROP CONSTRAINT "IDX_APPLICATION_PATH_WORKSPACE_ID_APPLICATION_ID_UNIQUE"');
-    await queryRunner.query('ALTER TABLE "core"."searchFieldMetadata" DROP CONSTRAINT "IDX_SEARCH_FIELD_METADATA_OBJECT_FIELD_UNIQUE"');
-    await queryRunner.query('ALTER TABLE "core"."timelineActivityType" DROP CONSTRAINT "IDX_TIMELINE_ACTIVITY_TYPE_NAME_APPLICATION_WORKSPACE_UNIQUE"');
-    await queryRunner.query('ALTER TABLE "core"."file" ADD CONSTRAINT "IDX_FILE_APPLICATION_ID_WORKSPACE_ID_PATH_UNIQUE" UNIQUE USING INDEX "IDX_FILE_APPLICATION_ID_WORKSPACE_ID_PATH_UNIQUE"');
-    await queryRunner.query('ALTER TABLE "core"."searchFieldMetadata" ADD CONSTRAINT "IDX_SEARCH_FIELD_METADATA_FIELD_OBJECT_UNIQUE" UNIQUE USING INDEX "IDX_SEARCH_FIELD_METADATA_FIELD_OBJECT_UNIQUE"');
-    await queryRunner.query('ALTER TABLE "core"."timelineActivityType" ADD CONSTRAINT "IDX_TIMELINE_ACTIVITY_TYPE_APPLICATION_WORKSPACE_NAME_UNIQUE" UNIQUE USING INDEX "IDX_TIMELINE_ACTIVITY_TYPE_APPLICATION_WORKSPACE_NAME_UNIQUE"');
-    await queryRunner.query('DROP INDEX "core"."IDX_FILE_APPLICATION_REGISTRATION_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_VIEW_WORKSPACE_ID_OBJECT_METADATA_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_PAGE_LAYOUT_WORKSPACE_ID_OBJECT_METADATA_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_SEARCH_FIELD_METADATA_WORKSPACE_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_INDEX_METADATA_WORKSPACE_ID_OBJECT_METADATA_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_FIELD_METADATA_OBJECT_METADATA_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_FIELD_METADATA_WORKSPACE_ID"');
+    await queryRunner.query(
+      'ALTER TABLE "core"."file" DROP CONSTRAINT "IDX_APPLICATION_PATH_WORKSPACE_ID_APPLICATION_ID_UNIQUE"',
+    );
+    await queryRunner.query(
+      'ALTER TABLE "core"."searchFieldMetadata" DROP CONSTRAINT "IDX_SEARCH_FIELD_METADATA_OBJECT_FIELD_UNIQUE"',
+    );
+    await queryRunner.query(
+      'ALTER TABLE "core"."timelineActivityType" DROP CONSTRAINT "IDX_TIMELINE_ACTIVITY_TYPE_NAME_APPLICATION_WORKSPACE_UNIQUE"',
+    );
+    await queryRunner.query(
+      'ALTER TABLE "core"."file" ADD CONSTRAINT "IDX_FILE_APPLICATION_ID_WORKSPACE_ID_PATH_UNIQUE" UNIQUE USING INDEX "IDX_FILE_APPLICATION_ID_WORKSPACE_ID_PATH_UNIQUE"',
+    );
+    await queryRunner.query(
+      'ALTER TABLE "core"."searchFieldMetadata" ADD CONSTRAINT "IDX_SEARCH_FIELD_METADATA_FIELD_OBJECT_UNIQUE" UNIQUE USING INDEX "IDX_SEARCH_FIELD_METADATA_FIELD_OBJECT_UNIQUE"',
+    );
+    await queryRunner.query(
+      'ALTER TABLE "core"."timelineActivityType" ADD CONSTRAINT "IDX_TIMELINE_ACTIVITY_TYPE_APPLICATION_WORKSPACE_NAME_UNIQUE" UNIQUE USING INDEX "IDX_TIMELINE_ACTIVITY_TYPE_APPLICATION_WORKSPACE_NAME_UNIQUE"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_FILE_APPLICATION_REGISTRATION_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_VIEW_WORKSPACE_ID_OBJECT_METADATA_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_PAGE_LAYOUT_WORKSPACE_ID_OBJECT_METADATA_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_SEARCH_FIELD_METADATA_WORKSPACE_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_INDEX_METADATA_WORKSPACE_ID_OBJECT_METADATA_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_FIELD_METADATA_OBJECT_METADATA_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_FIELD_METADATA_WORKSPACE_ID"',
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query('ALTER TABLE "core"."timelineActivityType" DROP CONSTRAINT "IDX_TIMELINE_ACTIVITY_TYPE_APPLICATION_WORKSPACE_NAME_UNIQUE"');
-    await queryRunner.query('ALTER TABLE "core"."searchFieldMetadata" DROP CONSTRAINT "IDX_SEARCH_FIELD_METADATA_FIELD_OBJECT_UNIQUE"');
-    await queryRunner.query('ALTER TABLE "core"."file" DROP CONSTRAINT "IDX_FILE_APPLICATION_ID_WORKSPACE_ID_PATH_UNIQUE"');
-    await queryRunner.query('DROP INDEX "core"."IDX_MESSAGE_FOLDER_MESSAGE_CHANNEL_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_MESSAGE_FOLDER_WORKSPACE_ID"');
+    await queryRunner.query(
+      'ALTER TABLE "core"."timelineActivityType" DROP CONSTRAINT "IDX_TIMELINE_ACTIVITY_TYPE_APPLICATION_WORKSPACE_NAME_UNIQUE"',
+    );
+    await queryRunner.query(
+      'ALTER TABLE "core"."searchFieldMetadata" DROP CONSTRAINT "IDX_SEARCH_FIELD_METADATA_FIELD_OBJECT_UNIQUE"',
+    );
+    await queryRunner.query(
+      'ALTER TABLE "core"."file" DROP CONSTRAINT "IDX_FILE_APPLICATION_ID_WORKSPACE_ID_PATH_UNIQUE"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_MESSAGE_FOLDER_MESSAGE_CHANNEL_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_MESSAGE_FOLDER_WORKSPACE_ID"',
+    );
     await queryRunner.query('DROP INDEX "core"."IDX_SKILL_APPLICATION_ID"');
     await queryRunner.query('DROP INDEX "core"."IDX_APP_TOKEN_USER_ID"');
     await queryRunner.query('DROP INDEX "core"."IDX_APP_TOKEN_WORKSPACE_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_VIEW_FIELD_APPLICATION_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_FIELD_METADATA_APPLICATION_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_INDEX_FIELD_METADATA_INDEX_METADATA_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_INDEX_METADATA_OBJECT_METADATA_ID_WORKSPACE_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_INDEX_METADATA_APPLICATION_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_OBJECT_METADATA_APPLICATION_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_SEARCH_FIELD_METADATA_APPLICATION_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_SEARCH_FIELD_METADATA_TS_VECTOR_FIELD_METADATA_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_COMMAND_MENU_ITEM_APPLICATION_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_PAGE_LAYOUT_APPLICATION_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_PAGE_LAYOUT_OBJECT_METADATA_ID_WORKSPACE_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_PAGE_LAYOUT_DEFAULT_TAB_TO_FOCUS_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_PAGE_LAYOUT_TAB_APPLICATION_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_PAGE_LAYOUT_WIDGET_APPLICATION_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_NAVIGATION_MENU_ITEM_APPLICATION_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_NAVIGATION_MENU_ITEM_TARGET_OBJECT_METADATA_ID"');
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_VIEW_FIELD_APPLICATION_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_FIELD_METADATA_APPLICATION_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_INDEX_FIELD_METADATA_INDEX_METADATA_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_INDEX_METADATA_OBJECT_METADATA_ID_WORKSPACE_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_INDEX_METADATA_APPLICATION_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_OBJECT_METADATA_APPLICATION_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_SEARCH_FIELD_METADATA_APPLICATION_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_SEARCH_FIELD_METADATA_TS_VECTOR_FIELD_METADATA_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_COMMAND_MENU_ITEM_APPLICATION_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_PAGE_LAYOUT_APPLICATION_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_PAGE_LAYOUT_OBJECT_METADATA_ID_WORKSPACE_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_PAGE_LAYOUT_DEFAULT_TAB_TO_FOCUS_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_PAGE_LAYOUT_TAB_APPLICATION_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_PAGE_LAYOUT_WIDGET_APPLICATION_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_NAVIGATION_MENU_ITEM_APPLICATION_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_NAVIGATION_MENU_ITEM_TARGET_OBJECT_METADATA_ID"',
+    );
     await queryRunner.query('DROP INDEX "core"."IDX_VIEW_APPLICATION_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_VIEW_OBJECT_METADATA_ID_WORKSPACE_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_VIEW_GROUP_APPLICATION_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_VIEW_FIELD_GROUP_APPLICATION_ID"');
-    await queryRunner.query('DROP INDEX "core"."IDX_LOGIC_FUNCTION_APPLICATION_ID"');
-    await queryRunner.query('ALTER TABLE "core"."timelineActivityType" ADD CONSTRAINT "IDX_TIMELINE_ACTIVITY_TYPE_NAME_APPLICATION_WORKSPACE_UNIQUE" UNIQUE ("name", "applicationId", "workspaceId")');
-    await queryRunner.query('ALTER TABLE "core"."searchFieldMetadata" ADD CONSTRAINT "IDX_SEARCH_FIELD_METADATA_OBJECT_FIELD_UNIQUE" UNIQUE ("objectMetadataId", "fieldMetadataId")');
-    await queryRunner.query('ALTER TABLE "core"."file" ADD CONSTRAINT "IDX_APPLICATION_PATH_WORKSPACE_ID_APPLICATION_ID_UNIQUE" UNIQUE ("workspaceId", "applicationId", "path")');
-    await queryRunner.query('CREATE INDEX "IDX_FIELD_METADATA_WORKSPACE_ID" ON "core"."fieldMetadata" ("workspaceId") ');
-    await queryRunner.query('CREATE INDEX "IDX_FIELD_METADATA_OBJECT_METADATA_ID" ON "core"."fieldMetadata" ("objectMetadataId") ');
-    await queryRunner.query('CREATE INDEX "IDX_INDEX_METADATA_WORKSPACE_ID_OBJECT_METADATA_ID" ON "core"."indexMetadata" ("workspaceId", "objectMetadataId") ');
-    await queryRunner.query('CREATE INDEX "IDX_SEARCH_FIELD_METADATA_WORKSPACE_ID" ON "core"."searchFieldMetadata" ("workspaceId") ');
-    await queryRunner.query('CREATE INDEX "IDX_PAGE_LAYOUT_WORKSPACE_ID_OBJECT_METADATA_ID" ON "core"."pageLayout" ("workspaceId", "objectMetadataId") WHERE ("deletedAt" IS NULL)');
-    await queryRunner.query('CREATE INDEX "IDX_VIEW_WORKSPACE_ID_OBJECT_METADATA_ID" ON "core"."view" ("workspaceId", "objectMetadataId") ');
-    await queryRunner.query('CREATE INDEX "IDX_FILE_APPLICATION_REGISTRATION_ID" ON "core"."file" ("applicationRegistrationId") ');
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_VIEW_OBJECT_METADATA_ID_WORKSPACE_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_VIEW_GROUP_APPLICATION_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_VIEW_FIELD_GROUP_APPLICATION_ID"',
+    );
+    await queryRunner.query(
+      'DROP INDEX "core"."IDX_LOGIC_FUNCTION_APPLICATION_ID"',
+    );
+    await queryRunner.query(
+      'ALTER TABLE "core"."timelineActivityType" ADD CONSTRAINT "IDX_TIMELINE_ACTIVITY_TYPE_NAME_APPLICATION_WORKSPACE_UNIQUE" UNIQUE ("name", "applicationId", "workspaceId")',
+    );
+    await queryRunner.query(
+      'ALTER TABLE "core"."searchFieldMetadata" ADD CONSTRAINT "IDX_SEARCH_FIELD_METADATA_OBJECT_FIELD_UNIQUE" UNIQUE ("objectMetadataId", "fieldMetadataId")',
+    );
+    await queryRunner.query(
+      'ALTER TABLE "core"."file" ADD CONSTRAINT "IDX_APPLICATION_PATH_WORKSPACE_ID_APPLICATION_ID_UNIQUE" UNIQUE ("workspaceId", "applicationId", "path")',
+    );
+    await queryRunner.query(
+      'CREATE INDEX "IDX_FIELD_METADATA_WORKSPACE_ID" ON "core"."fieldMetadata" ("workspaceId") ',
+    );
+    await queryRunner.query(
+      'CREATE INDEX "IDX_FIELD_METADATA_OBJECT_METADATA_ID" ON "core"."fieldMetadata" ("objectMetadataId") ',
+    );
+    await queryRunner.query(
+      'CREATE INDEX "IDX_INDEX_METADATA_WORKSPACE_ID_OBJECT_METADATA_ID" ON "core"."indexMetadata" ("workspaceId", "objectMetadataId") ',
+    );
+    await queryRunner.query(
+      'CREATE INDEX "IDX_SEARCH_FIELD_METADATA_WORKSPACE_ID" ON "core"."searchFieldMetadata" ("workspaceId") ',
+    );
+    await queryRunner.query(
+      'CREATE INDEX "IDX_PAGE_LAYOUT_WORKSPACE_ID_OBJECT_METADATA_ID" ON "core"."pageLayout" ("workspaceId", "objectMetadataId") WHERE ("deletedAt" IS NULL)',
+    );
+    await queryRunner.query(
+      'CREATE INDEX "IDX_VIEW_WORKSPACE_ID_OBJECT_METADATA_ID" ON "core"."view" ("workspaceId", "objectMetadataId") ',
+    );
+    await queryRunner.query(
+      'CREATE INDEX "IDX_FILE_APPLICATION_REGISTRATION_ID" ON "core"."file" ("applicationRegistrationId") ',
+    );
   }
 }

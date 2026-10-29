@@ -94,14 +94,13 @@ export const buildSearchFieldMetadataBackfillOperations = ({
       return;
     }
 
-    const universalFlatSearchFieldMetadata = buildFlatSearchFieldMetadataForField(
-      {
+    const universalFlatSearchFieldMetadata =
+      buildFlatSearchFieldMetadataForField({
         flatObjectMetadata,
         flatFieldMetadata,
         tsVectorFlatFieldMetadata,
         position,
-      },
-    );
+      });
 
     // Second dedupe layer, immune to metadata-id churn: rows created by a previous
     // partial run of this command carry the same deterministic universal identifier

@@ -192,8 +192,7 @@ export class RepairActivityTargetsJunctionTargetCommand extends ProvisionedWorks
 
     if (
       junctionTargetFieldMetadatas.some(
-        ({ id }) =>
-          id === lockedJunctionRelationSettings.junctionTargetFieldId,
+        ({ id }) => id === lockedJunctionRelationSettings.junctionTargetFieldId,
       )
     ) {
       return false;

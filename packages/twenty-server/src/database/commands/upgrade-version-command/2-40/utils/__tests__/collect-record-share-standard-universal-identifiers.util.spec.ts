@@ -13,9 +13,9 @@ describe('collectRecordShareStandardUniversalIdentifiers', () => {
       twentyStandardApplicationId: v4(),
     });
 
-  const universalIdentifiers = collectRecordShareStandardUniversalIdentifiers(
-    { standardAllFlatEntityMaps },
-  );
+  const universalIdentifiers = collectRecordShareStandardUniversalIdentifiers({
+    standardAllFlatEntityMaps,
+  });
 
   it('should collect the recordShare standard object only', () => {
     expect(universalIdentifiers.objectMetadata).toEqual([

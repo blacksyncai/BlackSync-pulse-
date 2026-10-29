@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.19.0', 1783094691548)
-export class AddPendingMimeCheckToFileFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddPendingMimeCheckToFileFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `ALTER TABLE "core"."file" DROP CONSTRAINT IF EXISTS "CHK_FILE_PENDING_MIME_OCTET_STREAM"`,

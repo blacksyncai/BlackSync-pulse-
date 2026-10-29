@@ -28,7 +28,8 @@ jest.mock(
 const generateFlatIndexMetadataWithNameOrThrowMock =
   generateFlatIndexMetadataWithNameOrThrow as jest.Mock;
 const deleteIndexMetadataMock = deleteIndexMetadata as jest.Mock;
-const dropIndexFromWorkspaceSchemaMock = dropIndexFromWorkspaceSchema as jest.Mock;
+const dropIndexFromWorkspaceSchemaMock =
+  dropIndexFromWorkspaceSchema as jest.Mock;
 const doesPhysicalIndexExistMock = doesPhysicalIndexExist as jest.Mock;
 const getPhysicalIndexDefinitionMock = getPhysicalIndexDefinition as jest.Mock;
 
@@ -81,7 +82,11 @@ const buildFlatEntityMaps = (indexes: IndexFixture[]) => {
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return { flatIndexMaps, flatObjectMetadataMaps, flatFieldMetadataMaps } as any;
+  return {
+    flatIndexMaps,
+    flatObjectMetadataMaps,
+    flatFieldMetadataMaps,
+  } as any;
 };
 
 const buildQueryRunner = (): {
@@ -244,7 +249,10 @@ describe('NormalizeLegacyIndexNamesCommand', () => {
       expect.objectContaining({ indexName: 'legacyB' }),
     );
     expect(deleteIndexMetadataMock).toHaveBeenCalledWith(
-      expect.objectContaining({ entityId: 'index-b', workspaceId: WORKSPACE_ID }),
+      expect.objectContaining({
+        entityId: 'index-b',
+        workspaceId: WORKSPACE_ID,
+      }),
     );
   });
 

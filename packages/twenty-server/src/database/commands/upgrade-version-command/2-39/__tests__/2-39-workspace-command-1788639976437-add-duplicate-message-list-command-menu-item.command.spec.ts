@@ -64,7 +64,9 @@ describe('AddDuplicateMessageListCommandMenuItemCommand', () => {
             twentyStandardFlatApplication: STANDARD_APPLICATION,
           }),
       } as unknown as ApplicationService,
-      { getOrRecompute: getOrRecomputeMock } as unknown as WorkspaceCacheService,
+      {
+        getOrRecompute: getOrRecomputeMock,
+      } as unknown as WorkspaceCacheService,
       {
         validateBuildAndRunWorkspaceMigration:
           validateBuildAndRunWorkspaceMigrationMock,

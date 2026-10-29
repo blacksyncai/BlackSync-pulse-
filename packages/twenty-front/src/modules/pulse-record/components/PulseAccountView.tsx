@@ -1,5 +1,9 @@
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
 import { PulseCustomFieldsSection } from '@/pulse-customize/components/PulseCustomFieldsSection';
+import {
+  PulseEmailComposer,
+  type PulseEmailRecipient,
+} from '@/pulse-outreach/components/PulseEmailComposer';
 import { PulseNoteComposer } from '@/pulse-record/components/PulseNoteComposer';
 import { PulseTimelineCard } from '@/pulse-record/components/PulseTimelineCard';
 import {
@@ -40,7 +44,7 @@ import { themeCssVariables } from 'twenty-ui/theme';
 
 type TimelineFilter = 'all' | 'conversations' | 'notes' | 'tasks';
 type LeftTab = 'details' | 'files';
-type Composer = 'note' | 'task' | null;
+type Composer = 'note' | 'task' | 'email' | null;
 
 const FILTER_KINDS: Record<TimelineFilter, PulseTimelineItem['kind'][]> = {
   all: ['call', 'email', 'sms', 'note', 'task'],
@@ -417,9 +421,6 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
 
   const accountName = account?.name ?? '';
   const primaryContact = contacts[0];
-  const primaryEmail = contacts
-    .map((contact) => contact.emails?.primaryEmail)
-    .find((email) => isDefined(email) && email.length > 0);
   const primaryPhone = contacts.map(formatPhone).find(isDefined);
   const openTasks = timeline.filter(
     (item) => item.kind === 'task' && !item.isDone,
@@ -433,11 +434,28 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
         `${item.title} ${item.body}`.toLowerCase().includes(query)),
   );
 
-  const {
-    call: handleCall,
-    email: handleEmail,
-    text: handleSms,
-  } = usePulseContactActions();
+  const { call: handleCall, text: handleSms } = usePulseContactActions();
+  const [emailPersonId, setEmailPersonId] = useState<string | null>(null);
+  const emailRecipients: PulseEmailRecipient[] = contacts
+    .filter((contact) => isDefined(contact.emails?.primaryEmail))
+    .map((contact) => ({
+      personId: contact.id,
+      email: contact.emails?.primaryEmail ?? '',
+      firstName: contact.name?.firstName ?? '',
+      lastName: contact.name?.lastName ?? '',
+    }))
+    .filter((recipient) => recipient.email.length > 0)
+    .sort(
+      (left, right) =>
+        Number(right.personId === emailPersonId) -
+        Number(left.personId === emailPersonId),
+    );
+
+  const openEmail = (personId: string | null) => {
+    setEmailPersonId(personId);
+    setComposer('email');
+    setFilter('all');
+  };
 
   const handleMeeting = () => {
     const guests = contacts
@@ -557,7 +575,8 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
           </StyledActionButton>
           <StyledActionButton
             type="button"
-            onClick={() => handleEmail(primaryEmail)}
+            aria-pressed={composer === 'email'}
+            onClick={() => openEmail(null)}
           >
             <IconMail size={16} />
             {t`Email`}
@@ -733,7 +752,6 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
                   ) : (
                     contacts.map((contact) => {
                       const phone = formatPhone(contact);
-                      const email = contact.emails?.primaryEmail;
 
                       return (
                         <StyledLine key={contact.id}>
@@ -747,7 +765,7 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
                           <StyledIconButton
                             type="button"
                             aria-label={t`Email`}
-                            onClick={() => handleEmail(email)}
+                            onClick={() => openEmail(contact.id)}
                           >
                             <IconMail size={16} />
                           </StyledIconButton>
@@ -834,6 +852,14 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
             {composer === 'note' && (
               <PulseNoteComposer
                 companyId={companyId}
+                onDone={handleComposerDone}
+              />
+            )}
+            {composer === 'email' && (
+              <PulseEmailComposer
+                key={emailPersonId ?? 'primary'}
+                recipients={emailRecipients}
+                companyName={accountName}
                 onDone={handleComposerDone}
               />
             )}

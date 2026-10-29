@@ -81,7 +81,9 @@ export class ReconcileStandardSkillsCommand extends ProvisionedWorkspaceCommandR
       existingSkills
         .filter(
           (existingSkill) =>
-            !universalIdentifiersToDelete.has(existingSkill.universalIdentifier),
+            !universalIdentifiersToDelete.has(
+              existingSkill.universalIdentifier,
+            ),
         )
         .map((existingSkill) => existingSkill.name),
     );

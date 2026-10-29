@@ -14,7 +14,8 @@ const SEND_COMMAND_MENU_ITEM = {
   universalIdentifier:
     STANDARD_COMMAND_MENU_ITEMS.sendMessageCampaign.universalIdentifier,
   applicationId: APPLICATION_ID,
-  applicationUniversalIdentifier: TWENTY_STANDARD_APPLICATION.universalIdentifier,
+  applicationUniversalIdentifier:
+    TWENTY_STANDARD_APPLICATION.universalIdentifier,
 };
 
 const MESSAGE_CAMPAIGN_OBJECT = {
@@ -22,7 +23,9 @@ const MESSAGE_CAMPAIGN_OBJECT = {
   universalIdentifier: STANDARD_OBJECTS.messageCampaign.universalIdentifier,
 } as FlatObjectMetadata;
 
-const buildFlatObjectMetadataMaps = (flatObjectMetadata?: FlatObjectMetadata) => ({
+const buildFlatObjectMetadataMaps = (
+  flatObjectMetadata?: FlatObjectMetadata,
+) => ({
   ...createEmptyFlatEntityMaps(),
   byUniversalIdentifier: flatObjectMetadata
     ? { [flatObjectMetadata.universalIdentifier]: flatObjectMetadata }

@@ -638,8 +638,7 @@ describe('buildSearchFieldMetadataBackfillOperations', () => {
     const existingSearchFieldMetadata = buildSearchFieldMetadata({
       id: 'existing-search-field-id',
       universalIdentifier: getSearchFieldUniversalIdentifier({
-        applicationUniversalIdentifier:
-          CUSTOM_APPLICATION_UNIVERSAL_IDENTIFIER,
+        applicationUniversalIdentifier: CUSTOM_APPLICATION_UNIVERSAL_IDENTIFIER,
         fieldMetadataUniversalIdentifier: nameField.universalIdentifier,
       }),
       objectMetadataId: 'stale-object-metadata-id',

@@ -5,9 +5,7 @@ import { SlowInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/
 import { getWorkspaceSchemaName } from 'src/engine/workspace-datasource/utils/get-workspace-schema-name.util';
 
 @RegisteredInstanceCommand('2.21.0', 1783934147089, { type: 'slow' })
-export class BackfillWorkspaceDatabaseSchemaSlowInstanceCommand
-  implements SlowInstanceCommand
-{
+export class BackfillWorkspaceDatabaseSchemaSlowInstanceCommand implements SlowInstanceCommand {
   // Schema names are deterministic from the workspace id, so we backfill them
   // unconditionally — even if the schema doesn't exist yet in Postgres — which
   // lets up() add the check constraint fully validated.

@@ -55,12 +55,15 @@ export class AddCalendarEventSummaryTabCommand extends ProvisionedWorkspaceComma
         { workspaceId },
       );
 
-    const { flatPageLayoutMaps, flatPageLayoutTabMaps, flatPageLayoutWidgetMaps } =
-      await this.workspaceCacheService.getOrRecompute(workspaceId, [
-        'flatPageLayoutMaps',
-        'flatPageLayoutTabMaps',
-        'flatPageLayoutWidgetMaps',
-      ]);
+    const {
+      flatPageLayoutMaps,
+      flatPageLayoutTabMaps,
+      flatPageLayoutWidgetMaps,
+    } = await this.workspaceCacheService.getOrRecompute(workspaceId, [
+      'flatPageLayoutMaps',
+      'flatPageLayoutTabMaps',
+      'flatPageLayoutWidgetMaps',
+    ]);
 
     const existingPageLayout =
       flatPageLayoutMaps.byUniversalIdentifier[

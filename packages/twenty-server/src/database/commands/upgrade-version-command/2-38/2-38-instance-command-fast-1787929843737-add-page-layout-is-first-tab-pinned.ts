@@ -4,9 +4,7 @@ import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decor
 import { FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
 @RegisteredInstanceCommand('2.38.0', 1787929843737)
-export class AddPageLayoutIsFirstTabPinnedFastInstanceCommand
-  implements FastInstanceCommand
-{
+export class AddPageLayoutIsFirstTabPinnedFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `ALTER TABLE "core"."pageLayout" ADD COLUMN IF NOT EXISTS "isFirstTabPinned" boolean NOT NULL DEFAULT true`,

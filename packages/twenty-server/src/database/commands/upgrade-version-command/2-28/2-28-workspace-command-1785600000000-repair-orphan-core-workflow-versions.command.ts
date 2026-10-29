@@ -47,17 +47,15 @@ export class RepairOrphanCoreWorkflowVersionsCommand extends ProvisionedWorkspac
       // means it was never provisioned, so there is nothing to repair and the
       // orphan query below would fail to resolve its schema table. Skip cleanly
       // like the sibling backfill commands rather than aborting the upgrade.
-      await this.workspaceOrmManager.executeInWorkspaceContext(
-        async () => {
-          const workflowVersionRepository =
-            this.workspaceOrmManager.getRepository<WorkflowVersionWorkspaceEntity>('workflowVersion',
-              { shouldBypassPermissionChecks: true },
-            );
+      await this.workspaceOrmManager.executeInWorkspaceContext(async () => {
+        const workflowVersionRepository =
+          this.workspaceOrmManager.getRepository<WorkflowVersionWorkspaceEntity>(
+            'workflowVersion',
+            { shouldBypassPermissionChecks: true },
+          );
 
-          return workflowVersionRepository.count();
-        },
-        buildSystemAuthContext(workspaceId),
-      );
+        return workflowVersionRepository.count();
+      }, buildSystemAuthContext(workspaceId));
     } catch (error) {
       if (isWorkspaceObjectNotFoundError(error)) {
         return;

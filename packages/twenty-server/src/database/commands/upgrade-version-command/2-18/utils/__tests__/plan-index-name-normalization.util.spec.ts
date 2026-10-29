@@ -5,7 +5,10 @@ import {
 
 const buildStatus = (
   overrides: Partial<FlatIndexNameStatus> &
-    Pick<FlatIndexNameStatus, 'indexMetadataId' | 'currentName' | 'expectedName'>,
+    Pick<
+      FlatIndexNameStatus,
+      'indexMetadataId' | 'currentName' | 'expectedName'
+    >,
 ): FlatIndexNameStatus => ({
   objectMetadataId: 'object-1',
   ...overrides,
