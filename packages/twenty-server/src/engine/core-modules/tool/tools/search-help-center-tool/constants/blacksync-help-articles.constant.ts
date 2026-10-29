@@ -18,7 +18,7 @@ export const BLACKSYNC_HELP_ARTICLES: BlackSyncHelpArticle[] = [
       'blacksync',
     ],
     content:
-      'BlackSync Cloud is the CRM made by BlackSync AI. It was founded by Hamza Basal and Rook Burri. It brings leads, deals, calls, emails, texts, tasks and AI together in one place, with a built-in phone, power dialer, email sequences and an AI assistant.',
+      'BlackSync Cloud is the CRM made by BlackSync AI. It was founded by Hamza Basal and Rithvik Burri. It brings leads, deals, calls, emails, texts, tasks and AI together in one place, with a built-in phone, power dialer, email sequences and an AI assistant.',
   },
   {
     title: 'Leads and Smart Views',

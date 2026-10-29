@@ -5,7 +5,7 @@ describe('searchBlackSyncHelpArticles', () => {
     const [first] = searchBlackSyncHelpArticles('who built this crm');
 
     expect(first.title).toBe('About BlackSync Cloud');
-    expect(first.content).toContain('Hamza Basal and Rook Burri');
+    expect(first.content).toContain('Hamza Basal and Rithvik Burri');
   });
 
   it('finds the power dialer article', () => {
