@@ -30,6 +30,8 @@ export type PulseLeadRow = {
 };
 
 const CALL_TITLE_PATTERN = '%call ·%';
+// The lead summary written by the Close import is not a touch.
+const IMPORT_SUMMARY_TITLE = 'Imported from Close';
 
 // One query computes the activity rollups a sales list needs, which would otherwise
 // take thousands of per-record lookups from the browser.
@@ -85,7 +87,7 @@ export class PulseLeadsService {
            max("createdAt") FILTER (WHERE title ILIKE $1) AS last_call,
            count(DISTINCT id) FILTER (WHERE title ILIKE $1)::int AS call_count
          FROM note_links
-         WHERE company_id IS NOT NULL
+         WHERE company_id IS NOT NULL AND title <> $2
          GROUP BY company_id
        ),
        tasks AS (
@@ -129,7 +131,7 @@ export class PulseLeadsService {
        WHERE c."deletedAt" IS NULL
        ORDER BY COALESCE(notes.last_activity, c."createdAt") DESC
        LIMIT 5000`,
-      [CALL_TITLE_PATTERN],
+      [CALL_TITLE_PATTERN, IMPORT_SUMMARY_TITLE],
     );
 
     return rows;
