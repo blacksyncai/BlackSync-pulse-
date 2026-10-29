@@ -1,4 +1,5 @@
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
+import { PulseCustomFieldsSection } from '@/pulse-customize/components/PulseCustomFieldsSection';
 import { PulseNoteComposer } from '@/pulse-record/components/PulseNoteComposer';
 import { PulseTimelineCard } from '@/pulse-record/components/PulseTimelineCard';
 import {
@@ -641,6 +642,10 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
                       )}
                     </StyledLineText>
                   </StyledLine>
+                  <PulseCustomFieldsSection
+                    objectNameSingular={CoreObjectNameSingular.Company}
+                    recordId={companyId}
+                  />
                 </StyledSection>
 
                 <StyledSection>

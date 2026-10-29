@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { PulseCrmModule } from 'src/engine/core-modules/pulse-crm/pulse-crm.module';
 import { CloseImportModule } from 'src/engine/core-modules/close-import/close-import.module';
 import { WorkspaceDomainsModule } from 'src/engine/core-modules/domain/workspace-domains/workspace-domains.module';
 import { KeyValuePairModule } from 'src/engine/core-modules/key-value-pair/key-value-pair.module';
@@ -14,6 +15,7 @@ import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.ent
     TypeOrmModule.forFeature([WorkspaceEntity]),
     KeyValuePairModule,
     CloseImportModule,
+    PulseCrmModule,
     WorkspaceDomainsModule,
   ],
   providers: [

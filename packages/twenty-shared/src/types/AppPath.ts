@@ -21,6 +21,9 @@ export enum AppPath {
   PulsePipelines = '/pipelines',
   PulseOpportunities = '/pipeline',
   PulseTodo = '/todo',
+  PulseLeads = '/leads',
+  PulseCustomize = '/customize',
+  PulseOutreach = '/outreach',
   Index = '/',
   // Mobile only: the navigation menu is a page there rather than a drawer.
   Home = '/home',

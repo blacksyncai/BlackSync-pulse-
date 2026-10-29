@@ -2,11 +2,15 @@ import { NavigationDrawerOpenedSection } from '@/navigation-menu-item/display/se
 import { NavigationDrawerWorkspaceSectionSkeletonLoader } from '@/object-metadata/components/NavigationDrawerWorkspaceSectionSkeletonLoader';
 import { PulseLiquidSidebar } from '@/pulse-navigation/components/PulseLiquidSidebar';
 import { PulseNavigationSection } from '@/pulse-navigation/components/PulseNavigationSection';
+import { NavigationDrawerSectionTitle } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerSectionTitle';
 
 import { styled } from '@linaria/react';
-import { lazy, Suspense } from 'react';
+import { useLingui } from '@lingui/react/macro';
+import { lazy, Suspense, useState } from 'react';
 
 import { themeCssVariables } from 'twenty-ui/theme';
+
+const MORE_OPEN_STORAGE_KEY = 'pulse-nav-more-open';
 
 const FavoritesSectionDispatcher = lazy(() =>
   import('@/navigation-menu-item/display/sections/favorites/components/FavoritesSectionDispatcher').then(
@@ -30,16 +34,52 @@ const StyledScrollableItemsContainer = styled.div`
   gap: ${themeCssVariables.spacing[3]};
 `;
 
+const readMoreOpen = () => {
+  try {
+    return localStorage.getItem(MORE_OPEN_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
 export const MainNavigationDrawerScrollableItems = () => {
+  const { t } = useLingui();
+  const [isMoreOpen, setIsMoreOpen] = useState(readMoreOpen);
+
+  const toggleMore = () => {
+    const next = !isMoreOpen;
+
+    setIsMoreOpen(next);
+
+    try {
+      localStorage.setItem(MORE_OPEN_STORAGE_KEY, String(next));
+    } catch {
+      // Remembering the toggle is a convenience only.
+    }
+  };
+
   return (
     <PulseLiquidSidebar>
       <StyledScrollableItemsContainer>
         <PulseNavigationSection />
-        <NavigationDrawerOpenedSection />
-        <Suspense fallback={<NavigationDrawerWorkspaceSectionSkeletonLoader />}>
-          <FavoritesSectionDispatcher />
-          <WorkspaceSectionDispatcher />
-        </Suspense>
+        <div>
+          <NavigationDrawerSectionTitle
+            label={t`More`}
+            isOpen={isMoreOpen}
+            onClick={toggleMore}
+          />
+          {isMoreOpen && (
+            <StyledScrollableItemsContainer>
+              <NavigationDrawerOpenedSection />
+              <Suspense
+                fallback={<NavigationDrawerWorkspaceSectionSkeletonLoader />}
+              >
+                <FavoritesSectionDispatcher />
+                <WorkspaceSectionDispatcher />
+              </Suspense>
+            </StyledScrollableItemsContainer>
+          )}
+        </div>
       </StyledScrollableItemsContainer>
     </PulseLiquidSidebar>
   );

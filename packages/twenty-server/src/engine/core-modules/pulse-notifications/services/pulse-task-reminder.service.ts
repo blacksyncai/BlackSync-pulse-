@@ -5,6 +5,7 @@ import { isDefined } from 'twenty-shared/utils';
 import { Between, In, IsNull, MoreThanOrEqual, Not } from 'typeorm';
 
 import { PulsePipelineProvisioningService } from 'src/engine/core-modules/close-import/services/pulse-pipeline-provisioning.service';
+import { PulseSettingsService } from 'src/engine/core-modules/pulse-crm/services/pulse-settings.service';
 import { WorkspaceDomainsService } from 'src/engine/core-modules/domain/workspace-domains/services/workspace-domains.service';
 import { EmailService } from 'src/engine/core-modules/email/email.service';
 import { KeyValuePairType } from 'src/engine/core-modules/key-value-pair/key-value-pair.entity';
@@ -21,7 +22,6 @@ import { TaskWorkspaceEntity } from 'src/modules/task/standard-objects/task.work
 import { WorkspaceMemberWorkspaceEntity } from 'src/modules/workspace-member/standard-objects/workspace-member.workspace-entity';
 
 const SENT_KEY = 'pulse-task-reminders:sent';
-const DUE_SOON_MS = 15 * 60 * 1000;
 // Reminders the cron missed (worker restarts, a slow run) still go out within this window.
 const DUE_LATE_MS = 60 * 60 * 1000;
 const ASSIGNED_LOOKBACK_MS = 30 * 60 * 1000;
@@ -33,6 +33,18 @@ const TASK_PRIORITY_OPTIONS = [
   { label: 'Normal', color: 'blue' },
   { label: 'Low', color: 'gray' },
 ];
+
+type NotificationPreferences = {
+  emailDueReminders: boolean;
+  emailAssignments: boolean;
+  reminderLeadMinutes: number;
+};
+
+const DEFAULT_PREFERENCES: NotificationPreferences = {
+  emailDueReminders: true,
+  emailAssignments: true,
+  reminderLeadMinutes: 15,
+};
 
 type PendingReminder = {
   key: string;
@@ -52,11 +64,24 @@ export class PulseTaskReminderService {
     private readonly workspaceDomainsService: WorkspaceDomainsService,
     private readonly twentyConfigService: TwentyConfigService,
     private readonly pulsePipelineProvisioningService: PulsePipelineProvisioningService,
+    private readonly pulseSettingsService: PulseSettingsService,
   ) {}
 
   async sendWorkspaceReminders(workspace: WorkspaceEntity): Promise<void> {
     await this.ensureTaskPriorityField(workspace.id);
 
+    const preferences = {
+      ...DEFAULT_PREFERENCES,
+      ...((await this.pulseSettingsService.get<
+        Partial<NotificationPreferences>
+      >(workspace.id, 'notificationPreferences')) ?? {}),
+    };
+
+    if (!preferences.emailDueReminders && !preferences.emailAssignments) {
+      return;
+    }
+
+    const dueSoonMs = preferences.reminderLeadMinutes * 60 * 1000;
     const now = Date.now();
     const sent = await this.readSent(workspace.id);
     const isUnsent = (key: string) => !isDefined(sent[key]);
@@ -77,7 +102,7 @@ export class PulseTaskReminderService {
             assigneeId: Not(IsNull()),
             dueAt: Between(
               new Date(now - DUE_LATE_MS),
-              new Date(now + DUE_SOON_MS),
+              new Date(now + dueSoonMs),
             ),
           },
         }),
@@ -90,7 +115,7 @@ export class PulseTaskReminderService {
       ]);
 
       const pending: PendingReminder[] = [
-        ...newTasks
+        ...(preferences.emailAssignments ? newTasks : [])
           .filter(
             (task) => task.createdBy?.workspaceMemberId !== task.assigneeId,
           )
@@ -99,7 +124,7 @@ export class PulseTaskReminderService {
             kind: 'assigned' as const,
             task,
           })),
-        ...dueTasks.map((task) => ({
+        ...(preferences.emailDueReminders ? dueTasks : []).map((task) => ({
           key: `due:${task.id}:${new Date(task.dueAt ?? 0).getTime()}`,
           kind: 'due' as const,
           task,
