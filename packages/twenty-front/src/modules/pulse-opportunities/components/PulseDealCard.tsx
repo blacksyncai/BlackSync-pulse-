@@ -1,3 +1,5 @@
+import { PulseLastContact } from '@/pulse-leads/components/PulseLastContact';
+import { type PulseLead } from '@/pulse-leads/types/PulseLead';
 import { type PulseBoardDeal } from '@/pulse-opportunities/hooks/usePulseBoardDeals';
 import { type PulsePipeline } from '@/pulse-pipelines/hooks/usePulsePipelines';
 import {
@@ -258,6 +260,7 @@ type PulseDealCardProps = {
   onOpen: (deal: PulseBoardDeal) => void;
   onSave: (deal: PulseBoardDeal, update: PulseDealUpdate) => Promise<void>;
   onDelete: (deal: PulseBoardDeal) => void;
+  lastContact?: PulseLead;
 };
 
 export const PulseDealCard = ({
@@ -267,6 +270,7 @@ export const PulseDealCard = ({
   onOpen,
   onSave,
   onDelete,
+  lastContact,
 }: PulseDealCardProps) => {
   const { t } = useLingui();
   const { call, email, text } = usePulseContactActions();
@@ -479,10 +483,16 @@ export const PulseDealCard = ({
           )}
           {fields.lastActivity && (
             <StyledRow>
-              <IconClock size={15} />
-              <StyledRowText>
-                {t`Updated ${formatRelativeDate(deal.updatedAt)}`}
-              </StyledRowText>
+              {isDefined(deal.company) ? (
+                <PulseLastContact lead={lastContact} now={Date.now()} />
+              ) : (
+                <>
+                  <IconClock size={15} />
+                  <StyledRowText>
+                    {t`Updated ${formatRelativeDate(deal.updatedAt)}`}
+                  </StyledRowText>
+                </>
+              )}
             </StyledRow>
           )}
           {fields.note && note.length > 0 && <StyledNote>{note}</StyledNote>}

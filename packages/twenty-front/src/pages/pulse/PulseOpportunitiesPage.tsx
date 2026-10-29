@@ -10,6 +10,7 @@ import {
   type PulseBoardDeal,
   usePulseBoardDeals,
 } from '@/pulse-opportunities/hooks/usePulseBoardDeals';
+import { usePulseLeads } from '@/pulse-leads/hooks/usePulseLeads';
 import { usePulsePipelines } from '@/pulse-pipelines/hooks/usePulsePipelines';
 import { useOpenRecordInSidePanel } from '@/side-panel/hooks/useOpenRecordInSidePanel';
 import { PageCardLayout } from '@/ui/layout/page/components/PageCardLayout';
@@ -198,6 +199,8 @@ export const PulseOpportunitiesPage = () => {
     objectNameSingular: CoreObjectNameSingular.Opportunity,
   });
   const { openRecordInSidePanel } = useOpenRecordInSidePanel();
+  const { leads } = usePulseLeads();
+  const leadById = new Map(leads.map((lead) => [lead.id, lead]));
   const [overStage, setOverStage] = useState<string | null>(null);
 
   if (!isDefined(selectedPipeline)) {
@@ -349,6 +352,11 @@ export const PulseOpportunitiesPage = () => {
                       onOpen={handleOpen}
                       onSave={handleSave}
                       onDelete={handleDelete}
+                      lastContact={
+                        isDefined(deal.company)
+                          ? leadById.get(deal.company.id)
+                          : undefined
+                      }
                     />
                   ))}
                   {stageDeals.length === 0 && (

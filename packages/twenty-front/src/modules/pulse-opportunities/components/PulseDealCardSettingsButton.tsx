@@ -91,7 +91,7 @@ export const PulseDealCardSettingsButton = () => {
     { field: 'owner', label: t`Owner` },
     { field: 'website', label: t`Website` },
     { field: 'closeDate', label: t`Estimated close date` },
-    { field: 'lastActivity', label: t`Last updated` },
+    { field: 'lastActivity', label: t`Last contacted` },
     { field: 'note', label: t`Note` },
   ];
 

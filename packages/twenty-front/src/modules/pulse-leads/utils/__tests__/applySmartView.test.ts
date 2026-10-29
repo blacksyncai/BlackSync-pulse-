@@ -15,6 +15,7 @@ const buildLead = (overrides: Partial<PulseLead>): PulseLead => ({
   contactCount: 1,
   primaryContact: null,
   lastActivityAt: null,
+  lastActivityTitle: null,
   lastCallAt: null,
   callCount: 0,
   nextTaskAt: null,

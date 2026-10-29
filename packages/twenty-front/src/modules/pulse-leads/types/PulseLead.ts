@@ -16,6 +16,7 @@ export type PulseLead = {
   contactCount: number;
   primaryContact: PulseLeadContact | null;
   lastActivityAt: string | null;
+  lastActivityTitle: string | null;
   lastCallAt: string | null;
   callCount: number;
   nextTaskAt: string | null;

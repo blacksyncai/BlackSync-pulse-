@@ -36,7 +36,7 @@ export const PulseDealCardFieldsEditor = () => {
     { id: 'value', label: t`Deal value` },
     { id: 'contact', label: t`Contact with call/email/text` },
     { id: 'closeDate', label: t`Close date` },
-    { id: 'lastActivity', label: t`Last updated` },
+    { id: 'lastActivity', label: t`Last contacted (call, email, text)` },
     { id: 'owner', label: t`Owner` },
     { id: 'website', label: t`Website` },
     { id: 'note', label: t`Deal note` },

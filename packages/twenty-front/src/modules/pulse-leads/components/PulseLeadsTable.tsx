@@ -1,3 +1,4 @@
+import { PulseLastContact } from '@/pulse-leads/components/PulseLastContact';
 import { PulseLeadLogo } from '@/pulse-leads/components/PulseLeadLogo';
 import { PulseLeadStatusSelect } from '@/pulse-leads/components/PulseLeadStatusSelect';
 import { type LeadStatusOption } from '@/pulse-leads/hooks/useLeadStatusOptions';
@@ -357,9 +358,7 @@ export const PulseLeadsTable = ({
                 </StyledIconButton>
               )}
             </StyledContactCell>
-            <StyledSecondary>
-              {formatRelativeTime(lead.lastActivityAt, now) ?? t`Never`}
-            </StyledSecondary>
+            <PulseLastContact lead={lead} now={now} isCompact />
             <StyledSecondary>
               {formatRelativeTime(lead.lastCallAt, now) ?? '—'}
             </StyledSecondary>

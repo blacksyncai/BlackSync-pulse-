@@ -21,6 +21,7 @@ export type PulseLeadRow = {
     phone: string | null;
   } | null;
   lastActivityAt: string | null;
+  lastActivityTitle: string | null;
   lastCallAt: string | null;
   callCount: number;
   nextTaskAt: string | null;
@@ -84,6 +85,7 @@ export class PulseLeadsService {
        notes AS (
          SELECT company_id,
            max("createdAt") AS last_activity,
+           (array_agg(title ORDER BY "createdAt" DESC))[1] AS last_title,
            max("createdAt") FILTER (WHERE title ILIKE $1) AS last_call,
            count(DISTINCT id) FILTER (WHERE title ILIKE $1)::int AS call_count
          FROM note_links
@@ -117,6 +119,7 @@ export class PulseLeadsService {
          COALESCE(people.contact_count, 0) AS "contactCount",
          people.primary_contact AS "primaryContact",
          notes.last_activity AS "lastActivityAt",
+         notes.last_title AS "lastActivityTitle",
          notes.last_call AS "lastCallAt",
          COALESCE(notes.call_count, 0) AS "callCount",
          tasks.next_task AS "nextTaskAt",
