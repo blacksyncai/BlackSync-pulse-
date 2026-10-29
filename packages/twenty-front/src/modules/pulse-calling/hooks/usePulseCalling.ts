@@ -110,6 +110,12 @@ export const usePulseCalling = () => {
         errorMessage: typeof reason === 'string' ? reason : null,
       });
     });
+    client.on('onPermissionDenied', () =>
+      setCall({
+        status: 'failed',
+        errorMessage: 'Calling is not allowed for this phone line',
+      }),
+    );
     client.on('onMediaPermission', (event: { status?: string }) => {
       if (event?.status === 'failure') {
         setCall({
@@ -190,12 +196,19 @@ export const usePulseCalling = () => {
 
       applyAudioDevices(client, settings);
       // Plivo forwards X-PH- headers to the answer webhook, which validates them.
-      client.call(phoneNumber, {
+      const isPlaced = client.call(phoneNumber, {
         ...(isDefined(settings.callerId)
           ? { 'X-PH-Callerid': settings.callerId }
           : {}),
         ...(settings.autoRecord ? { 'X-PH-Record': '1' } : {}),
       });
+
+      if (isPlaced === false) {
+        setCall({
+          status: 'failed',
+          errorMessage: 'The call could not be placed, try again',
+        });
+      }
     } catch (error) {
       store.set(pulseCallState.atom, PULSE_CALL_IDLE);
       throw error;

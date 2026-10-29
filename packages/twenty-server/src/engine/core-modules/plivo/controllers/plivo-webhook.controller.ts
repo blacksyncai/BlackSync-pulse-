@@ -1,5 +1,6 @@
 import {
   Controller,
+  Logger,
   Header,
   HttpCode,
   Post,
@@ -19,6 +20,8 @@ import { PublicEndpointGuard } from 'src/engine/guards/public-endpoint.guard';
 // authenticated endpoint started.
 @Controller()
 export class PlivoWebhookController {
+  private readonly logger = new Logger(PlivoWebhookController.name);
+
   constructor(private readonly plivoService: PlivoService) {}
 
   @Post(`${ApiPath.Webhooks}/plivo/answer`)
@@ -40,9 +43,17 @@ export class PlivoWebhookController {
     };
     const destination = params.To;
 
+    const callerId = await this.plivoService.resolveCallerId(
+      header('x-ph-callerid'),
+    );
+
+    this.logger.log(
+      `Plivo answer for ${String(destination)} from ${String(callerId)}`,
+    );
+
     return this.plivoService.buildAnswerXml(
       typeof destination === 'string' ? destination : undefined,
-      await this.plivoService.resolveCallerId(header('x-ph-callerid')),
+      callerId,
       header('x-ph-record') === '1',
     );
   }

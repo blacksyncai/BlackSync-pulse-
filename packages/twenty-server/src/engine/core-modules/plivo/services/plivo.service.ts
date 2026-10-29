@@ -103,7 +103,7 @@ export class PlivoService {
     return this.voiceSetup;
   }
 
-  // Same claims and headers as Plivo's own AccessToken helper (plivo npm package).
+  // The browser SDK reads call permissions from `per.voice` and refuses to dial without it.
   createAccessToken(callerIdentity: string, endpointUsername: string): string {
     const authId = this.twentyConfigService.get('PLIVO_AUTH_ID');
     const nowInSeconds = Math.floor(Date.now() / 1000);
@@ -115,12 +115,13 @@ export class PlivoService {
         sub: endpointUsername,
         nbf: nowInSeconds,
         exp: nowInSeconds + ACCESS_TOKEN_LIFETIME_SECONDS,
-        grants: {
+        per: {
           voice: { incoming_allow: false, outgoing_allow: true },
         },
       },
       this.twentyConfigService.get('PLIVO_AUTH_TOKEN'),
       {
+        noTimestamp: true,
         header: { alg: 'HS256', typ: 'JWT', cty: 'plivo;v=1' } as jwt.JwtHeader,
       },
     );
@@ -199,7 +200,11 @@ export class PlivoService {
     callerId: string | undefined,
     shouldRecord = false,
   ): string {
-    const normalizedDestination = (destination ?? '').replace(/[\s()-]/g, '');
+    // Browser calls can arrive as a SIP URI such as sip:+14155550100@phone.plivo.com.
+    const normalizedDestination = (destination ?? '')
+      .replace(/^sip:/i, '')
+      .replace(/@.*$/, '')
+      .replace(/[\s()-]/g, '');
 
     if (
       !isNonEmptyString(callerId) ||
