@@ -11,6 +11,7 @@ import { CheckEmailingDomainVerificationCronCommand } from 'src/engine/core-modu
 import { EnterpriseKeyValidationCronCommand } from 'src/engine/core-modules/enterprise/cron/command/organization-key-validation.cron.command';
 import { EventLogCleanupCronCommand } from 'src/engine/core-modules/event-logs/cleanup/commands/event-log-cleanup.cron.command';
 import { PendingFileCleanupCronCommand } from 'src/engine/core-modules/file/file-upload/crons/commands/pending-file-cleanup.cron.command';
+import { PulseTaskReminderCronCommand } from 'src/engine/core-modules/pulse-notifications/crons/commands/pulse-task-reminder.cron.command';
 import { RotateSigningKeysCronCommand } from 'src/engine/core-modules/jwt/crons/commands/rotate-signing-keys.cron.command';
 import { CronTriggerCronCommand } from 'src/engine/core-modules/logic-function/logic-function-trigger/triggers/cron/cron-trigger.cron.command';
 import { CheckPublicDomainsValidRecordsCronCommand } from 'src/engine/core-modules/public-domain/crons/commands/check-public-domains-valid-records.cron.command';
@@ -84,6 +85,7 @@ export class CronRegisterAllCommand extends CommandRunner {
     private readonly billingReminderCronCommand: BillingReminderCronCommand,
     private readonly applicationRecurringChargeCronCommand: ApplicationRecurringChargeCronCommand,
     private readonly userSessionCleanupCronCommand: UserSessionCleanupCronCommand,
+    private readonly pulseTaskReminderCronCommand: PulseTaskReminderCronCommand,
     private readonly twentyConfigService: TwentyConfigService,
   ) {
     super();
@@ -238,6 +240,10 @@ export class CronRegisterAllCommand extends CommandRunner {
       {
         name: 'UserSessionCleanup',
         command: this.userSessionCleanupCronCommand,
+      },
+      {
+        name: 'PulseTaskReminder',
+        command: this.pulseTaskReminderCronCommand,
       },
     ];
 

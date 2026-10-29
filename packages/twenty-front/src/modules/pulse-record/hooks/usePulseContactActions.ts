@@ -54,15 +54,29 @@ export const usePulseContactActions = () => {
   };
 
   const email = (address: string | null | undefined) => {
-    if (isDefined(address) && address.length > 0) {
-      window.open(`mailto:${address}`, '_blank');
+    if (!isDefined(address) || address.length === 0) {
+      enqueueToast({
+        variant: 'error',
+        children: t`No email address on this contact yet.`,
+      });
+
+      return;
     }
+
+    window.open(`mailto:${address}`, '_blank');
   };
 
   const text = (phoneNumber: string | null | undefined) => {
-    if (isDefined(phoneNumber)) {
-      window.location.href = `sms:${phoneNumber}`;
+    if (!isDefined(phoneNumber)) {
+      enqueueToast({
+        variant: 'error',
+        children: t`No phone number on this contact yet.`,
+      });
+
+      return;
     }
+
+    window.location.href = `sms:${phoneNumber}`;
   };
 
   return { call, email, text };

@@ -1,5 +1,5 @@
-import { useOpenCreateActivityDrawer } from '@/activities/hooks/useOpenCreateActivityDrawer';
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
+import { PulseNoteComposer } from '@/pulse-record/components/PulseNoteComposer';
 import { PulseTimelineCard } from '@/pulse-record/components/PulseTimelineCard';
 import {
   formatContactPhone,
@@ -11,6 +11,7 @@ import {
   usePulseAccountData,
 } from '@/pulse-record/hooks/usePulseAccountData';
 import { type PulseTimelineItem } from '@/pulse-record/types/PulseTimelineItem';
+import { PulseTaskQuickAdd } from '@/pulse-tasks/components/PulseTaskQuickAdd';
 import { SidePanelPageTitleSyncEffect } from '@/side-panel/components/SidePanelPageTitleSyncEffect';
 import { useOpenRecordInSidePanel } from '@/side-panel/hooks/useOpenRecordInSidePanel';
 import { styled } from '@linaria/react';
@@ -27,7 +28,9 @@ import {
   IconMessage,
   IconNotes,
   IconPhone,
+  IconPlus,
   IconSearch,
+  IconSquare,
   IconTargetArrow,
   IconUser,
 } from 'twenty-ui/icon';
@@ -36,6 +39,7 @@ import { themeCssVariables } from 'twenty-ui/theme';
 
 type TimelineFilter = 'all' | 'conversations' | 'notes' | 'tasks';
 type LeftTab = 'details' | 'files';
+type Composer = 'note' | 'task' | null;
 
 const FILTER_KINDS: Record<TimelineFilter, PulseTimelineItem['kind'][]> = {
   all: ['call', 'email', 'sms', 'note', 'task'],
@@ -142,6 +146,11 @@ const StyledActionButton = styled.button`
     color: ${themeCssVariables.accent.accent11};
   }
 
+  &[aria-pressed='true'] {
+    border-color: ${themeCssVariables.accent.accent9};
+    color: ${themeCssVariables.accent.accent11};
+  }
+
   &[data-primary='true'] {
     background: ${themeCssVariables.accent.accent9};
     border-color: ${themeCssVariables.accent.accent9};
@@ -216,6 +225,25 @@ const StyledSectionTitle = styled.div`
   letter-spacing: 0.04em;
   padding: ${themeCssVariables.spacing[2]} ${themeCssVariables.spacing[3]};
   text-transform: uppercase;
+`;
+
+const StyledSectionAction = styled.button`
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: ${themeCssVariables.font.color.tertiary};
+  cursor: pointer;
+  display: flex;
+  height: 20px;
+  justify-content: center;
+  margin-left: auto;
+  width: 20px;
+
+  &:hover {
+    background: ${themeCssVariables.background.transparent.light};
+    color: ${themeCssVariables.accent.accent10};
+  }
 `;
 
 const StyledCount = styled.span`
@@ -369,20 +397,22 @@ type PulseAccountViewProps = {
 
 export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
   const { t } = useLingui();
-  const { account, contacts, deals, timeline, attachments, leadStatus } =
-    usePulseAccountData(companyId);
+  const {
+    account,
+    contacts,
+    deals,
+    timeline,
+    attachments,
+    leadStatus,
+    refetchActivity,
+  } = usePulseAccountData(companyId);
   const { updateOneRecord } = useUpdateOneRecord();
   const { openRecordInSidePanel } = useOpenRecordInSidePanel();
-  const openCreateNote = useOpenCreateActivityDrawer({
-    activityObjectNameSingular: CoreObjectNameSingular.Note,
-  });
-  const openCreateTask = useOpenCreateActivityDrawer({
-    activityObjectNameSingular: CoreObjectNameSingular.Task,
-  });
 
   const [leftTab, setLeftTab] = useState<LeftTab>('details');
   const [filter, setFilter] = useState<TimelineFilter>('all');
   const [search, setSearch] = useState('');
+  const [composer, setComposer] = useState<Composer>(null);
 
   const accountName = account?.name ?? '';
   const primaryContact = contacts[0];
@@ -402,10 +432,6 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
         `${item.title} ${item.body}`.toLowerCase().includes(query)),
   );
 
-  const accountTarget = [
-    { id: companyId, targetObjectNameSingular: CoreObjectNameSingular.Company },
-  ];
-
   const {
     call: handleCall,
     email: handleEmail,
@@ -422,6 +448,25 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
     url.searchParams.set('text', `${accountName} <> BlackSync`);
     url.searchParams.set('add', guests.join(','));
     window.open(url.toString(), '_blank');
+  };
+
+  const openComposer = (nextComposer: Composer) => {
+    setComposer(composer === nextComposer ? null : nextComposer);
+    setFilter('all');
+  };
+
+  const handleComposerDone = () => {
+    setComposer(null);
+    void refetchActivity();
+  };
+
+  const completeTask = async (taskId: string) => {
+    await updateOneRecord({
+      objectNameSingular: CoreObjectNameSingular.Task,
+      idToUpdate: taskId,
+      updateOneRecordInput: { status: 'DONE' },
+    });
+    void refetchActivity();
   };
 
   const handleLeadStatusChange = (value: string) => {
@@ -495,14 +540,16 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
           </StyledActionButton>
           <StyledActionButton
             type="button"
-            onClick={() => openCreateNote({ targetableObjects: accountTarget })}
+            aria-pressed={composer === 'note'}
+            onClick={() => openComposer('note')}
           >
             <IconNotes size={16} />
             {t`Note`}
           </StyledActionButton>
           <StyledActionButton
             type="button"
-            onClick={() => openCreateTask({ targetableObjects: accountTarget })}
+            aria-pressed={composer === 'task'}
+            onClick={() => openComposer('task')}
           >
             <IconCheckbox size={16} />
             {t`Task`}
@@ -600,6 +647,13 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
                   <StyledSectionTitle>
                     <IconCheckbox size={14} />
                     {t`Tasks`} <StyledCount>{openTasks.length}</StyledCount>
+                    <StyledSectionAction
+                      type="button"
+                      aria-label={t`Add task`}
+                      onClick={() => openComposer('task')}
+                    >
+                      <IconPlus size={14} />
+                    </StyledSectionAction>
                   </StyledSectionTitle>
                   {openTasks.length === 0 ? (
                     <StyledLine>
@@ -608,6 +662,13 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
                   ) : (
                     openTasks.slice(0, 5).map((task) => (
                       <StyledLine key={task.id}>
+                        <StyledIconButton
+                          type="button"
+                          aria-label={t`Mark as done`}
+                          onClick={() => void completeTask(task.id)}
+                        >
+                          <IconSquare size={16} />
+                        </StyledIconButton>
                         <StyledLineText>
                           {task.title}
                           <StyledMuted>
@@ -765,6 +826,19 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
             </StyledSearch>
           </StyledFeedBar>
           <StyledFeed>
+            {composer === 'note' && (
+              <PulseNoteComposer
+                companyId={companyId}
+                onDone={handleComposerDone}
+              />
+            )}
+            {composer === 'task' && (
+              <PulseTaskQuickAdd
+                autoFocus
+                companyId={companyId}
+                onCreated={handleComposerDone}
+              />
+            )}
             {visibleItems.length === 0 ? (
               <StyledEmpty>{t`Nothing here yet.`}</StyledEmpty>
             ) : (

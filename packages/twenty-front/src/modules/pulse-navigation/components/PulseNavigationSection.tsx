@@ -4,6 +4,7 @@ import { useLingui } from '@lingui/react/macro';
 import { useLocation } from 'react-router-dom';
 import { AppPath } from 'twenty-shared/types';
 import {
+  IconCheckbox,
   IconFileImport,
   IconInbox,
   IconLayoutDashboard,
@@ -35,6 +36,12 @@ export const PulseNavigationSection = () => {
         to={AppPath.PulseInbox}
         Icon={IconInbox}
         active={pathname === AppPath.PulseInbox}
+      />
+      <NavigationDrawerItem
+        label={t`To-do`}
+        to={AppPath.PulseTodo}
+        Icon={IconCheckbox}
+        active={pathname === AppPath.PulseTodo}
       />
       <NavigationDrawerItem
         label={t`Opportunities`}

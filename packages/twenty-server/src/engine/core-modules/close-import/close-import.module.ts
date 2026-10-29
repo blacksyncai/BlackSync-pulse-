@@ -34,5 +34,6 @@ import { ViewModule } from 'src/engine/metadata-modules/view/view.module';
     CloseImportRemovalJob,
     PulsePipelineProvisioningService,
   ],
+  exports: [PulsePipelineProvisioningService],
 })
 export class CloseImportModule {}

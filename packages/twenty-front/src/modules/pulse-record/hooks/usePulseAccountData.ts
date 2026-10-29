@@ -166,31 +166,12 @@ export const usePulseAccountData = (companyId: string) => {
     limit: 50,
   });
 
-  const { records: noteTargets, loading: notesLoading } =
-    useFindManyRecords<NoteTargetRecord>({
-      objectNameSingular: CoreObjectNameSingular.NoteTarget,
-      filter: {
-        or: [
-          { targetCompanyId: { eq: companyId } },
-          { targetPersonId: { in: contactIdsOrNone } },
-        ],
-      },
-      recordGqlFields: {
-        id: true,
-        targetPerson: { name: { firstName: true, lastName: true } },
-        note: {
-          id: true,
-          title: true,
-          createdAt: true,
-          bodyV2: { markdown: true },
-          attachments: { id: true, file: true },
-        },
-      },
-      limit: 500,
-    });
-
-  const { records: taskTargets } = useFindManyRecords<TaskTargetRecord>({
-    objectNameSingular: CoreObjectNameSingular.TaskTarget,
+  const {
+    records: noteTargets,
+    loading: notesLoading,
+    refetch: refetchNotes,
+  } = useFindManyRecords<NoteTargetRecord>({
+    objectNameSingular: CoreObjectNameSingular.NoteTarget,
     filter: {
       or: [
         { targetCompanyId: { eq: companyId } },
@@ -199,17 +180,40 @@ export const usePulseAccountData = (companyId: string) => {
     },
     recordGqlFields: {
       id: true,
-      task: {
+      targetPerson: { name: { firstName: true, lastName: true } },
+      note: {
         id: true,
         title: true,
-        status: true,
-        dueAt: true,
         createdAt: true,
         bodyV2: { markdown: true },
+        attachments: { id: true, file: true },
       },
     },
-    limit: 200,
+    limit: 500,
   });
+
+  const { records: taskTargets, refetch: refetchTasks } =
+    useFindManyRecords<TaskTargetRecord>({
+      objectNameSingular: CoreObjectNameSingular.TaskTarget,
+      filter: {
+        or: [
+          { targetCompanyId: { eq: companyId } },
+          { targetPersonId: { in: contactIdsOrNone } },
+        ],
+      },
+      recordGqlFields: {
+        id: true,
+        task: {
+          id: true,
+          title: true,
+          status: true,
+          dueAt: true,
+          createdAt: true,
+          bodyV2: { markdown: true },
+        },
+      },
+      limit: 200,
+    });
 
   const { records: attachments } = useFindManyRecords<AttachmentRecord>({
     objectNameSingular: CoreObjectNameSingular.Attachment,
@@ -384,5 +388,7 @@ export const usePulseAccountData = (companyId: string) => {
     timeline,
     attachments,
     leadStatus,
+    refetchActivity: () =>
+      Promise.all([refetchNotes(), refetchTasks()]).then(() => undefined),
   };
 };

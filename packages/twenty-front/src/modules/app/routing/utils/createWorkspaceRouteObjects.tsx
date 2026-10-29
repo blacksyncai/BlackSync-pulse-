@@ -71,6 +71,12 @@ const PulseOpportunitiesPage = lazy(() =>
   })),
 );
 
+const PulseTodoPage = lazy(() =>
+  import('~/pages/pulse/PulseTodoPage').then((module) => ({
+    default: module.PulseTodoPage,
+  })),
+);
+
 const MobileHomePage = lazy(() =>
   import('~/pages/mobile-home/MobileHomePage').then((module) => ({
     default: module.MobileHomePage,
@@ -180,6 +186,14 @@ export const createWorkspaceRouteObjects = ({
       element: (
         <LazyRoute>
           <PulseOpportunitiesPage />
+        </LazyRoute>
+      ),
+    },
+    {
+      path: AppPath.PulseTodo,
+      element: (
+        <LazyRoute>
+          <PulseTodoPage />
         </LazyRoute>
       ),
     },

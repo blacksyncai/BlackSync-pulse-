@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { WorkspaceIteratorModule } from 'src/database/commands/command-runners/workspace-iterator.module';
+import { PulseNotificationsModule } from 'src/engine/core-modules/pulse-notifications/pulse-notifications.module';
 import { CronRegisterAllCommand } from 'src/database/commands/cron-register-all.command';
 import { DataSeedWorkspaceCommand } from 'src/database/commands/data-seed-dev-workspace.command';
 import { SecretEncryptionRotationModule } from 'src/database/commands/secret-encryption-rotation/secret-encryption-rotation.module';
@@ -109,6 +110,7 @@ import { WorkflowCoreConsistencyModule } from 'src/modules/workflow/workflow-cor
     SecretEncryptionRotationModule,
     UserSessionModule,
     EmailingDomainModule,
+    PulseNotificationsModule,
   ],
   providers: [
     DataSeedWorkspaceCommand,
