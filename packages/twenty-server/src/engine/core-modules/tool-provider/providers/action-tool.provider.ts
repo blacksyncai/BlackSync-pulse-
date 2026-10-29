@@ -68,6 +68,7 @@ export class ActionToolProvider implements ToolProvider {
       ['draft_email', this.draftEmailTool],
       ['find_connected_accounts', this.findConnectedAccountsTool],
       ['create_calendar_event', this.createCalendarEventTool],
+      ['search_help_center', this.searchHelpCenterTool],
       ['create_file_upload', this.createFileUploadTool],
       ['complete_file_upload', this.completeFileUploadTool],
       ['code_interpreter', this.codeInterpreterTool],
@@ -182,6 +183,15 @@ export class ActionToolProvider implements ToolProvider {
         ),
       );
     }
+
+    descriptors.push(
+      this.buildDescriptor(
+        'search_help_center',
+        this.searchHelpCenterTool,
+        includeSchemas,
+        context.locale,
+      ),
+    );
 
     descriptors.push(
       this.buildDescriptor(
