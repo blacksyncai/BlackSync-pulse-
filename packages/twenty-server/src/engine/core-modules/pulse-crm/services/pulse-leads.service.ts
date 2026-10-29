@@ -91,8 +91,7 @@ export class PulseLeadsService {
        tasks AS (
          SELECT COALESCE(tt."targetCompanyId", tp."companyId") AS company_id,
            min(t."dueAt") FILTER (WHERE t.status IS DISTINCT FROM 'DONE') AS next_task,
-           count(DISTINCT t.id) FILTER (WHERE t.status IS DISTINCT FROM 'DONE')::int AS open_tasks,
-           max(t."createdAt") AS last_task
+           count(DISTINCT t.id) FILTER (WHERE t.status IS DISTINCT FROM 'DONE')::int AS open_tasks
          FROM ${quotedSchema}."taskTarget" tt
          JOIN ${quotedSchema}.task t ON t.id = tt."taskId" AND t."deletedAt" IS NULL
          LEFT JOIN ${quotedSchema}.person tp ON tp.id = tt."targetPersonId"
@@ -115,7 +114,7 @@ export class PulseLeadsService {
          c."createdAt" AS "createdAt",
          COALESCE(people.contact_count, 0) AS "contactCount",
          people.primary_contact AS "primaryContact",
-         GREATEST(notes.last_activity, tasks.last_task) AS "lastActivityAt",
+         notes.last_activity AS "lastActivityAt",
          notes.last_call AS "lastCallAt",
          COALESCE(notes.call_count, 0) AS "callCount",
          tasks.next_task AS "nextTaskAt",
@@ -128,7 +127,7 @@ export class PulseLeadsService {
        LEFT JOIN tasks ON tasks.company_id = c.id
        LEFT JOIN deals ON deals.company_id = c.id
        WHERE c."deletedAt" IS NULL
-       ORDER BY GREATEST(notes.last_activity, tasks.last_task, c."createdAt") DESC
+       ORDER BY COALESCE(notes.last_activity, c."createdAt") DESC
        LIMIT 5000`,
       [CALL_TITLE_PATTERN],
     );

@@ -372,9 +372,13 @@ export const PulseLeadsTable = ({
                 : '—'}
             </StyledSecondary>
             <StyledSecondary>
-              {lead.dealCount > 0
-                ? `${formatCompactMoney(lead.dealValueMicros)} · ${lead.dealCount}`
-                : '—'}
+              {lead.dealCount === 0
+                ? '—'
+                : lead.dealValueMicros > 0
+                  ? formatCompactMoney(lead.dealValueMicros)
+                  : lead.dealCount === 1
+                    ? t`1 deal`
+                    : t`${lead.dealCount} deals`}
             </StyledSecondary>
           </StyledRow>
         );
