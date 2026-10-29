@@ -8,7 +8,6 @@ import { useMemo } from 'react';
 import { CoreObjectNameSingular, FieldMetadataType } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 
-const NO_MATCH_ID = '00000000-0000-0000-0000-000000000000';
 const LEAD_STATUS_FIELD_NAME = 'leadStatus';
 const PIPELINE_FIELD_NAME = 'pipeline';
 const AUDIO_EXTENSIONS = ['mp3', 'wav', 'm4a', 'ogg', 'webm'];
@@ -150,7 +149,14 @@ export const usePulseAccountData = (companyId: string) => {
   });
 
   const contactIds = contacts.map((contact) => contact.id);
-  const contactIdsOrNone = contactIds.length > 0 ? contactIds : [NO_MATCH_ID];
+  const activityTargetFilter = {
+    or: [
+      { targetCompanyId: { eq: companyId } },
+      ...(contactIds.length > 0
+        ? [{ targetPersonId: { in: contactIds } }]
+        : []),
+    ],
+  };
 
   const { records: dealRecords } = useFindManyRecords<DealRecord>({
     objectNameSingular: CoreObjectNameSingular.Opportunity,
@@ -172,12 +178,7 @@ export const usePulseAccountData = (companyId: string) => {
     refetch: refetchNotes,
   } = useFindManyRecords<NoteTargetRecord>({
     objectNameSingular: CoreObjectNameSingular.NoteTarget,
-    filter: {
-      or: [
-        { targetCompanyId: { eq: companyId } },
-        { targetPersonId: { in: contactIdsOrNone } },
-      ],
-    },
+    filter: activityTargetFilter,
     recordGqlFields: {
       id: true,
       targetPerson: { name: { firstName: true, lastName: true } },
@@ -195,12 +196,7 @@ export const usePulseAccountData = (companyId: string) => {
   const { records: taskTargets, refetch: refetchTasks } =
     useFindManyRecords<TaskTargetRecord>({
       objectNameSingular: CoreObjectNameSingular.TaskTarget,
-      filter: {
-        or: [
-          { targetCompanyId: { eq: companyId } },
-          { targetPersonId: { in: contactIdsOrNone } },
-        ],
-      },
+      filter: activityTargetFilter,
       recordGqlFields: {
         id: true,
         task: {
@@ -225,7 +221,7 @@ export const usePulseAccountData = (companyId: string) => {
   const { records: messageParticipants } =
     useFindManyRecords<MessageParticipantRecord>({
       objectNameSingular: CoreObjectNameSingular.MessageParticipant,
-      filter: { personId: { in: contactIdsOrNone } },
+      filter: { personId: { in: contactIds } },
       recordGqlFields: {
         id: true,
         role: true,

@@ -649,7 +649,7 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
                     {t`Tasks`} <StyledCount>{openTasks.length}</StyledCount>
                     <StyledSectionAction
                       type="button"
-                      aria-label={t`Add task`}
+                      aria-label={t`New task`}
                       onClick={() => openComposer('task')}
                     >
                       <IconPlus size={14} />
