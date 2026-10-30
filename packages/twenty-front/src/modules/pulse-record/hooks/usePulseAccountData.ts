@@ -299,7 +299,9 @@ export const usePulseAccountData = (companyId: string) => {
       const storedRecordingUrl = note.attachments
         ?.flatMap((attachment) => attachment.file ?? [])
         .find((file) =>
-          AUDIO_EXTENSIONS.includes((file.extension ?? '').toLowerCase()),
+          AUDIO_EXTENSIONS.includes(
+            (file.extension ?? '').toLowerCase().replace(/^\./, ''),
+          ),
         )?.url;
 
       items.push({
