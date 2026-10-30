@@ -13,4 +13,6 @@ export type PulseTimelineItem = {
   isDone: boolean;
   openRecordId: string;
   openObjectNameSingular: string;
+  contactName?: string | null;
+  repName?: string | null;
 };

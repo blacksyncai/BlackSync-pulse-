@@ -1,8 +1,14 @@
 export type PulseCallFact = { label: string; value: string };
 export type PulseCallLink = { label: string; url: string };
-export type PulseTranscriptLine = { speaker: string | null; text: string };
+export type PulseTranscriptLine = {
+  speaker: string | null;
+  text: string;
+  start: number | null;
+  end: number | null;
+};
 
 export type PulseCallBody = {
+  aiSummary: string[];
   summary: string;
   facts: PulseCallFact[];
   links: PulseCallLink[];
@@ -10,6 +16,9 @@ export type PulseCallBody = {
 };
 
 const TRANSCRIPT_HEADING = /^\**\s*transcript\s*\**:?\s*$/i;
+const SUMMARY_HEADING = /^\*\*\s*summary\s*\*\*:?\s*$/i;
+const TIMED_LINE =
+  /^\*\*(.+?)\*\*\s*\[(\d+):(\d{2})(?:-(\d+):(\d{2}))?\]:\s*(.+)$/;
 const FACT_LINE = /^([A-Za-z][\w '/()-]{0,40}):\s+(.+)$/;
 const SPEAKER_LINE = /^\**([^*:\n]{1,40}?):\**\s*(.+)$/;
 const URL = /(https?:\/\/\S+)/;
@@ -25,10 +34,26 @@ export const parsePulseCallBody = (markdown: string): PulseCallBody => {
   const transcriptStart = lines.findIndex((line) =>
     TRANSCRIPT_HEADING.test(line.trim()),
   );
+  const summaryStart = lines.findIndex((line) =>
+    SUMMARY_HEADING.test(line.trim()),
+  );
+  const firstSection = [transcriptStart, summaryStart]
+    .filter((index) => index !== -1)
+    .sort((left, right) => left - right)[0];
   const headerLines =
-    transcriptStart === -1 ? lines : lines.slice(0, transcriptStart);
+    firstSection === undefined ? lines : lines.slice(0, firstSection);
   const transcriptLines =
     transcriptStart === -1 ? [] : lines.slice(transcriptStart + 1);
+  const aiSummary =
+    summaryStart === -1
+      ? []
+      : lines
+          .slice(
+            summaryStart + 1,
+            transcriptStart > summaryStart ? transcriptStart : undefined,
+          )
+          .map((line) => line.trim().replace(/^[-*•]\s*/, ''))
+          .filter((line) => line.length > 0);
 
   const summary: string[] = [];
   const facts: PulseCallFact[] = [];
@@ -81,16 +106,37 @@ export const parsePulseCallBody = (markdown: string): PulseCallBody => {
       continue;
     }
 
+    const timed = line.match(TIMED_LINE);
+
+    if (timed !== null) {
+      transcript.push({
+        speaker: timed[1].trim(),
+        start: Number(timed[2]) * 60 + Number(timed[3]),
+        end:
+          timed[4] !== undefined
+            ? Number(timed[4]) * 60 + Number(timed[5])
+            : null,
+        text: timed[6].trim(),
+      });
+      continue;
+    }
+
     const speaker = line.match(SPEAKER_LINE);
 
     transcript.push(
       speaker !== null
-        ? { speaker: speaker[1].trim(), text: speaker[2].trim() }
-        : { speaker: null, text: line },
+        ? {
+            speaker: speaker[1].trim(),
+            text: speaker[2].trim(),
+            start: null,
+            end: null,
+          }
+        : { speaker: null, text: line, start: null, end: null },
     );
   }
 
   return {
+    aiSummary,
     summary: summary.join('\n').trim(),
     facts,
     links,

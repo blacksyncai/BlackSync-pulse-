@@ -47,9 +47,22 @@ describe('parsePulseCallBody', () => {
 
     expect(body.facts).toEqual([{ label: 'Phone', value: '+1555' }]);
     expect(body.transcript).toEqual([
-      { speaker: 'Speaker 1', text: 'Hi there' },
-      { speaker: 'Speaker 2', text: 'Who is this?' },
-      { speaker: null, text: 'unlabelled tail' },
+      { speaker: 'Speaker 1', text: 'Hi there', start: null, end: null },
+      { speaker: 'Speaker 2', text: 'Who is this?', start: null, end: null },
+      { speaker: null, text: 'unlabelled tail', start: null, end: null },
+    ]);
+  });
+
+  it('reads the AI summary and timed transcript lines', () => {
+    const body = parsePulseCallBody(
+      'Phone: +1555\n\n**Summary**\n\n- Booked a demo\n- Follow up Friday\n\n**Transcript**\n\n**Speaker 1** [0:01-0:04]: Hello?\n\n**Speaker 2** [1:05-1:20]: Hi, it is Hamza',
+    );
+
+    expect(body.aiSummary).toEqual(['Booked a demo', 'Follow up Friday']);
+    expect(body.facts).toEqual([{ label: 'Phone', value: '+1555' }]);
+    expect(body.transcript).toEqual([
+      { speaker: 'Speaker 1', text: 'Hello?', start: 1, end: 4 },
+      { speaker: 'Speaker 2', text: 'Hi, it is Hamza', start: 65, end: 80 },
     ]);
   });
 });

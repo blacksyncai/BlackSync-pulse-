@@ -7,6 +7,7 @@ import { PlivoModule } from 'src/engine/core-modules/plivo/plivo.module';
 import { PulseCallRecordingJob } from 'src/engine/core-modules/pulse-calls/jobs/pulse-call-recording.job';
 import { PulseCallsResolver } from 'src/engine/core-modules/pulse-calls/pulse-calls.resolver';
 import { PulseCallLogService } from 'src/engine/core-modules/pulse-calls/services/pulse-call-log.service';
+import { PulseCallSummaryService } from 'src/engine/core-modules/pulse-calls/services/pulse-call-summary.service';
 import { PulseRecordingService } from 'src/engine/core-modules/pulse-calls/services/pulse-recording.service';
 import { FieldMetadataEntity } from 'src/engine/metadata-modules/field-metadata/field-metadata.entity';
 import { provideWorkspaceScopedRepository } from 'src/engine/twenty-orm/workspace-scoped-repository/provide-workspace-scoped-repository';
@@ -19,6 +20,7 @@ import { provideWorkspaceScopedRepository } from 'src/engine/twenty-orm/workspac
   ],
   providers: [
     PulseRecordingService,
+    PulseCallSummaryService,
     PulseCallLogService,
     PulseCallsResolver,
     PulseCallRecordingJob,

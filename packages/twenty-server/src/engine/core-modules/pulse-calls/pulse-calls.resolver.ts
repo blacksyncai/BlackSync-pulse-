@@ -72,4 +72,23 @@ export class PulseCallsResolver {
       );
     }
   }
+
+  @Mutation(() => String)
+  async pulseSummarizeCall(
+    @AuthWorkspace() workspace: WorkspaceEntity,
+    @Args('noteId', { type: () => String }) noteId: string,
+  ): Promise<string> {
+    try {
+      return await this.pulseRecordingService.summarizeCallNote(
+        workspace.id,
+        noteId,
+      );
+    } catch (error) {
+      throw new UserInputError(
+        error instanceof Error
+          ? error.message
+          : 'Could not summarize this call',
+      );
+    }
+  }
 }

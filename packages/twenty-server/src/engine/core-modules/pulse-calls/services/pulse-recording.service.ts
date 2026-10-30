@@ -12,6 +12,11 @@ import {
   type DeepgramResponse,
   formatDeepgramTranscript,
 } from 'src/engine/core-modules/pulse-calls/utils/format-deepgram-transcript.util';
+import { PulseCallSummaryService } from 'src/engine/core-modules/pulse-calls/services/pulse-call-summary.service';
+import {
+  extractCallNoteSection,
+  upsertCallNoteSections,
+} from 'src/engine/core-modules/pulse-calls/utils/upsert-call-note-sections.util';
 import { transformRichTextValue } from 'src/engine/core-modules/record-transformer/utils/transform-rich-text.util';
 import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
 import { FieldMetadataEntity } from 'src/engine/metadata-modules/field-metadata/field-metadata.entity';
@@ -52,6 +57,7 @@ export class PulseRecordingService {
     private readonly fieldMetadataRepository: WorkspaceScopedRepository<FieldMetadataEntity>,
     @InjectWorkspaceScopedRepository(ApplicationEntity)
     private readonly applicationRepository: WorkspaceScopedRepository<ApplicationEntity>,
+    private readonly pulseCallSummaryService: PulseCallSummaryService,
   ) {}
 
   async download(
@@ -169,14 +175,28 @@ export class PulseRecordingService {
     );
   }
 
-  async appendTranscript({
+  private async readNoteMarkdown(workspaceId: string, noteId: string) {
+    return this.workspaceOrmManager.executeInWorkspaceContext(async () => {
+      const noteRepository = this.workspaceOrmManager.getRepository(
+        NoteWorkspaceEntity,
+        { shouldBypassPermissionChecks: true },
+      );
+      const note = await noteRepository.findOne({ where: { id: noteId } });
+
+      return isDefined(note) ? (note.bodyV2?.markdown ?? '') : null;
+    }, buildSystemAuthContext(workspaceId));
+  }
+
+  async saveCallSections({
     workspaceId,
     noteId,
     transcript,
+    summary,
   }: {
     workspaceId: string;
     noteId: string;
-    transcript: string;
+    transcript?: string | null;
+    summary?: string | null;
   }): Promise<void> {
     await this.workspaceOrmManager.executeInWorkspaceContext(async () => {
       const noteRepository = this.workspaceOrmManager.getRepository(
@@ -189,12 +209,10 @@ export class PulseRecordingService {
         return;
       }
 
-      const markdown = [
-        note.bodyV2?.markdown,
-        `**Transcript**\n\n${transcript}`,
-      ]
-        .filter(isNonEmptyString)
-        .join('\n\n');
+      const markdown = upsertCallNoteSections(note.bodyV2?.markdown ?? '', {
+        transcript,
+        summary,
+      });
 
       await noteRepository.update(
         { id: noteId },
@@ -203,6 +221,57 @@ export class PulseRecordingService {
         },
       );
     }, buildSystemAuthContext(workspaceId));
+  }
+
+  // A summary failure never loses the transcript; it is saved either way.
+  private async saveTranscriptWithSummary(
+    workspaceId: string,
+    noteId: string,
+    transcript: string,
+  ) {
+    const summary = await this.pulseCallSummaryService
+      .summarize(transcript)
+      .catch((error) => {
+        this.logger.warn(
+          `Could not summarize call ${noteId}: ${String(error)}`,
+        );
+
+        return null;
+      });
+
+    await this.saveCallSections({ workspaceId, noteId, transcript, summary });
+
+    return summary;
+  }
+
+  async summarizeCallNote(workspaceId: string, noteId: string) {
+    if (!this.pulseCallSummaryService.canSummarize()) {
+      throw new Error(
+        'AI summaries are not set up (ANTHROPIC_API_KEY is missing)',
+      );
+    }
+
+    const markdown = await this.readNoteMarkdown(workspaceId, noteId);
+
+    if (markdown === null) {
+      throw new Error('That call no longer exists');
+    }
+
+    const transcript = extractCallNoteSection(markdown, 'transcript');
+
+    if (!isNonEmptyString(transcript)) {
+      throw new Error('This call has no transcript to summarize yet');
+    }
+
+    const summary = await this.pulseCallSummaryService.summarize(transcript);
+
+    if (!isNonEmptyString(summary)) {
+      throw new Error('The summary could not be generated');
+    }
+
+    await this.saveCallSections({ workspaceId, noteId, summary });
+
+    return summary;
   }
 
   // Only Pulse's own file links are fetched, so a caller can't point the server elsewhere.
@@ -239,7 +308,9 @@ export class PulseRecordingService {
     }
 
     if (!this.isPulseFileUrl(recordingUrl)) {
-      throw new Error('Only recordings stored in BlackSync Cloud can be transcribed');
+      throw new Error(
+        'Only recordings stored in BlackSync Cloud can be transcribed',
+      );
     }
 
     const recording = await this.download(recordingUrl);
@@ -254,9 +325,14 @@ export class PulseRecordingService {
       return null;
     }
 
-    await this.appendTranscript({ workspaceId, noteId, transcript });
+    const summary = await this.saveTranscriptWithSummary(
+      workspaceId,
+      noteId,
+      transcript,
+    );
 
-    return transcript;
+    // Returned in the note's own section format so the card can show both at once.
+    return upsertCallNoteSections('', { summary, transcript });
   }
 
   // Store and transcribe in one go; failures are logged so a bad recording never
@@ -287,7 +363,7 @@ export class PulseRecordingService {
       const transcript = await this.transcribe(recording);
 
       if (isNonEmptyString(transcript)) {
-        await this.appendTranscript({ workspaceId, noteId, transcript });
+        await this.saveTranscriptWithSummary(workspaceId, noteId, transcript);
       }
     } catch (error) {
       this.logger.warn(

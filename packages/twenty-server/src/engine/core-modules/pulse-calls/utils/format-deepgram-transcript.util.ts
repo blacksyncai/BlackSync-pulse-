@@ -1,4 +1,9 @@
-type DeepgramUtterance = { speaker?: number; transcript?: string };
+type DeepgramUtterance = {
+  speaker?: number;
+  transcript?: string;
+  start?: number;
+  end?: number;
+};
 
 export type DeepgramResponse = {
   results?: {
@@ -7,7 +12,14 @@ export type DeepgramResponse = {
   };
 };
 
-// Speaker-labelled lines read like a conversation; fall back to the plain transcript.
+const formatTimestamp = (seconds: number | undefined) => {
+  const total = Math.max(0, Math.floor(seconds ?? 0));
+
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+};
+
+// Each turn keeps its speaker and start/end time so the call card can draw talk-time
+// bars and jump the recording to any line.
 export const formatDeepgramTranscript = (
   response: DeepgramResponse,
 ): string | null => {
@@ -18,7 +30,7 @@ export const formatDeepgramTranscript = (
       .filter((utterance) => (utterance.transcript ?? '').trim().length > 0)
       .map(
         (utterance) =>
-          `**Speaker ${(utterance.speaker ?? 0) + 1}:** ${utterance.transcript?.trim()}`,
+          `**Speaker ${(utterance.speaker ?? 0) + 1}** [${formatTimestamp(utterance.start)}-${formatTimestamp(utterance.end)}]: ${utterance.transcript?.trim()}`,
       );
 
     return lines.length > 0 ? lines.join('\n\n') : null;

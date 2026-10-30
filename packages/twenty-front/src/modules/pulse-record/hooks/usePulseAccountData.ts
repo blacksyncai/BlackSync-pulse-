@@ -59,6 +59,7 @@ type NoteTargetRecord = ObjectRecord & {
     id: string;
     title: string | null;
     createdAt: string;
+    createdBy?: { name: string | null } | null;
     bodyV2: { markdown: string | null } | null;
     attachments?: {
       id: string;
@@ -268,6 +269,16 @@ export const usePulseAccountData = (companyId: string) => {
   const timeline = useMemo<PulseTimelineItem[]>(() => {
     const seen = new Set<string>();
     const items: PulseTimelineItem[] = [];
+    // A note is linked to both the company and the person; the person link names the caller.
+    const contactNameByNoteId = new Map<string, string>();
+
+    for (const target of noteTargets) {
+      const name = formatFullName(target.targetPerson?.name);
+
+      if (isDefined(target.note) && name.length > 0) {
+        contactNameByNoteId.set(target.note.id, name);
+      }
+    }
 
     for (const target of noteTargets) {
       const note = target.note;
@@ -282,7 +293,7 @@ export const usePulseAccountData = (companyId: string) => {
         note.title ?? '',
         note.bodyV2?.markdown ?? '',
       );
-      const contactName = formatFullName(target.targetPerson?.name);
+      const contactName = contactNameByNoteId.get(note.id) ?? '';
 
       // Recordings copied into Pulse play from storage; older notes still carry a link.
       const storedRecordingUrl = note.attachments
@@ -301,6 +312,8 @@ export const usePulseAccountData = (companyId: string) => {
               : `Called ${contactName}`
             : activity.title,
         id: note.id,
+        contactName: contactName.length > 0 ? contactName : null,
+        repName: note.createdBy?.name ?? null,
         date: new Date(note.createdAt),
         isDone: false,
         openRecordId: note.id,
