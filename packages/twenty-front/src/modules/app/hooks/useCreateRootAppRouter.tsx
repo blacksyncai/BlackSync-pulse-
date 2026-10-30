@@ -15,6 +15,8 @@ import { OnboardingTransitionOutlet } from '@/onboarding/components/OnboardingTr
 import { AuthFlowLayout } from '@/ui/layout/page/components/AuthFlowLayout';
 import { BlankLayout } from '@/ui/layout/page/components/BlankLayout';
 
+const LandingPage = lazy(() => import('@/components/ui/hero-01'));
+
 const SignInUp = lazy(() =>
   import('~/pages/auth/SignInUp').then((module) => ({
     default: module.SignInUp,
@@ -30,43 +32,61 @@ const PasswordReset = lazy(() =>
 const createRootAppRouter = () =>
   createBrowserRouter(
     createRoutesFromElements(
-      <Route element={<RootAppProviders />} loader={async () => null}>
-        <Route element={<BlankLayout />}>
-          <Route element={<OnboardingTransitionOutlet />}>
+      <>
+        <Route
+          path="/"
+          element={
+            <LazyRoute fallback={null}>
+              <LandingPage />
+            </LazyRoute>
+          }
+        />
+        <Route
+          path="/landing"
+          element={
+            <LazyRoute fallback={null}>
+              <LandingPage />
+            </LazyRoute>
+          }
+        />
+        <Route element={<RootAppProviders />} loader={async () => null}>
+          <Route element={<BlankLayout />}>
+            <Route element={<OnboardingTransitionOutlet />}>
+              <Route
+                path={AppPath.SignInUp}
+                element={
+                  <LazyRoute fallback={<OnboardingPageLoader />}>
+                    <SignInUp />
+                  </LazyRoute>
+                }
+              />
+              <Route
+                path={AppPath.Invite}
+                element={
+                  <LazyRoute fallback={<OnboardingPageLoader />}>
+                    <SignInUp />
+                  </LazyRoute>
+                }
+              />
+            </Route>
+          </Route>
+          <Route element={<AuthFlowLayout />}>
+            <Route path={AppPath.VerifyEmail} element={<VerifyEmail />} />
             <Route
-              path={AppPath.SignInUp}
+              path={AppPath.ResetPassword}
               element={
-                <LazyRoute fallback={<OnboardingPageLoader />}>
-                  <SignInUp />
-                </LazyRoute>
-              }
-            />
-            <Route
-              path={AppPath.Invite}
-              element={
-                <LazyRoute fallback={<OnboardingPageLoader />}>
-                  <SignInUp />
+                <LazyRoute fallback={null}>
+                  <PasswordReset />
                 </LazyRoute>
               }
             />
           </Route>
-        </Route>
-        <Route element={<AuthFlowLayout />}>
-          <Route path={AppPath.VerifyEmail} element={<VerifyEmail />} />
           <Route
-            path={AppPath.ResetPassword}
-            element={
-              <LazyRoute fallback={null}>
-                <PasswordReset />
-              </LazyRoute>
-            }
+            path={AppPath.NotFoundWildcard}
+            element={<RootDeepLinkRedirect />}
           />
         </Route>
-        <Route
-          path={AppPath.NotFoundWildcard}
-          element={<RootDeepLinkRedirect />}
-        />
-      </Route>,
+      </>,
     ),
   );
 

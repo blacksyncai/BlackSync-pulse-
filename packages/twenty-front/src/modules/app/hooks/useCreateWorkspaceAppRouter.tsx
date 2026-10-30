@@ -22,6 +22,8 @@ import { MainAppLayoutWithSidePanel } from '@/ui/layout/page/components/MainAppL
 import { Verify } from '~/pages/onboarding/Verify';
 import { lazyWithPreload } from '~/utils/lazyWithPreload';
 
+const LandingPage = lazy(() => import('@/components/ui/hero-01'));
+
 const SignInUp = lazy(() =>
   import('~/pages/auth/SignInUp').then((module) => ({
     default: module.SignInUp,
@@ -112,6 +114,14 @@ const createWorkspaceAppRouter = ({
   });
 
   return createBrowserRouter([
+    {
+      path: '/landing',
+      element: (
+        <LazyRoute fallback={null}>
+          <LandingPage />
+        </LazyRoute>
+      ),
+    },
     {
       element: (
         <WorkspaceRouteObjectsProvider routeObjects={workspaceRouteObjects} />
