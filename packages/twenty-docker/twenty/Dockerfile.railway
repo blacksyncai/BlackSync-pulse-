@@ -165,7 +165,10 @@ RUN mkdir -p /app/.local-storage /app/packages/twenty-server/.local-storage && \
 
 USER 1000
 
-CMD ["node", "dist/main"]
+# The queue worker runs in the same container as the server: Railway volumes attach to
+# one service, and files the worker saves (call recordings) must be on the disk the
+# server reads from.
+CMD ["sh", "-c", "node dist/queue-worker/queue-worker & exec node dist/main"]
 ENTRYPOINT ["/app/entrypoint.sh"]
 
 

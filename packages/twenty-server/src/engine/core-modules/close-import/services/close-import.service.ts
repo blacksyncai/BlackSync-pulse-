@@ -50,7 +50,6 @@ import { transformRichTextValue } from 'src/engine/core-modules/record-transform
 import { type WorkspaceRepository } from 'src/engine/twenty-orm/repository/workspace-repository';
 import { WorkspaceOrmManager } from 'src/engine/twenty-orm/workspace-orm.manager';
 import { buildSystemAuthContext } from 'src/engine/twenty-orm/utils/build-system-auth-context.util';
-import { AttachmentWorkspaceEntity } from 'src/modules/attachment/standard-objects/attachment.workspace-entity';
 import { CompanyWorkspaceEntity } from 'src/modules/company/standard-objects/company.workspace-entity';
 import { NoteTargetWorkspaceEntity } from 'src/modules/note/standard-objects/note-target.workspace-entity';
 import { NoteWorkspaceEntity } from 'src/modules/note/standard-objects/note.workspace-entity';
@@ -694,10 +693,11 @@ export class CloseImportService {
 
           // The attachment itself is the source of truth, so a sync also repairs calls
           // whose recording was lost, not only ones it has never seen.
-          const noteIdsWithRecording = await this.findNoteIdsWithAttachments(
-            workspaceId,
-            candidates.map((call) => importedIds[call.id]),
-          );
+          const noteIdsWithRecording =
+            await this.pulseRecordingService.findNotesWithStoredRecording(
+              workspaceId,
+              candidates.map((call) => importedIds[call.id]),
+            );
           const pending = candidates.filter(
             (call) => !noteIdsWithRecording.has(importedIds[call.id]),
           );
@@ -1000,28 +1000,6 @@ export class CloseImportService {
       ...status,
       heartbeatAt: Date.now(),
     });
-  }
-
-  private async findNoteIdsWithAttachments(
-    workspaceId: string,
-    noteIds: string[],
-  ): Promise<Set<string>> {
-    return this.workspaceOrmManager.executeInWorkspaceContext(async () => {
-      const attachmentRepository = this.workspaceOrmManager.getRepository(
-        AttachmentWorkspaceEntity,
-        { shouldBypassPermissionChecks: true },
-      );
-      const attachments = await attachmentRepository.find({
-        where: { targetNoteId: In(noteIds) },
-        select: ['targetNoteId'],
-      });
-
-      return new Set(
-        attachments
-          .map((attachment) => attachment.targetNoteId)
-          .filter(isDefined),
-      );
-    }, buildSystemAuthContext(workspaceId));
   }
 
   private async readStored<TValue>(

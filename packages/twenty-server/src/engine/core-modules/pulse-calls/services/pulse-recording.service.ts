@@ -4,6 +4,7 @@ import { isNonEmptyString } from '@sniptt/guards';
 import { STANDARD_OBJECTS } from 'twenty-shared/metadata';
 import { FieldActorSource, FileFolder } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
+import { In } from 'typeorm';
 import { v4 } from 'uuid';
 
 import { ApplicationEntity } from 'src/engine/core-modules/application/application.entity';
@@ -109,6 +110,87 @@ export class PulseRecordingService {
     };
   }
 
+  private async getAttachmentFileLocation(workspaceId: string) {
+    const fieldMetadata = await this.fieldMetadataRepository.findOneOrFail(
+      workspaceId,
+      {
+        select: ['applicationId', 'universalIdentifier'],
+        where: {
+          universalIdentifier:
+            STANDARD_OBJECTS.attachment.fields.file.universalIdentifier,
+        },
+      },
+    );
+    const application = await this.applicationRepository.findOneOrFail(
+      workspaceId,
+      { where: { id: fieldMetadata.applicationId } },
+    );
+
+    return { fieldMetadata, application };
+  }
+
+  // Notes whose recording file is really in storage. Attachments pointing at a missing
+  // file (saved where the app could not serve it) are removed so the recording is
+  // copied again instead of showing a broken player.
+  async findNotesWithStoredRecording(
+    workspaceId: string,
+    noteIds: string[],
+  ): Promise<Set<string>> {
+    if (noteIds.length === 0) {
+      return new Set();
+    }
+
+    const { fieldMetadata, application } =
+      await this.getAttachmentFileLocation(workspaceId);
+
+    return this.workspaceOrmManager.executeInWorkspaceContext(async () => {
+      const attachmentRepository = this.workspaceOrmManager.getRepository(
+        AttachmentWorkspaceEntity,
+        { shouldBypassPermissionChecks: true },
+      );
+      const attachments = await attachmentRepository.find({
+        where: { targetNoteId: In(noteIds) },
+      });
+      const stored = new Set<string>();
+      const brokenIds: string[] = [];
+
+      for (const attachment of attachments) {
+        const file = (
+          attachment.file as { fileId?: string; extension?: string }[] | null
+        )?.[0];
+
+        if (!isDefined(attachment.targetNoteId) || !isDefined(file?.fileId)) {
+          continue;
+        }
+
+        const extension = (file.extension ?? '').replace(/^\.?/, '.');
+        const exists = await this.fileStorageService
+          .checkFileExists({
+            workspaceId,
+            applicationUniversalIdentifier: application.universalIdentifier,
+            fileFolder: FileFolder.FilesField,
+            resourcePath: `${fieldMetadata.universalIdentifier}/${file.fileId}${extension === '.' ? '' : extension}`,
+          })
+          .catch(() => false);
+
+        if (exists) {
+          stored.add(attachment.targetNoteId);
+        } else {
+          brokenIds.push(attachment.id);
+        }
+      }
+
+      if (brokenIds.length > 0) {
+        await attachmentRepository.delete({ id: In(brokenIds) });
+        this.logger.warn(
+          `Removed ${brokenIds.length} recording attachment(s) whose file was missing`,
+        );
+      }
+
+      return stored;
+    }, buildSystemAuthContext(workspaceId));
+  }
+
   async storeOnNote({
     workspaceId,
     noteId,
@@ -120,19 +202,8 @@ export class PulseRecordingService {
     recording: CallRecordingAudio;
     label: string;
   }): Promise<void> {
-    const fileUniversalIdentifier =
-      STANDARD_OBJECTS.attachment.fields.file.universalIdentifier;
-    const fieldMetadata = await this.fieldMetadataRepository.findOneOrFail(
-      workspaceId,
-      {
-        select: ['applicationId', 'universalIdentifier'],
-        where: { universalIdentifier: fileUniversalIdentifier },
-      },
-    );
-    const application = await this.applicationRepository.findOneOrFail(
-      workspaceId,
-      { where: { id: fieldMetadata.applicationId } },
-    );
+    const { fieldMetadata, application } =
+      await this.getAttachmentFileLocation(workspaceId);
 
     const fileId = v4();
 
