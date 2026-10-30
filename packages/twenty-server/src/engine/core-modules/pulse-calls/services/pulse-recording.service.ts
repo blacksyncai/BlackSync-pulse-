@@ -144,7 +144,8 @@ export class PulseRecordingService {
       applicationId: application.id,
       workspaceId,
       fileId,
-      settings: { isTemporaryFile: false, toDelete: false },
+      // Saved as a pending upload; inserting the attachment below makes it permanent.
+      settings: { isTemporaryFile: true, toDelete: false },
     });
 
     await this.workspaceOrmManager.executeInWorkspaceContext(async () => {
