@@ -219,6 +219,26 @@ export const usePulseAccountData = (companyId: string) => {
     limit: 100,
   });
 
+  const callNoteIds = [
+    ...new Set(
+      noteTargets
+        .map((target) => target.note?.id)
+        .filter((noteId): noteId is string => isDefined(noteId)),
+    ),
+  ];
+
+  // Nested lists under a note aren't returned through note targets, so call
+  // recordings are fetched by note directly.
+  const { records: callAttachments } = useFindManyRecords<
+    AttachmentRecord & { targetNoteId: string | null }
+  >({
+    objectNameSingular: CoreObjectNameSingular.Attachment,
+    filter: { targetNoteId: { in: callNoteIds } },
+    recordGqlFields: { id: true, targetNoteId: true, file: true },
+    limit: 200,
+    skip: callNoteIds.length === 0,
+  });
+
   const { records: messageParticipants } =
     useFindManyRecords<MessageParticipantRecord>({
       objectNameSingular: CoreObjectNameSingular.MessageParticipant,
@@ -296,8 +316,13 @@ export const usePulseAccountData = (companyId: string) => {
       const contactName = contactNameByNoteId.get(note.id) ?? '';
 
       // Recordings copied into Pulse play from storage; older notes still carry a link.
-      const storedRecordingUrl = note.attachments
-        ?.flatMap((attachment) => attachment.file ?? [])
+      const storedRecordingUrl = [
+        ...(note.attachments ?? []),
+        ...callAttachments.filter(
+          (attachment) => attachment.targetNoteId === note.id,
+        ),
+      ]
+        .flatMap((attachment) => attachment.file ?? [])
         .find((file) =>
           AUDIO_EXTENSIONS.includes(
             (file.extension ?? '').toLowerCase().replace(/^\./, ''),
@@ -379,7 +404,7 @@ export const usePulseAccountData = (companyId: string) => {
     }
 
     return items.sort((a, b) => b.date.getTime() - a.date.getTime());
-  }, [noteTargets, taskTargets, messageParticipants]);
+  }, [noteTargets, taskTargets, messageParticipants, callAttachments]);
 
   const leadStatus = isDefined(leadStatusField)
     ? {
