@@ -230,11 +230,19 @@ export const usePulseAccountData = (companyId: string) => {
   // Nested lists under a note aren't returned through note targets, so call
   // recordings are fetched by note directly.
   const { records: callAttachments } = useFindManyRecords<
-    AttachmentRecord & { targetNoteId: string | null }
+    AttachmentRecord & {
+      targetNoteId?: string | null;
+      targetNote?: { id: string } | null;
+    }
   >({
     objectNameSingular: CoreObjectNameSingular.Attachment,
     filter: { targetNoteId: { in: callNoteIds } },
-    recordGqlFields: { id: true, targetNoteId: true, file: true },
+    recordGqlFields: {
+      id: true,
+      targetNoteId: true,
+      targetNote: { id: true },
+      file: true,
+    },
     limit: 200,
     skip: callNoteIds.length === 0,
   });
@@ -319,7 +327,8 @@ export const usePulseAccountData = (companyId: string) => {
       const storedRecordingUrl = [
         ...(note.attachments ?? []),
         ...callAttachments.filter(
-          (attachment) => attachment.targetNoteId === note.id,
+          (attachment) =>
+            (attachment.targetNoteId ?? attachment.targetNote?.id) === note.id,
         ),
       ]
         .flatMap((attachment) => attachment.file ?? [])

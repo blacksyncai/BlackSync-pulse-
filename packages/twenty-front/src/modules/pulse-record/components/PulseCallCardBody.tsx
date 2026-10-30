@@ -359,7 +359,11 @@ export const PulseCallCardBody = ({ item }: PulseCallCardBodyProps) => {
   const [activeLine, setActiveLine] = useState(-1);
   const [search, setSearch] = useState('');
   const [isWorking, setIsWorking] = useState(false);
-  const [canPlayRecording, setCanPlayRecording] = useState(true);
+  // Remembered per link: the stored copy can replace an unplayable link after loading.
+  const [failedRecordingUrl, setFailedRecordingUrl] = useState<string | null>(
+    null,
+  );
+  const canPlayRecording = item.recordingUrl !== failedRecordingUrl;
 
   const lines = transcript ?? parsed.transcript;
   const bullets = aiSummary ?? parsed.aiSummary;
@@ -603,7 +607,7 @@ export const PulseCallCardBody = ({ item }: PulseCallCardBodyProps) => {
                   : 0,
               )
             }
-            onError={() => setCanPlayRecording(false)}
+            onError={() => setFailedRecordingUrl(item.recordingUrl)}
           />
           <StyledPlayer>
             <StyledPlayButton
