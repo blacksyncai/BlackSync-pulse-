@@ -50,6 +50,7 @@ import { transformRichTextValue } from 'src/engine/core-modules/record-transform
 import { type WorkspaceRepository } from 'src/engine/twenty-orm/repository/workspace-repository';
 import { WorkspaceOrmManager } from 'src/engine/twenty-orm/workspace-orm.manager';
 import { buildSystemAuthContext } from 'src/engine/twenty-orm/utils/build-system-auth-context.util';
+import { AttachmentWorkspaceEntity } from 'src/modules/attachment/standard-objects/attachment.workspace-entity';
 import { CompanyWorkspaceEntity } from 'src/modules/company/standard-objects/company.workspace-entity';
 import { NoteTargetWorkspaceEntity } from 'src/modules/note/standard-objects/note-target.workspace-entity';
 import { NoteWorkspaceEntity } from 'src/modules/note/standard-objects/note.workspace-entity';
@@ -681,15 +682,25 @@ export class CloseImportService {
         // Close recording links need the Close login and expire, so the audio is copied
         // into Pulse (and transcribed) the first time each call is imported.
         const copyRecordings = async (calls: CloseCallActivity[]) => {
-          const pending = calls.filter((call) => {
-            const recordingUrl = call.recording_url ?? call.voicemail_url;
+          const candidates = calls.filter(
+            (call) =>
+              isNonEmptyString(call.recording_url ?? call.voicemail_url) &&
+              isDefined(importedIds[call.id]),
+          );
 
-            return (
-              isNonEmptyString(recordingUrl) &&
-              isDefined(importedIds[call.id]) &&
-              !isDefined(importedIds[`${call.id}:recording`])
-            );
-          });
+          if (candidates.length === 0) {
+            return;
+          }
+
+          // The attachment itself is the source of truth, so a sync also repairs calls
+          // whose recording was lost, not only ones it has never seen.
+          const noteIdsWithRecording = await this.findNoteIdsWithAttachments(
+            workspaceId,
+            candidates.map((call) => importedIds[call.id]),
+          );
+          const pending = candidates.filter(
+            (call) => !noteIdsWithRecording.has(importedIds[call.id]),
+          );
 
           for (
             let start = 0;
@@ -989,6 +1000,28 @@ export class CloseImportService {
       ...status,
       heartbeatAt: Date.now(),
     });
+  }
+
+  private async findNoteIdsWithAttachments(
+    workspaceId: string,
+    noteIds: string[],
+  ): Promise<Set<string>> {
+    return this.workspaceOrmManager.executeInWorkspaceContext(async () => {
+      const attachmentRepository = this.workspaceOrmManager.getRepository(
+        AttachmentWorkspaceEntity,
+        { shouldBypassPermissionChecks: true },
+      );
+      const attachments = await attachmentRepository.find({
+        where: { targetNoteId: In(noteIds) },
+        select: ['targetNoteId'],
+      });
+
+      return new Set(
+        attachments
+          .map((attachment) => attachment.targetNoteId)
+          .filter(isDefined),
+      );
+    }, buildSystemAuthContext(workspaceId));
   }
 
   private async readStored<TValue>(

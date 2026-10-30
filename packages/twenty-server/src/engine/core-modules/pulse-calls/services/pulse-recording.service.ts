@@ -72,17 +72,40 @@ export class PulseRecordingService {
       return null;
     }
 
-    const mimeType = response.headers.get('content-type') ?? 'audio/mpeg';
+    const contentType = (response.headers.get('content-type') ?? '')
+      .split(';')[0]
+      .trim()
+      .toLowerCase();
     const audio = Buffer.from(await response.arrayBuffer());
+    // File storage often serves recordings as generic binary; those are still audio.
+    const isGenericBinary =
+      contentType === '' ||
+      contentType === 'application/octet-stream' ||
+      contentType === 'binary/octet-stream';
 
-    if (audio.length === 0 || !mimeType.startsWith('audio/')) {
+    if (
+      audio.length === 0 ||
+      (!contentType.startsWith('audio/') && !isGenericBinary)
+    ) {
+      this.logger.warn(
+        `Recording download returned ${contentType || 'no content type'} (${audio.length} bytes), skipped`,
+      );
+
       return null;
     }
+
+    const isWav =
+      contentType.includes('wav') || /\.wav(\?|$)/i.test(response.url);
+    const mimeType = contentType.startsWith('audio/')
+      ? contentType
+      : isWav
+        ? 'audio/wav'
+        : 'audio/mpeg';
 
     return {
       audio,
       mimeType,
-      extension: mimeType.includes('wav') ? 'wav' : 'mp3',
+      extension: isWav ? 'wav' : 'mp3',
     };
   }
 
