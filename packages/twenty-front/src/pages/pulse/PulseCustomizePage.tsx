@@ -1,4 +1,5 @@
 import { useObjectMetadataItem } from '@/object-metadata/hooks/useObjectMetadataItem';
+import { PulseTagsEditor } from '@/pulse-customize/components/PulseTagsEditor';
 import { PulseCustomFieldsEditor } from '@/pulse-customize/components/PulseCustomFieldsEditor';
 import { PulseDealCardFieldsEditor } from '@/pulse-customize/components/PulseDealCardFieldsEditor';
 import { PulseNotificationPreferencesEditor } from '@/pulse-customize/components/PulseNotificationPreferences';
@@ -20,6 +21,7 @@ import { IconAdjustments } from 'twenty-ui/icon';
 import { themeCssVariables } from 'twenty-ui/theme';
 
 type SectionId =
+  | 'tags'
   | 'statuses'
   | 'pipelines'
   | 'fields'
@@ -169,6 +171,7 @@ export const PulseCustomizePage = () => {
   };
 
   const sections: { id: SectionId; label: string }[] = [
+    { id: 'tags', label: t`Tags` },
     { id: 'statuses', label: t`Lead statuses` },
     { id: 'pipelines', label: t`Pipelines & stages` },
     { id: 'fields', label: t`Custom fields` },
@@ -196,6 +199,17 @@ export const PulseCustomizePage = () => {
         </StyledMenu>
         <StyledContent>
           <StyledInner>
+            {section === 'tags' && (
+              <>
+                <StyledHeading>
+                  <h2>{t`Tags`}</h2>
+                  <p>{t`Create reusable tags for leads, contacts, and deals. Apply them from record details, filters, workflows, or the record API.`}</p>
+                </StyledHeading>
+                <StyledCard>
+                  <PulseTagsEditor />
+                </StyledCard>
+              </>
+            )}
             {section === 'statuses' && (
               <>
                 <StyledHeading>

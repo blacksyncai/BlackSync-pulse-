@@ -55,6 +55,23 @@ export const SettingsMcpSetup = () => {
 
   return (
     <StyledMcpSetupContainer>
+      <Section.Root>
+        <Section.Header
+          title={t`Your BlackSync MCP server`}
+          description={t`Paste this URL when adding BlackSync Cloud as a custom MCP server in ChatGPT or a custom connector in Claude. Choose OAuth and sign in to this workspace.`}
+        />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            overflowWrap: 'anywhere',
+          }}
+        >
+          <code>{mcpServerUrl}</code>
+          <LightCopyIconButton copyText={mcpServerUrl} />
+        </div>
+      </Section.Root>
       {categories.map((category) => (
         <Fragment key={category.title}>
           <Section.Root>

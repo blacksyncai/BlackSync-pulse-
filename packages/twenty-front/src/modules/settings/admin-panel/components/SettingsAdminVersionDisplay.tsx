@@ -44,7 +44,7 @@ export const SettingsAdminVersionDisplay = ({
 
   return (
     <StyledActionLink
-      href={`https://hub.docker.com/r/twentycrm/twenty/tags?name=${version}`}
+      href={`https://github.com/blacksyncai/BlackSync-pulse-/commits/application-registration-ownership-guard/`}
       target="_blank"
       rel="noreferrer"
     >

@@ -226,7 +226,7 @@ export default function AgencyHeroSection() {
                 <span>+</span>
               </summary>
               <p>
-                <Trans id="BlackSync Cloud is a connected CRM built on the open-source Twenty platform, bringing relationships, sales pipelines, calls, and workflows into one place." />
+                <Trans id="BlackSync Cloud brings relationships, sales pipelines, calls, and workflows into one connected workspace." />
               </p>
             </details>
             <details>

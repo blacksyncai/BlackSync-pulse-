@@ -40,15 +40,15 @@ export const buildMcpSetupCategories = ({
 }: BuildMcpSetupCategoriesParams): McpSetupCategory[] => [
   {
     title: t`Quick install`,
-    description: t`Open a maintained integration or prefill clients that accept MCP install links.`,
+    description: t`Connect directly to your BlackSync Cloud workspace. No third-party CRM account is required.`,
     showManualConfigurationAfter: true,
     cards: [
       {
         title: t`ChatGPT`,
-        badge: t`Official app`,
-        description: t`Open BlackSync Cloud's official ChatGPT integration for your workspace.`,
+        badge: t`Custom MCP`,
+        description: t`Add a custom MCP app named BlackSync Cloud using your workspace MCP URL below. Connect with OAuth to your own workspace.`,
         ctaLabel: t`Open`,
-        href: MCP_SETUP.chatGptTwentyAppUrl,
+        href: MCP_SETUP.chatGptAppsUrl,
         logo: <McpClientLogo src={OpenAiLogo} invertInDarkMode />,
       },
       {

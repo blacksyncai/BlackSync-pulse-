@@ -7,6 +7,40 @@ export type BlackSyncHelpArticle = {
 // The help center answers from BlackSync Cloud's own guide, kept in sync with the product.
 export const BLACKSYNC_HELP_ARTICLES: BlackSyncHelpArticle[] = [
   {
+    title: 'Connect BlackSync MCP to Claude and ChatGPT',
+    keywords: [
+      'mcp',
+      'claude',
+      'chatgpt',
+      'connector',
+      'connect',
+      'api',
+      'oauth',
+    ],
+    content:
+      'Open Connect & automate in the sidebar, then MCP. Copy your workspace MCP URL ending in /mcp. Add a custom MCP server named BlackSync Cloud in ChatGPT Plugins, or a custom connector in Claude. Choose OAuth and authorize with your BlackSync account. Access depends on the client plan and workspace permissions. For clients supporting static headers, create an API key and use Authorization: Bearer YOUR_API_KEY. This connects to this BlackSync workspace, not another CRM service.',
+  },
+  {
+    title: 'Push external call activity into BlackSync',
+    keywords: [
+      'webhook',
+      'api',
+      'call',
+      'external',
+      'recording',
+      'integration',
+      'retry',
+    ],
+    content:
+      'POST /rest/pulse/calls with a Bearer API key and normalized JSON: source, externalId, phoneNumber in E.164 format, direction (inbound or outbound), durationSeconds, outcome, and personId or companyId. Optional summary, transcript and HTTPS recordingUrl appear on the call card. The first write returns 201; replaying the same source and externalId in the workspace returns 200 with the same noteId. The API requires record permissions, attaches existing records only, and does not fetch or transcribe external recording URLs. Raw provider webhooks need a server-side adapter.',
+  },
+  {
+    title: 'Tags on leads, contacts and deals',
+    keywords: ['tags', 'tag', 'label', 'segment', 'multi-select'],
+    content:
+      'Open Customize → Tags and select Leads, Contacts or Deals. Add reusable tag options and save. Apply tags from the record custom fields. Tags are regular multi-select fields named tags and are available to REST record APIs, MCP and workflows. PATCH updates replace the tags array; read existing values first to append without losing tags.',
+  },
+  {
     title: 'About BlackSync Cloud',
     keywords: [
       'about',

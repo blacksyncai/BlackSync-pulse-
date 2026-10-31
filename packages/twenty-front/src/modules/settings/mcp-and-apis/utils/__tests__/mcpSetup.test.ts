@@ -11,7 +11,7 @@ import {
   isHttpsUrl,
 } from '@/settings/mcp-and-apis/utils/mcpSetup';
 
-const mcpServerUrl = 'https://api.twenty.com/mcp';
+const mcpServerUrl = 'https://crm.blacksync.cloud/mcp';
 
 const decodeBase64JsonParam = (link: string, paramName: string) => {
   const params = new URLSearchParams(link.split('?')[1]);
@@ -26,14 +26,16 @@ const decodeBase64JsonParam = (link: string, paramName: string) => {
 
 describe('buildMcpServerUrl', () => {
   it('appends /mcp after trimming trailing slashes', () => {
-    expect(buildMcpServerUrl('https://api.twenty.com///')).toBe(mcpServerUrl);
+    expect(buildMcpServerUrl('https://crm.blacksync.cloud///')).toBe(
+      mcpServerUrl,
+    );
   });
 });
 
 describe('isHttpsUrl', () => {
   it('returns true only for valid HTTPS urls', () => {
     expect(isHttpsUrl(mcpServerUrl)).toBe(true);
-    expect(isHttpsUrl('http://api.twenty.com/mcp')).toBe(false);
+    expect(isHttpsUrl('http://crm.blacksync.cloud/mcp')).toBe(false);
     expect(isHttpsUrl('not a url')).toBe(false);
   });
 });
@@ -42,7 +44,7 @@ describe('buildMcpConfig', () => {
   it('builds the remote MCP JSON config', () => {
     expect(JSON.parse(buildMcpConfig(mcpServerUrl))).toEqual({
       mcpServers: {
-        twenty: {
+        blacksync: {
           url: mcpServerUrl,
           headers: {
             Authorization: 'Bearer <YOUR_API_KEY>',
@@ -83,7 +85,9 @@ describe('buildCursorInstallLink', () => {
     const link = buildCursorInstallLink(mcpServerUrl);
 
     expect(link.startsWith('https://cursor.com/en/install-mcp?')).toBe(true);
-    expect(new URLSearchParams(link.split('?')[1]).get('name')).toBe('twenty');
+    expect(new URLSearchParams(link.split('?')[1]).get('name')).toBe(
+      'blacksync',
+    );
     expect(decodeBase64JsonParam(link, 'config')).toEqual(
       buildRemoteMcpServerConfig(mcpServerUrl),
     );
@@ -99,7 +103,7 @@ describe('buildVsCodeInstallLink', () => {
     );
 
     expect(payload).toEqual({
-      name: 'twenty',
+      name: 'blacksync',
       type: 'http',
       url: mcpServerUrl,
       headers: {
@@ -116,7 +120,7 @@ describe('buildGooseInstallLink', () => {
 
     expect(link.startsWith('goose://extension?')).toBe(true);
     expect(params.get('type')).toBe('streamable_http');
-    expect(params.get('id')).toBe('twenty');
+    expect(params.get('id')).toBe('blacksync');
     expect(params.get('name')).toBe('BlackSync Cloud');
     expect(params.get('url')).toBe(mcpServerUrl);
     expect(params.get('header')).toBe('Authorization=Bearer <YOUR_API_KEY>');
@@ -146,7 +150,9 @@ describe('buildLmStudioInstallLink', () => {
     const link = buildLmStudioInstallLink(mcpServerUrl);
 
     expect(link.startsWith('lmstudio://add_mcp?')).toBe(true);
-    expect(new URLSearchParams(link.split('?')[1]).get('name')).toBe('twenty');
+    expect(new URLSearchParams(link.split('?')[1]).get('name')).toBe(
+      'blacksync',
+    );
     expect(decodeBase64JsonParam(link, 'config')).toEqual(
       buildRemoteMcpServerConfig(mcpServerUrl),
     );

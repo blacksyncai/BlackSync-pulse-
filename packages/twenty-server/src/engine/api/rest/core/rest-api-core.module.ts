@@ -18,6 +18,7 @@ import { RestApiRestoreOneHandler } from 'src/engine/api/rest/core/handlers/rest
 import { RestApiUpdateManyHandler } from 'src/engine/api/rest/core/handlers/rest-api-update-many.handler';
 import { RestApiUpdateOneHandler } from 'src/engine/api/rest/core/handlers/rest-api-update-one.handler';
 import { restToCommonArgsHandlers } from 'src/engine/api/rest/core/rest-to-common-args-handlers/rest-to-common-args-handlers';
+import { PulseCallIngestionService } from 'src/engine/api/rest/core/services/pulse-call-ingestion.service';
 import { RestApiCoreService } from 'src/engine/api/rest/core/services/rest-api-core.service';
 import { ActorModule } from 'src/engine/core-modules/actor/actor.module';
 import { ApiKeyModule } from 'src/engine/core-modules/api-key/api-key.module';
@@ -66,6 +67,7 @@ const restApiCoreResolvers = [
   controllers: [RestApiCoreController],
   providers: [
     RestApiCoreService,
+    PulseCallIngestionService,
     ...restApiCoreResolvers,
     ...restToCommonArgsHandlers,
   ],

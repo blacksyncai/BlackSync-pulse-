@@ -3,15 +3,11 @@ import { NavigationButton } from '@/ui/input/components/NavigationButton';
 import { SettingsPageLayout } from '@/settings/components/layout/SettingsPageLayout';
 import { SettingsTabBar } from '@/settings/components/layout/SettingsTabBar';
 import { useSettingsActiveTabId } from '@/settings/components/layout/useSettingsActiveTabId';
-import { SettingsDiscoveryHeroCard } from '@/settings/components/SettingsDiscoveryHeroCard';
 import { SettingsPageContainer } from '@/settings/components/SettingsPageContainer';
 import { SettingsApiKeysTable } from '@/settings/developers/components/SettingsApiKeysTable';
 import { SettingsWebhooksTable } from '@/settings/developers/components/SettingsWebhooksTable';
-import PlaygroundCoverDark from '@/settings/mcp-and-apis/assets/cover-dark.png';
-import PlaygroundCoverLight from '@/settings/mcp-and-apis/assets/cover-light.png';
-import McpCoverDark from '@/settings/mcp-and-apis/assets/mcp-cover-dark.png';
-import McpCoverLight from '@/settings/mcp-and-apis/assets/mcp-cover-light.png';
 import { PlaygroundSetupForm } from '@/settings/mcp-and-apis/components/PlaygroundSetupForm';
+import { BlackSyncIntegrationGuide } from '@/settings/mcp-and-apis/components/BlackSyncIntegrationGuide';
 import { SettingsMcpSetup } from '@/settings/mcp-and-apis/components/SettingsMcpSetup';
 import { useIsMobile } from 'twenty-ui/utilities';
 import { styled } from '@linaria/react';
@@ -19,20 +15,12 @@ import { useLingui } from '@lingui/react/macro';
 import { SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
 import { Section } from 'twenty-ui/components';
-import {
-  IconApi,
-  IconPlus,
-  IconSparkle2,
-  IconSparkles,
-  IconWebhook,
-} from 'twenty-ui/icon';
+import { IconApi, IconPlus, IconSparkles, IconWebhook } from 'twenty-ui/icon';
 import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme';
 import { SETTINGS_API_WEBHOOKS_TABS } from '~/pages/settings/api-webhooks/constants/SettingsApiWebhooksTabs';
 
 type TabKey =
   (typeof SETTINGS_API_WEBHOOKS_TABS.TABS_IDS)[keyof typeof SETTINGS_API_WEBHOOKS_TABS.TABS_IDS];
-
-const SETTINGS_API_HERO_INSTANCE_ID_PREFIX = 'settings-api-hero';
 
 const StyledButtonContainer = styled.div`
   display: flex;
@@ -85,8 +73,6 @@ export const SettingsApiWebhooks = () => {
       tabs.map((tab) => tab.id),
     ) as TabKey) ?? SETTINGS_API_WEBHOOKS_TABS.TABS_IDS.MCP;
 
-  const isMcpTab = activeTab === SETTINGS_API_WEBHOOKS_TABS.TABS_IDS.MCP;
-
   return (
     <SettingsPageLayout
       title={t`MCP & APIs`}
@@ -107,20 +93,9 @@ export const SettingsApiWebhooks = () => {
     >
       <SettingsPageContainer>
         <Section.Root>
-          <SettingsDiscoveryHeroCard
-            lightSrc={isMcpTab ? McpCoverLight : PlaygroundCoverLight}
-            darkSrc={isMcpTab ? McpCoverDark : PlaygroundCoverDark}
-            instanceIdPrefix={SETTINGS_API_HERO_INSTANCE_ID_PREFIX}
-            tabs={[
-              {
-                id: 'api_webhook_walkthrough',
-                title: t`Walkthrough`,
-                Icon: IconSparkle2,
-                vimeoId: '1217967646',
-                hasSound: true,
-              },
-            ]}
-            playButtonAriaLabel={t`Watch API demo`}
+          <Section.Header
+            title={t`BlackSync connections`}
+            description={t`Connect your own CRM to AI assistants, automations, and external systems.`}
           />
         </Section.Root>
 
@@ -132,6 +107,7 @@ export const SettingsApiWebhooks = () => {
                 description={t`Try our REST or GraphQL API playgrounds`}
               />
               <PlaygroundSetupForm />
+              <BlackSyncIntegrationGuide />
             </Section.Root>
 
             <Section.Root>

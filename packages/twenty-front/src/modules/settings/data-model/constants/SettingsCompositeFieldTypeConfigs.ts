@@ -185,7 +185,7 @@ export const SETTINGS_COMPOSITE_FIELD_TYPE_CONFIGS = {
       },
       {
         primaryLinkUrl: 'blacksync.cloud',
-        primaryLinkLabel: 'Twenty Repo',
+        primaryLinkLabel: 'BlackSync Cloud',
         secondaryLinks: [{ url: 'blacksync.ai', label: '' }],
       },
       {

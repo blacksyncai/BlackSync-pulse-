@@ -38,11 +38,7 @@ import { ViewKey } from '@/views/types/ViewKey';
 import { getAbsoluteImageUrl } from '~/utils/image/getAbsoluteImageUrl';
 
 export type NavigationMenuItemAddStep =
-  | 'main'
-  | 'object'
-  | 'view'
-  | 'record'
-  | 'page';
+  'main' | 'object' | 'view' | 'record' | 'page';
 
 type UseNavigationMenuItemAddOptionsParams = {
   step: NavigationMenuItemAddStep;
@@ -173,7 +169,7 @@ export const useNavigationMenuItemAddOptions = ({
           onClick: () => {
             addItem({
               type: NavigationMenuItemType.LINK,
-              name: 'Twenty',
+              name: 'BlackSync Cloud',
               link: 'https://blacksync.ai',
               color: DEFAULT_NAVIGATION_MENU_ITEM_COLOR_LINK,
             });

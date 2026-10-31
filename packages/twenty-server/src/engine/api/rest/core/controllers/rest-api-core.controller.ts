@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -10,11 +11,14 @@ import {
   Res,
   UseFilters,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 
 import { Response } from 'express';
 import { ApiPath } from 'twenty-shared/types';
 
+import { IngestPulseCallDto } from 'src/engine/api/rest/core/dtos/ingest-pulse-call.dto';
+import { PulseCallIngestionService } from 'src/engine/api/rest/core/services/pulse-call-ingestion.service';
 import { RestApiCoreService } from 'src/engine/api/rest/core/services/rest-api-core.service';
 import { RestApiExceptionFilter } from 'src/engine/api/rest/rest-api-exception.filter';
 import { AuthenticatedRequest } from 'src/engine/api/rest/types/authenticated-request.type';
@@ -42,7 +46,27 @@ import { AuthRestApiExceptionFilter } from 'src/engine/core-modules/auth/filters
 @UseFilters(RestApiExceptionFilter, AuthRestApiExceptionFilter)
 export class RestApiCoreController {
   private readonly logger = new Logger(RestApiCoreController.name);
-  constructor(private readonly restApiCoreService: RestApiCoreService) {}
+  constructor(
+    private readonly restApiCoreService: RestApiCoreService,
+    private readonly pulseCallIngestionService: PulseCallIngestionService,
+  ) {}
+
+  @Post('pulse/calls')
+  async ingestCall(
+    @Req() request: AuthenticatedRequest,
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      }),
+    )
+    input: IngestPulseCallDto,
+    @Res() response: Response,
+  ) {
+    const result = await this.pulseCallIngestionService.ingest(input, request);
+    return response.status(result.created ? 201 : 200).send(result);
+  }
 
   @Post('batch/*path')
   async handleApiPostBatch(

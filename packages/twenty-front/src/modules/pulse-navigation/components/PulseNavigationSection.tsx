@@ -6,9 +6,11 @@ import { getNavigationSubItemLeftAdornment } from '@/ui/navigation/navigation-dr
 import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { AppPath } from 'twenty-shared/types';
+import { AppPath, SettingsPath } from 'twenty-shared/types';
+import { getSettingsPath } from 'twenty-shared/utils';
 import {
   IconAdjustments,
+  IconApi,
   IconBuildingSkyscraper,
   IconCheckbox,
   IconFileImport,
@@ -109,6 +111,14 @@ export const PulseNavigationSection = () => {
       </StyledGroup>
       <StyledGroup>
         <NavigationDrawerSectionTitle label={t`Setup`} />
+        <NavigationDrawerItem
+          label={t`Connect & automate`}
+          to={getSettingsPath(SettingsPath.ApiWebhooks)}
+          Icon={IconApi}
+          active={pathname.startsWith(
+            getSettingsPath(SettingsPath.ApiWebhooks),
+          )}
+        />
         <NavigationDrawerItem
           label={t`Customize`}
           to={AppPath.PulseCustomize}

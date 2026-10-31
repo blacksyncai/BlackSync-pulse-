@@ -24,6 +24,7 @@ export const useSaveSelectOptions = () => {
     label,
     icon,
     options,
+    fieldType = FieldMetadataType.SELECT,
   }: {
     objectMetadataId: string;
     field: FieldMetadataItem | undefined;
@@ -31,6 +32,7 @@ export const useSaveSelectOptions = () => {
     label: string;
     icon: string;
     options: EditableSelectOption[];
+    fieldType?: FieldMetadataType.SELECT | FieldMetadataType.MULTI_SELECT;
   }) => {
     const normalized = options.map((option, position) => ({
       id: option.id,
@@ -52,7 +54,7 @@ export const useSaveSelectOptions = () => {
 
     const result = await createOneFieldMetadataItem({
       objectMetadataId,
-      type: FieldMetadataType.SELECT,
+      type: fieldType,
       name: fieldName,
       label,
       icon,
