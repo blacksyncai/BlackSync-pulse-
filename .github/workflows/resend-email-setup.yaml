@@ -40,6 +40,9 @@ jobs:
               configurations = {}
               for label, service_id in services.items():
                   configurations[label] = railway('query($projectId: String!, $environmentId: String!, $serviceId: String!) { variables(projectId: $projectId, environmentId: $environmentId, serviceId: $serviceId) }', {'projectId':project_id,'environmentId':environment_id,'serviceId':service_id})['variables']
+              for label, data in configurations.items():
+                  print('EMAIL_AUDIT ' + label + ': ' + json.dumps({'from_name':data.get('EMAIL_FROM_NAME'),'from_address':data.get('EMAIL_FROM_ADDRESS'),'email_driver':data.get('EMAIL_DRIVER'),'domain_driver':data.get('EMAILING_DOMAIN_DRIVER'),'resend_from_domain':data.get('RESEND_FROM_DOMAIN'),'cron_registration_disabled':str(data.get('DISABLE_CRON_JOBS_REGISTRATION','false')).lower() == 'true'}, sort_keys=True))
+              sys.exit(0)
               key = os.environ.get('RESEND_API_KEY') or next((data.get('RESEND_API_KEY') for data in configurations.values() if data.get('RESEND_API_KEY')), None)
               print('Resend API key available: ' + str(bool(key)))
               if not key:
