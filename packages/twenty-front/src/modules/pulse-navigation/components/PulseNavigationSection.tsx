@@ -14,7 +14,7 @@ import {
   IconBuildingSkyscraper,
   IconCheckbox,
   IconFileImport,
-  IconForms,
+  IconFileText,
   IconInbox,
   IconLayoutDashboard,
   IconMail,
@@ -115,7 +115,7 @@ export const PulseNavigationSection = () => {
         <NavigationDrawerItem
           label={t`Forms & submissions`}
           to="/forms"
-          Icon={IconForms}
+          Icon={IconFileText}
           active={pathname === '/forms'}
         />
         <NavigationDrawerItem

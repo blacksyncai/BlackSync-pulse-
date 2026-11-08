@@ -16,7 +16,7 @@ import { useLingui } from '@lingui/react/macro';
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CoreObjectNameSingular } from 'twenty-shared/types';
-import { IconForms } from 'twenty-ui/icon';
+import { IconFileText } from 'twenty-ui/icon';
 import { themeCssVariables } from 'twenty-ui/theme';
 import { v4 } from 'uuid';
 
@@ -297,7 +297,7 @@ export const PulseFormsPage = () => {
 
   return (
     <PageCardLayout
-      header={<PageHeader title={t`Forms & submissions`} Icon={IconForms} />}
+      header={<PageHeader title={t`Forms & submissions`} Icon={IconFileText} />}
     >
       <StyledPage>
         <StyledHeader>
