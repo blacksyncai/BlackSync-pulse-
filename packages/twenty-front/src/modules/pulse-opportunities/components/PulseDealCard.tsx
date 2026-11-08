@@ -153,11 +153,26 @@ const StyledContact = styled.div`
 
 const StyledContactName = styled.strong`
   color: ${themeCssVariables.font.color.primary};
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.1px;
   line-height: 1.3;
   overflow-wrap: anywhere;
+`;
+
+const StyledIndustry = styled.span`
+  align-self: flex-start;
+  background: ${themeCssVariables.accent.quaternary};
+  border: 1px solid ${themeCssVariables.border.color.medium};
+  border-radius: 999px;
+  color: ${themeCssVariables.accent.accent11};
+  font-size: ${themeCssVariables.font.size.sm};
+  font-weight: ${themeCssVariables.font.weight.medium};
+  line-height: 1.4;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  padding: 3px 8px;
+  box-sizing: border-box;
 `;
 
 const StyledRowText = styled.span`
@@ -439,6 +454,9 @@ export const PulseDealCard = ({
         </StyledForm>
       ) : (
         <StyledBody>
+          <StyledIndustry aria-label={t`Industry`}>
+            {deal.industryLabel || t`Industry not set`}
+          </StyledIndustry>
           {fields.contact && isDefined(contact) && (
             <StyledContact>
               <StyledContactName>{contactName || t`Contact`}</StyledContactName>
