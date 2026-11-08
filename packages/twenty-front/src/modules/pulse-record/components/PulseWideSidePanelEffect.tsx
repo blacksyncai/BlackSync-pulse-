@@ -1,29 +1,13 @@
-import {
-  SIDE_PANEL_WIDTH_VAR,
-  sidePanelWidthState,
-} from '@/side-panel/states/sidePanelWidthState';
-import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
-import { useEffect } from 'react';
-
-// Accounts open in a wide panel so the Close-style two-column view fits beside the list.
-const WIDE_SIDE_PANEL_WIDTH = '75vw';
+import { isRecordSidePanelOverlayState } from '@/side-panel/states/isRecordSidePanelOverlayState';
+import { useSetAtomState } from '@/ui/utilities/state/jotai/hooks/useSetAtomState';
+import { useLayoutEffect } from 'react';
 
 export const PulseWideSidePanelEffect = () => {
-  const sidePanelWidth = useAtomStateValue(sidePanelWidthState);
-
-  useEffect(() => {
-    document.documentElement.style.setProperty(
-      SIDE_PANEL_WIDTH_VAR,
-      WIDE_SIDE_PANEL_WIDTH,
-    );
-
-    return () => {
-      document.documentElement.style.setProperty(
-        SIDE_PANEL_WIDTH_VAR,
-        `${sidePanelWidth}px`,
-      );
-    };
-  }, [sidePanelWidth]);
-
+  const setIsRecordOverlay = useSetAtomState(isRecordSidePanelOverlayState);
+  // Record detail needs room without changing the board's layout or saved drawer width.
+  useLayoutEffect(() => {
+    setIsRecordOverlay(true);
+    return () => setIsRecordOverlay(false);
+  }, [setIsRecordOverlay]);
   return null;
 };

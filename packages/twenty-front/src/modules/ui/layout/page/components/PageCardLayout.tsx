@@ -1,3 +1,4 @@
+import { CrmGlassSurface } from '@/components/ui/crm-glass-surface';
 import { InformationBannerWrapper } from '@/information-banner/components/InformationBannerWrapper';
 import { useWorkspaceSurface } from '@/ui/layout/hooks/useWorkspaceSurface';
 import { styled } from '@linaria/react';
@@ -39,11 +40,9 @@ const StyledMainCardWrapper = styled.div`
   }
 `;
 
-const StyledCard = styled.div`
-  background: ${themeCssVariables.background.primary};
-  border-left: 1px solid ${themeCssVariables.border.color.medium};
-  border-radius: 0;
-  box-shadow: ${themeCssVariables.boxShadow.sidebar};
+const StyledCard = styled(CrmGlassSurface)`
+  margin: 8px;
+  min-width: 0;
   box-sizing: border-box;
   display: flex;
   flex: 1;
@@ -53,12 +52,16 @@ const StyledCard = styled.div`
   width: 100%;
 
   @media (max-width: ${MOBILE_VIEWPORT}px) {
-    border-left: none;
+    border: none;
+    border-radius: 0;
+    margin: 0;
     box-shadow: none;
   }
 
   @media print {
-    border-left: none;
+    border: none;
+    border-radius: 0;
+    margin: 0;
     box-shadow: none;
     display: block;
     min-height: auto;

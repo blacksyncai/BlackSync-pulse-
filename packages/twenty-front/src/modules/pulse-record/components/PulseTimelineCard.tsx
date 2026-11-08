@@ -30,6 +30,8 @@ const KIND_STYLES: Record<
 };
 
 const StyledRow = styled.div`
+  flex-shrink: 0;
+  min-width: 0;
   display: flex;
   gap: ${themeCssVariables.spacing[3]};
   position: relative;
@@ -69,6 +71,7 @@ const StyledCard = styled.div`
 `;
 
 const StyledCardHeader = styled.button`
+  flex-wrap: wrap;
   align-items: center;
   background: transparent;
   border: 0;
@@ -87,12 +90,16 @@ const StyledCardHeader = styled.button`
 `;
 
 const StyledTitle = styled.span`
+  flex: 1 1 160px;
+  line-height: 1.4;
   font-size: ${themeCssVariables.font.size.md};
   font-weight: ${themeCssVariables.font.weight.semiBold};
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
 
   &[data-done='true'] {
     color: ${themeCssVariables.font.color.tertiary};

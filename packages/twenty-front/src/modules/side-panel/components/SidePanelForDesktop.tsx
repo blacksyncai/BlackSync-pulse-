@@ -1,3 +1,4 @@
+import { isRecordSidePanelOverlayState } from '@/side-panel/states/isRecordSidePanelOverlayState';
 import { tableWidthResizeIsActiveState } from '@/object-record/record-table/states/tableWidthResizeIsActivedState';
 import { SidePanelAskAiHandoffEffect } from '@/side-panel/components/SidePanelAskAiHandoffEffect';
 import { SidePanelRouter } from '@/side-panel/components/SidePanelRouter';
@@ -27,15 +28,23 @@ import { themeCssVariables } from 'twenty-ui/theme';
 const StyledSidePanelWrapper = styled.div<{
   isOpen: boolean;
   isResizing: boolean;
+  isRecordOverlay: boolean;
 }>`
   flex-shrink: 0;
   min-width: 0;
+  position: ${({ isRecordOverlay }) => (isRecordOverlay ? 'absolute' : 'relative')};
+  top: ${({ isRecordOverlay }) => (isRecordOverlay ? '12px' : 'auto')};
+  right: ${({ isRecordOverlay }) => (isRecordOverlay ? '12px' : 'auto')};
+  bottom: ${({ isRecordOverlay }) => (isRecordOverlay ? '12px' : 'auto')};
+  z-index: ${({ isRecordOverlay }) => (isRecordOverlay ? 30 : 'auto')};
+  border-radius: ${({ isRecordOverlay }) => (isRecordOverlay ? '18px' : '0')};
+  box-shadow: ${({ isRecordOverlay }) => (isRecordOverlay ? '0 18px 70px rgba(0, 0, 0, 0.18)' : 'none')};
   overflow: hidden;
   transition: ${({ isResizing }) =>
     isResizing
       ? 'none'
       : `width calc(${themeCssVariables.animation.duration.normal} * 1s)`};
-  width: ${({ isOpen }) => (isOpen ? `var(${SIDE_PANEL_WIDTH_VAR})` : '0px')};
+  width: ${({ isOpen, isRecordOverlay }) => (!isOpen ? '0px' : isRecordOverlay ? 'min(1280px, calc(100% - 24px))' : `var(${SIDE_PANEL_WIDTH_VAR})`)};
 
   @keyframes sidePanelShrinkFromFullWidth {
     from {
@@ -49,17 +58,26 @@ const StyledSidePanelWrapper = styled.div<{
   }
 `;
 
-const StyledSidePanel = styled.aside<{ isShrinkingFromFullWidth: boolean }>`
+const StyledSidePanel = styled.aside<{
+  isShrinkingFromFullWidth: boolean;
+  isRecordOverlay: boolean;
+}>`
   background: ${themeCssVariables.background.primary};
+  border: ${({ isRecordOverlay }) => (isRecordOverlay ? `1px solid ${themeCssVariables.border.color.strong}` : 'none')};
   border-left: 1px solid ${themeCssVariables.border.color.medium};
+  border-radius: ${({ isRecordOverlay }) => (isRecordOverlay ? '18px' : '0')};
+  min-height: 0;
+  min-width: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
   position: relative;
-  width: ${({ isShrinkingFromFullWidth }) =>
-    isShrinkingFromFullWidth ? '100%' : `var(${SIDE_PANEL_WIDTH_VAR})`};
+  width: ${({ isShrinkingFromFullWidth, isRecordOverlay }) =>
+    isShrinkingFromFullWidth || isRecordOverlay
+      ? '100%'
+      : `var(${SIDE_PANEL_WIDTH_VAR})`};
 `;
 
 const StyledModalContainer = styled.div`
@@ -75,6 +93,7 @@ const StyledModalContainer = styled.div`
 export const SidePanelForDesktop = () => {
   const store = useStore();
   const isSidePanelOpened = useAtomStateValue(isSidePanelOpenedState);
+  const isRecordOverlay = useAtomStateValue(isRecordSidePanelOverlayState);
   const [sidePanelWidth, setSidePanelWidth] = useAtomState(sidePanelWidthState);
   const { closeSidePanelMenu } = useSidePanelMenu();
   const { sidePanelCloseAnimationCompleteCleanup } =
@@ -162,27 +181,33 @@ export const SidePanelForDesktop = () => {
       <SidePanelAskAiHandoffEffect
         onContinueChatFromFullWidth={handleContinueChatFromFullWidth}
       />
-      <ResizablePanelGap
-        side="left"
-        constraints={SIDE_PANEL_CONSTRAINTS}
-        currentSize={sidePanelWidth}
-        onSizeChange={handleWidthChange}
-        onCollapse={handleCollapse}
-        gapWidth={0}
-        cssVariableName={SIDE_PANEL_WIDTH_VAR}
-        onResizeStart={handleResizeStart}
-      />
+      {!isRecordOverlay && (
+        <ResizablePanelGap
+          side="left"
+          constraints={SIDE_PANEL_CONSTRAINTS}
+          currentSize={sidePanelWidth}
+          onSizeChange={handleWidthChange}
+          onCollapse={handleCollapse}
+          gapWidth={0}
+          cssVariableName={SIDE_PANEL_WIDTH_VAR}
+          onResizeStart={handleResizeStart}
+        />
+      )}
 
       <StyledSidePanelWrapper
         isOpen={isSidePanelOpened}
         isResizing={isResizing}
+        isRecordOverlay={isRecordOverlay}
         onTransitionEnd={handleTransitionEnd}
         onAnimationEnd={handleAnimationEnd}
         data-shrink-from-full-width={isShrinkingFromFullWidth}
         data-side-panel=""
         data-click-outside-id={SIDE_PANEL_CLICK_OUTSIDE_ID}
       >
-        <StyledSidePanel isShrinkingFromFullWidth={isShrinkingFromFullWidth}>
+        <StyledSidePanel
+          isShrinkingFromFullWidth={isShrinkingFromFullWidth}
+          isRecordOverlay={isRecordOverlay}
+        >
           <StyledModalContainer ref={handleModalContainerRef} />
           <DialogContainerContext.Provider
             value={{ container: modalContainer }}

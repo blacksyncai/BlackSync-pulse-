@@ -1,3 +1,4 @@
+import { CrmGlassSurface } from '@/components/ui/crm-glass-surface';
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
 import { PulseCustomFieldsSection } from '@/pulse-customize/components/PulseCustomFieldsSection';
 import {
@@ -54,6 +55,10 @@ const FILTER_KINDS: Record<TimelineFilter, PulseTimelineItem['kind'][]> = {
 };
 
 const StyledRoot = styled.div`
+  container-name: pulse-account;
+  container-type: inline-size;
+  min-width: 0;
+  width: 100%;
   background: ${themeCssVariables.background.secondary};
   box-sizing: border-box;
   display: flex;
@@ -65,8 +70,14 @@ const StyledRoot = styled.div`
 `;
 
 const StyledHeader = styled.header`
+  flex-shrink: 0;
+  min-width: 0;
   align-items: center;
-  background: ${themeCssVariables.background.primary};
+  background: linear-gradient(
+    115deg,
+    ${themeCssVariables.accent.quaternary},
+    ${themeCssVariables.background.primary} 65%
+  );
   border-bottom: 1px solid ${themeCssVariables.border.color.medium};
   display: flex;
   flex-wrap: wrap;
@@ -93,6 +104,7 @@ const StyledLogo = styled.div`
 `;
 
 const StyledIdentity = styled.div`
+  flex: 1 1 220px;
   display: flex;
   flex-direction: column;
   gap: ${themeCssVariables.spacing[1]};
@@ -101,13 +113,12 @@ const StyledIdentity = styled.div`
 
 const StyledName = styled.h1`
   color: ${themeCssVariables.font.color.primary};
-  font-size: 24px;
+  font-size: clamp(20px, 2.1vw, 26px);
   font-weight: 700;
   letter-spacing: -0.01em;
   margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 `;
 
 const StyledStatusSelect = styled.select`
@@ -128,7 +139,7 @@ const StyledActions = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: ${themeCssVariables.spacing[2]};
-  margin-left: auto;
+  margin-left: 0;
 `;
 
 const StyledActionButton = styled.button`
@@ -163,10 +174,34 @@ const StyledActionButton = styled.button`
   }
 `;
 
+const StyledMobileTabs = styled.div`
+  display: none;
+  flex-shrink: 0;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid ${themeCssVariables.border.color.medium};
+  background: ${themeCssVariables.background.primary};
+  @container pulse-account (max-width: 760px) {
+    display: flex;
+  }
+`;
+
 const StyledColumns = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
   flex: 1;
   min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  @container pulse-account (max-width: 760px) {
+    grid-template-columns: minmax(0, 1fr);
+    &[data-mobile-pane='details'] > [data-account-activity] {
+      display: none;
+    }
+    &[data-mobile-pane='activity'] > [data-account-details] {
+      display: none;
+    }
+  }
 `;
 
 const StyledLeft = styled.aside`
@@ -176,10 +211,14 @@ const StyledLeft = styled.aside`
   flex: none;
   flex-direction: column;
   min-height: 0;
-  width: 360px;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  height: 100%;
 `;
 
 const StyledTabs = styled.div`
+  flex-shrink: 0;
   border-bottom: 1px solid ${themeCssVariables.border.color.medium};
   display: flex;
   gap: ${themeCssVariables.spacing[4]};
@@ -204,6 +243,11 @@ const StyledTab = styled.button`
 `;
 
 const StyledLeftScroll = styled.div`
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
   gap: ${themeCssVariables.spacing[3]};
@@ -211,10 +255,9 @@ const StyledLeftScroll = styled.div`
   padding: ${themeCssVariables.spacing[4]};
 `;
 
-const StyledSection = styled.section`
-  background: ${themeCssVariables.background.primary};
-  border: 1px solid ${themeCssVariables.border.color.medium};
-  border-radius: 12px;
+const StyledSection = styled(CrmGlassSurface)`
+  flex-shrink: 0;
+  min-width: 0;
   overflow: hidden;
 `;
 
@@ -259,6 +302,11 @@ const StyledCount = styled.span`
 `;
 
 const StyledLine = styled.div`
+  min-width: 0;
+  line-height: 1.5;
+  > svg {
+    flex-shrink: 0;
+  }
   align-items: flex-start;
   color: ${themeCssVariables.font.color.primary};
   display: flex;
@@ -277,6 +325,7 @@ const StyledLine = styled.div`
 `;
 
 const StyledLineText = styled.div`
+  overflow-wrap: anywhere;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -313,6 +362,8 @@ const StyledIconButton = styled.button`
 `;
 
 const StyledRight = styled.main`
+  height: 100%;
+  overflow: hidden;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -321,6 +372,8 @@ const StyledRight = styled.main`
 `;
 
 const StyledFeedBar = styled.div`
+  flex-shrink: 0;
+  min-width: 0;
   align-items: center;
   border-bottom: 1px solid ${themeCssVariables.border.color.medium};
   display: flex;
@@ -352,11 +405,9 @@ const StyledSearch = styled.label`
   border-radius: 8px;
   color: ${themeCssVariables.font.color.tertiary};
   display: flex;
-  flex: 1;
+  flex: 1 1 220px;
   gap: ${themeCssVariables.spacing[2]};
-  margin-left: auto;
-  max-width: 320px;
-  min-width: 160px;
+  min-width: 0;
   padding: 0 ${themeCssVariables.spacing[3]};
 
   input {
@@ -366,12 +417,21 @@ const StyledSearch = styled.label`
     flex: 1;
     font-family: inherit;
     font-size: ${themeCssVariables.font.size.md};
-    height: 32px;
+    height: 36px;
+    min-width: 0;
+    width: 100%;
     outline: none;
   }
 `;
 
 const StyledFeed = styled.div`
+  min-height: 0;
+  min-width: 0;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  > * {
+    flex-shrink: 0;
+  }
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -415,6 +475,9 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
   const { openRecordInSidePanel } = useOpenRecordInSidePanel();
 
   const [leftTab, setLeftTab] = useState<LeftTab>('details');
+  const [mobilePane, setMobilePane] = useState<'details' | 'activity'>(
+    'details',
+  );
   const [filter, setFilter] = useState<TimelineFilter>('all');
   const [search, setSearch] = useState('');
   const [composer, setComposer] = useState<Composer>(null);
@@ -455,6 +518,7 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
     setEmailPersonId(personId);
     setComposer('email');
     setFilter('all');
+    setMobilePane('activity');
   };
 
   const handleMeeting = () => {
@@ -472,6 +536,7 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
   const openComposer = (nextComposer: Composer) => {
     setComposer(composer === nextComposer ? null : nextComposer);
     setFilter('all');
+    setMobilePane('activity');
   };
 
   const handleComposerDone = () => {
@@ -529,7 +594,7 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
   ];
 
   return (
-    <StyledRoot>
+    <StyledRoot data-account-view>
       <SidePanelPageTitleSyncEffect
         pageTitle={accountName.length > 0 ? accountName : undefined}
       />
@@ -608,8 +673,20 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
         </StyledActions>
       </StyledHeader>
 
-      <StyledColumns>
-        <StyledLeft>
+      <StyledMobileTabs aria-label={t`Record sections`}>
+        <StyledFilter
+          type="button"
+          aria-pressed={mobilePane === 'details'}
+          onClick={() => setMobilePane('details')}
+        >{t`Record details`}</StyledFilter>
+        <StyledFilter
+          type="button"
+          aria-pressed={mobilePane === 'activity'}
+          onClick={() => setMobilePane('activity')}
+        >{t`Activity`}</StyledFilter>
+      </StyledMobileTabs>
+      <StyledColumns data-mobile-pane={mobilePane}>
+        <StyledLeft data-account-details>
           <StyledTabs>
             <StyledTab
               type="button"
@@ -626,7 +703,11 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
               {t`Files`} <StyledCount>{attachments.length}</StyledCount>
             </StyledTab>
           </StyledTabs>
-          <StyledLeftScroll>
+          <StyledLeftScroll
+            role="region"
+            aria-label={t`Record details and contacts`}
+            tabIndex={0}
+          >
             {leftTab === 'details' ? (
               <>
                 <StyledSection>
@@ -684,7 +765,7 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
                       <StyledMuted>{t`No open tasks`}</StyledMuted>
                     </StyledLine>
                   ) : (
-                    openTasks.slice(0, 5).map((task) => (
+                    openTasks.map((task) => (
                       <StyledLine key={task.id}>
                         <StyledIconButton
                           type="button"
@@ -827,7 +908,7 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
           </StyledLeftScroll>
         </StyledLeft>
 
-        <StyledRight>
+        <StyledRight data-account-activity>
           <StyledFeedBar>
             {filters.map((option) => (
               <StyledFilter
@@ -848,7 +929,11 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
               />
             </StyledSearch>
           </StyledFeedBar>
-          <StyledFeed>
+          <StyledFeed
+            role="region"
+            aria-label={t`Activity timeline`}
+            tabIndex={0}
+          >
             {composer === 'note' && (
               <PulseNoteComposer
                 companyId={companyId}
