@@ -113,3 +113,36 @@ jobs:
               print('::error::Setup failed ('+type(error).__name__+'). Credentials and response bodies were not logged.')
               sys.exit(1)
           PYTHON
+
+      - name: Verify live CRM configuration and assignment release
+        run: |
+          python3 - <<'PY'
+          import json, time, urllib.request
+          base = 'https://crm.blacksync.cloud'
+          def read(path):
+              for attempt in range(8):
+                  try:
+                      request = urllib.request.Request(base+path, headers={'User-Agent':'BlackSync-Deployment-Check/1.0'})
+                      with urllib.request.urlopen(request, timeout=15) as response:
+                          return response.headers.get('Content-Type',''), response.read().decode()
+                  except Exception:
+                      if attempt == 7:
+                          raise RuntimeError('Live check did not recover: '+path)
+                      time.sleep(4)
+          _, health = read('/healthz')
+          assert json.loads(health).get('status') == 'ok', 'CRM health failed'
+          _, configuration = read('/client-config')
+          config = json.loads(configuration)
+          report = {name:config.get(name) for name in ['isEmailingDomainInDemoMode','isGoogleMessagingEnabled']}
+          print('Live configuration: '+json.dumps(report))
+          assert config.get('isEmailingDomainInDemoMode') is False, 'Email domain is still in demo mode; check database overrides'
+          for asset in ['PulseTodoPage-C93K4YQT.js','PulseDashboardPage-DA_nlvwc.js','PulseCustomizePage-CYPs7JHh.js']:
+              content_type, body = read('/assets/'+asset)
+              assert 'javascript' in content_type, 'New release asset is unavailable'
+              if asset.startswith('PulseTodoPage'):
+                  assert 'member:' in body and 'team:' in body, 'Task assignment scopes are missing'
+              if asset.startswith('PulseCustomizePage'):
+                  assert 'TEAM_' in body, 'Team editor is missing'
+              print('Live release asset verified: '+asset)
+          print('Live CRM health, Resend production mode, and assignment release verified. No test email was sent.')
+          PY
