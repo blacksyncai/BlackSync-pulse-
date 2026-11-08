@@ -124,4 +124,27 @@ describe('applySmartView', () => {
       ),
     ).toEqual(['Bolt', 'Acme', 'Crane']);
   });
+  it('keeps saved pond views scoped to that pond and unassigned owners', () => {
+    const pool = [
+      buildLead({ name: 'Incoming', leadPond: 'WEBSITE' }),
+      buildLead({ name: 'Claimed', leadPond: 'WEBSITE', ownerId: 'me' }),
+      buildLead({ name: 'Other', leadPond: 'OTHER' }),
+    ];
+    expect(
+      names(
+        applySmartView(
+          pool,
+          {
+            filters: {
+              ...EMPTY_SMART_VIEW_FILTERS,
+              pondValue: 'WEBSITE',
+              owner: 'unassigned',
+            },
+            sort: { field: 'name', direction: 'asc' },
+          },
+          context,
+        ),
+      ),
+    ).toEqual(['Incoming']);
+  });
 });

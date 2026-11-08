@@ -9,6 +9,7 @@ export type PulseLastContactFilter =
 
 export type PulseSmartViewFilters = {
   search: string;
+  pondValue?: string;
   statuses: string[];
   lastContact: PulseLastContactFilter;
   calls: 'any' | 'never' | 'called';

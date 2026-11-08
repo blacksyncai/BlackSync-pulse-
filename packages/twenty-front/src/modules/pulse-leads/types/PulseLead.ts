@@ -11,6 +11,7 @@ export type PulseLead = {
   name: string | null;
   domain: string | null;
   leadStatus: string | null;
+  leadPond?: string | null;
   ownerId: string | null;
   createdAt: string;
   contactCount: number;

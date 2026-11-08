@@ -49,6 +49,7 @@ export const matchesSmartViewFilters = (
     currentWorkspaceMemberId,
   }: { now: number; currentWorkspaceMemberId: string | null },
 ) => {
+  if (filters.pondValue && lead.leadPond !== filters.pondValue) return false;
   const search = filters.search.trim().toLowerCase();
 
   if (search.length > 0) {

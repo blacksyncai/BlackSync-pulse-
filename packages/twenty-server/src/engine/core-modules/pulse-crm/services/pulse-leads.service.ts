@@ -10,6 +10,7 @@ export type PulseLeadRow = {
   name: string | null;
   domain: string | null;
   leadStatus: string | null;
+  leadPond: string | null;
   ownerId: string | null;
   createdAt: string;
   contactCount: number;
@@ -46,19 +47,23 @@ export class PulseLeadsService {
   async listLeads(workspaceId: string): Promise<PulseLeadRow[]> {
     const schema = getWorkspaceSchemaName(workspaceId);
     const quotedSchema = `"${schema.replace(/"/g, '')}"`;
-    const [{ hasLeadStatus }] = await this.coreDataSource.query<
-      { hasLeadStatus: boolean }[]
+    const [{ hasLeadStatus, hasLeadPond }] = await this.coreDataSource.query<
+      { hasLeadStatus: boolean; hasLeadPond: boolean }[]
     >(
       `SELECT EXISTS (
          SELECT 1 FROM information_schema.columns
          WHERE table_schema = $1 AND table_name = 'company' AND column_name = 'leadStatus'
-       ) AS "hasLeadStatus"`,
+       ) AS "hasLeadStatus", EXISTS (
+         SELECT 1 FROM information_schema.columns
+         WHERE table_schema = $1 AND table_name = 'company' AND column_name = 'leadPond'
+       ) AS "hasLeadPond"`,
       [schema],
     );
     const leadStatusColumn = hasLeadStatus
       ? 'c."leadStatus"::text'
       : 'NULL::text';
 
+    const leadPondColumn = hasLeadPond ? 'c."leadPond"::text' : 'NULL::text';
     const rows = await this.coreDataSource.query<PulseLeadRow[]>(
       `WITH people AS (
          SELECT p."companyId" AS company_id,
@@ -114,6 +119,7 @@ export class PulseLeadsService {
          c.name,
          NULLIF(c."domainNamePrimaryLinkUrl", '') AS domain,
          ${leadStatusColumn} AS "leadStatus",
+         ${leadPondColumn} AS "leadPond",
          c."accountOwnerId" AS "ownerId",
          c."createdAt" AS "createdAt",
          COALESCE(people.contact_count, 0) AS "contactCount",

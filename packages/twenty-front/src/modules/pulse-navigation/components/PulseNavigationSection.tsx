@@ -14,6 +14,7 @@ import {
   IconBuildingSkyscraper,
   IconCheckbox,
   IconFileImport,
+  IconForms,
   IconInbox,
   IconLayoutDashboard,
   IconMail,
@@ -111,6 +112,12 @@ export const PulseNavigationSection = () => {
       </StyledGroup>
       <StyledGroup>
         <NavigationDrawerSectionTitle label={t`Setup`} />
+        <NavigationDrawerItem
+          label={t`Forms & submissions`}
+          to="/forms"
+          Icon={IconForms}
+          active={pathname === '/forms'}
+        />
         <NavigationDrawerItem
           label={t`Connect & automate`}
           to={getSettingsPath(SettingsPath.ApiWebhooks)}

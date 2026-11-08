@@ -1,3 +1,4 @@
+import { useObjectMetadataItem } from '@/object-metadata/hooks/useObjectMetadataItem';
 import { usePulseDialer } from '@/pulse-dialer/hooks/usePulseDialer';
 import { toPulseDialerQueue } from '@/pulse-dialer/utils/toPulseDialerQueue';
 import { PulseLeadsBulkBar } from '@/pulse-leads/components/PulseLeadsBulkBar';
@@ -154,6 +155,12 @@ export const PulseLeadsPage = () => {
   const { enqueueToast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const { leads, loading, refetch } = usePulseLeads();
+  const { objectMetadataItem: companyMetadata } = useObjectMetadataItem({
+    objectNameSingular: CoreObjectNameSingular.Company,
+  });
+  const pondOptions =
+    companyMetadata.fields.find((field) => field.name === 'leadPond')
+      ?.options ?? [];
   const { options: statusOptions } = useLeadStatusOptions();
   const { smartViews, createSmartView, updateSmartView, deleteSmartView } =
     useSmartViews();
@@ -378,6 +385,40 @@ export const PulseLeadsPage = () => {
           />
         )}
 
+        {pondOptions.length > 0 && (
+          <label>
+            {t`Lead pond`}
+            <select
+              aria-label={t`Lead pond`}
+              value={activeDraft.filters.pondValue ?? ''}
+              onChange={(event) => {
+                setSelectedIds(new Set());
+                setDraft({
+                  ...activeDraft,
+                  filters: {
+                    ...activeDraft.filters,
+                    pondValue: event.target.value,
+                    ...(event.target.value
+                      ? { owner: 'unassigned' as const }
+                      : {}),
+                  },
+                });
+              }}
+            >
+              <option value="">{t`All ponds`}</option>
+              {pondOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <span>
+              {' '}
+              ·{' '}
+              {t`Selecting a pond shows unassigned leads. Use Assign to me to take ownership.`}
+            </span>
+          </label>
+        )}
         <PulseLeadsFilterBar
           filters={activeDraft.filters}
           statusOptions={statusOptions}
