@@ -22,4 +22,9 @@ export const PULSE_FIELD_TYPES = [
 ] as const;
 
 // Fields Pulse manages itself (statuses, pipelines and their stages) are edited in their own sections.
-export const PULSE_MANAGED_FIELD_NAMES = ['leadStatus', 'pipeline', 'priority'];
+export const PULSE_MANAGED_FIELD_NAMES = [
+  'leadStatus',
+  'pipeline',
+  'priority',
+  'assignmentTeam',
+];

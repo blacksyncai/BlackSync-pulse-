@@ -1,3 +1,4 @@
+import { PulseLeadAssignment } from '@/pulse-assignment/components/PulseLeadAssignment';
 import { CrmGlassSurface } from '@/components/ui/crm-glass-surface';
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
 import { PulseCustomFieldsSection } from '@/pulse-customize/components/PulseCustomFieldsSection';
@@ -710,6 +711,12 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
           >
             {leftTab === 'details' ? (
               <>
+                <StyledSection>
+                  <StyledSectionTitle>{t`Assigned to`}</StyledSectionTitle>
+                  <StyledLine>
+                    <PulseLeadAssignment companyId={companyId} />
+                  </StyledLine>
+                </StyledSection>
                 <StyledSection>
                   <StyledSectionTitle>{t`About`}</StyledSectionTitle>
                   <StyledLine>

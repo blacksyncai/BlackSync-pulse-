@@ -112,6 +112,14 @@ export const matchesSmartViewFilters = (
     return false;
   }
 
+  if (filters.teamValue && lead.assignmentTeam !== filters.teamValue)
+    return false;
+  if (
+    filters.owner.startsWith('member:') &&
+    lead.ownerId !== filters.owner.slice(7)
+  )
+    return false;
+
   if (filters.owner === 'me' && lead.ownerId !== currentWorkspaceMemberId) {
     return false;
   }

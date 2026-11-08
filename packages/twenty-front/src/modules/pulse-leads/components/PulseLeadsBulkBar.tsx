@@ -1,3 +1,9 @@
+import { PulseAssignmentPicker } from '@/pulse-assignment/components/PulseAssignmentPicker';
+import {
+  usePulseAssignment,
+  assignmentMemberName,
+  type PulseAssignment,
+} from '@/pulse-assignment/contexts/PulseAssignmentContext';
 import { type LeadStatusOption } from '@/pulse-leads/hooks/useLeadStatusOptions';
 import { usePulseLeadActions } from '@/pulse-leads/hooks/usePulseLeadActions';
 import {
@@ -78,8 +84,20 @@ export const PulseLeadsBulkBar = ({
 }: PulseLeadsBulkBarProps) => {
   const { t } = useLingui();
   const { enqueueToast } = useToast();
-  const { setStatus, assignToMe, addTaskToLeads, deleteLeads } =
-    usePulseLeadActions();
+  const { members, teams, hasLeadTeam, hasTaskTeam, currentMemberId } =
+    usePulseAssignment();
+  const [taskAssignment, setTaskAssignment] = useState<PulseAssignment>({
+    memberId: currentMemberId,
+    teamValue: null,
+  });
+  const {
+    setStatus,
+    assignToMe,
+    assignOwner,
+    assignTeam,
+    addTaskToLeads,
+    deleteLeads,
+  } = usePulseLeadActions();
   const { sequences } = useSequences();
   const { enroll } = useOutreachActions();
   const [isAddingTask, setIsAddingTask] = useState(false);
@@ -94,11 +112,13 @@ export const PulseLeadsBulkBar = ({
       await action();
       enqueueToast({ variant: 'success', children: message });
       onDone();
+      return true;
     } catch {
       enqueueToast({
         variant: 'error',
         children: t`That didn't work. Try again.`,
       });
+      return false;
     } finally {
       setIsWorking(false);
     }
@@ -134,6 +154,12 @@ export const PulseLeadsBulkBar = ({
       )}
       {isAddingTask ? (
         <>
+          <PulseAssignmentPicker
+            value={taskAssignment}
+            onChange={setTaskAssignment}
+            disabled={isWorking}
+            allowTeam={hasTaskTeam}
+          />
           <input
             autoFocus
             placeholder={t`Task for each lead`}
@@ -154,9 +180,12 @@ export const PulseLeadsBulkBar = ({
                     title: taskTitle,
                     dueAt: tomorrow,
                     isUrgent: false,
+                    assigneeId: taskAssignment.memberId,
+                    teamValue: taskAssignment.teamValue,
                   }),
                 t`Added a task to ${count} leads, due tomorrow 9am`,
-              ).then(() => {
+              ).then((succeeded) => {
+                if (!succeeded) return;
                 setTaskTitle('');
                 setIsAddingTask(false);
               });
@@ -202,6 +231,50 @@ export const PulseLeadsBulkBar = ({
               {sequence.name}
             </option>
           ))}
+        </select>
+      )}
+      <select
+        aria-label={t`Assign selected leads to user`}
+        value=""
+        disabled={isWorking}
+        onChange={(event) => {
+          const id = event.target.value;
+          void run(
+            () => assignOwner(selectedIds, id === '__unassigned__' ? null : id),
+            t`Lead owners updated`,
+          );
+        }}
+      >
+        <option value="" disabled>{t`Assign user…`}</option>
+        <option value="__unassigned__">{t`Unassigned user`}</option>
+        {members.map((member) => (
+          <option key={member.id} value={member.id}>
+            {assignmentMemberName(member)}
+          </option>
+        ))}
+      </select>
+      {hasLeadTeam && (
+        <select
+          aria-label={t`Assign selected leads to team`}
+          value=""
+          disabled={isWorking}
+          onChange={(event) => {
+            const id = event.target.value;
+            void run(
+              () => assignTeam(selectedIds, id === '__none__' ? null : id),
+              t`Lead teams updated`,
+            );
+          }}
+        >
+          <option value="" disabled>{t`Assign team…`}</option>
+          <option value="__none__">{t`No team`}</option>
+          {teams
+            .filter((team) => !team.archived)
+            .map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
         </select>
       )}
       <button

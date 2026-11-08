@@ -1,0 +1,103 @@
+name: BlackSync Resend setup
+on:
+  push:
+    branches: [blacksync-resend-setup]
+    paths: [.github/workflows/resend-email-setup.yaml, .github/resend-bootstrap.enc]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Resend and configure production email
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_WEBHOOK_SIGNING_SECRET: ${{ secrets.RESEND_WEBHOOK_SIGNING_SECRET }}
+        run: |
+          python3 - <<'PYTHON'
+          import base64, json, os, sys, subprocess, tempfile, urllib.request, urllib.error
+          from pathlib import Path
+          environment_id = '8ab88842-edce-4c68-a73d-4c91f6f5b51e'
+          services = {'server': 'a5950130-0787-4c89-8f14-841138ad4da7', 'worker': '66f02f54-1b92-4f2a-964e-b3cf7ddea1af'}
+          token = os.environ.get('RAILWAY_TOKEN')
+          def request_json(url, headers, payload=None):
+              request = urllib.request.Request(url, data=json.dumps(payload).encode() if payload is not None else None, headers=headers)
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  return json.load(response)
+          def railway(query, variables):
+              result = request_json('https://backboard.railway.com/graphql/v2', {'Content-Type':'application/json','Project-Access-Token':token,'User-Agent':'BlackSync-Configuration-Check/1.0'}, {'query':query,'variables':variables})
+              if result.get('errors'):
+                  raise RuntimeError('Railway rejected request')
+              return result['data']
+          try:
+              if not token:
+                  raise RuntimeError('Railway credential unavailable')
+              project_id = railway('query($id: String!) { environment(id: $id) { projectId } }', {'id':environment_id})['environment']['projectId']
+              configurations = {}
+              for label, service_id in services.items():
+                  configurations[label] = railway('query($projectId: String!, $environmentId: String!, $serviceId: String!) { variables(projectId: $projectId, environmentId: $environmentId, serviceId: $serviceId) }', {'projectId':project_id,'environmentId':environment_id,'serviceId':service_id})['variables']
+              key = os.environ.get('RESEND_API_KEY') or next((data.get('RESEND_API_KEY') for data in configurations.values() if data.get('RESEND_API_KEY')), None)
+              print('Resend API key available: ' + str(bool(key)))
+              if not key:
+                  # A short-lived RSA envelope transfers the credential directly to Railway.
+                  # Only the public key and encrypted payload may appear in GitHub.
+                  private_key_name = 'BLACKSYNC_RESEND_BOOTSTRAP_PRIVATE_KEY'
+                  private_key = configurations['server'].get(private_key_name)
+                  envelope = Path('.github/resend-bootstrap.enc')
+                  with tempfile.TemporaryDirectory() as temporary_directory:
+                      private_path = Path(temporary_directory) / 'private.pem'
+                      if not private_key or not envelope.exists() or not envelope.read_text().strip():
+                          subprocess.run(['openssl','genpkey','-algorithm','RSA','-pkeyopt','rsa_keygen_bits:3072','-out',str(private_path)],check=True,capture_output=True)
+                          private_path.chmod(0o600)
+                          public_key = subprocess.run(['openssl','pkey','-in',str(private_path),'-pubout'],check=True,capture_output=True).stdout
+                          railway('mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }', {'input':{'projectId':project_id,'environmentId':environment_id,'serviceId':services['server'],'variables':{private_key_name:private_path.read_text()},'replace':False,'skipDeploys':True}})
+                          print('BOOTSTRAP_PUBLIC_KEY_BASE64=' + base64.b64encode(public_key).decode())
+                          print('::notice::Awaiting the RSA-OAEP SHA256 encrypted credential envelope. The private key is held only in Railway configuration; no email settings were enabled.')
+                          sys.exit(0)
+                      private_path.write_text(private_key)
+                      private_path.chmod(0o600)
+                      ciphertext = base64.b64decode(envelope.read_text().strip(), validate=True)
+                      key = subprocess.run(['openssl','pkeyutl','-decrypt','-inkey',str(private_path),'-pkeyopt','rsa_padding_mode:oaep','-pkeyopt','rsa_oaep_md:sha256'],input=ciphertext,check=True,capture_output=True).stdout.decode().strip()
+                      if not key.startswith('re_') or len(key) < 20:
+                          raise RuntimeError('Invalid credential envelope')
+                      railway('mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }', {'input':{'projectId':project_id,'environmentId':environment_id,'serviceId':services['server'],'variables':{'RESEND_API_KEY':key,private_key_name:''},'replace':False,'skipDeploys':True}})
+                      print('Encrypted credential received; Resend key saved in Railway and bootstrap private key erased.')
+              headers = {'Authorization':'Bearer '+key,'Content-Type':'application/json','User-Agent':'BlackSync-Email-Setup/1.0'}
+              domains = request_json('https://api.resend.com/domains', headers).get('data', [])
+              verified = [domain['name'] for domain in domains if domain.get('status') == 'verified']
+              configured = configurations['server'].get('RESEND_FROM_DOMAIN')
+              domain = next((name for name in [configured,'blacksync.ai','blacksync.cloud'] if name and name in verified), None)
+              print('Verified BlackSync sending domain available: ' + str(bool(domain)))
+              if not domain:
+                  print('::notice::SETUP BLOCKED: Verify blacksync.ai or blacksync.cloud in Resend, or set RESEND_FROM_DOMAIN to another verified domain. No production configuration was changed.')
+                  sys.exit(0)
+              current_from = configurations['server'].get('EMAIL_FROM_ADDRESS', '')
+              from_address = current_from if current_from.lower().endswith('@'+domain.lower()) else 'notifications@'+domain
+              settings = {'RESEND_API_KEY':key,'RESEND_FROM_DOMAIN':domain,'EMAIL_FROM_ADDRESS':from_address,'EMAIL_FROM_NAME':'BlackSync Cloud','EMAILING_DOMAIN_DRIVER':'RESEND','EMAIL_DRIVER':'SMTP','EMAIL_SMTP_HOST':'smtp.resend.com','EMAIL_SMTP_PORT':'587','EMAIL_SMTP_USER':'resend','EMAIL_SMTP_PASSWORD':key,'EMAIL_SMTP_NO_TLS':'false'}
+              signing_secret = os.environ.get('RESEND_WEBHOOK_SIGNING_SECRET') or configurations['server'].get('RESEND_WEBHOOK_SIGNING_SECRET')
+              if signing_secret:
+                  settings['RESEND_WEBHOOK_SIGNING_SECRET'] = signing_secret
+              print('Inbound webhook signing configured: ' + str(bool(signing_secret)))
+              changed = []
+              for label, service_id in services.items():
+                  if all(str(configurations[label].get(name, '')) == value for name,value in settings.items()):
+                      print(label + ': settings already match.')
+                      continue
+                  railway('mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }', {'input':{'projectId':project_id,'environmentId':environment_id,'serviceId':service_id,'variables':settings,'replace':False,'skipDeploys':True}})
+                  changed.append((label,service_id))
+                  print(label + ': Resend settings saved without logging credentials.')
+              for label, service_id in changed:
+                  railway('mutation($serviceId: String!, $environmentId: String!) { serviceInstanceDeployV2(serviceId: $serviceId, environmentId: $environmentId) }', {'serviceId':service_id,'environmentId':environment_id})
+                  print(label + ': redeployment requested.')
+              print('Outbound Resend configuration complete. No email was sent. Verify effective application settings after rollout; database configuration can override environment variables.')
+          except urllib.error.HTTPError as error:
+              print('::error::Setup request returned HTTP '+str(error.code)+'. Response bodies and credentials were not logged. Domain discovery requires a Resend key with domain read access.')
+              sys.exit(1)
+          except Exception as error:
+              print('::error::Setup failed ('+type(error).__name__+'). Credentials and response bodies were not logged.')
+              sys.exit(1)
+          PYTHON

@@ -147,4 +147,35 @@ describe('applySmartView', () => {
       ),
     ).toEqual(['Incoming']);
   });
+  it('combines a specific user and team without including another owner or team', () => {
+    const pool = [
+      buildLead({ name: 'Match', ownerId: 'alice', assignmentTeam: 'sales' }),
+      buildLead({
+        name: 'Other owner',
+        ownerId: 'bob',
+        assignmentTeam: 'sales',
+      }),
+      buildLead({
+        name: 'Other team',
+        ownerId: 'alice',
+        assignmentTeam: 'support',
+      }),
+    ];
+    expect(
+      names(
+        applySmartView(
+          pool,
+          {
+            filters: {
+              ...EMPTY_SMART_VIEW_FILTERS,
+              owner: 'member:alice',
+              teamValue: 'sales',
+            },
+            sort: { field: 'name', direction: 'asc' },
+          },
+          context,
+        ),
+      ),
+    ).toEqual(['Match']);
+  });
 });

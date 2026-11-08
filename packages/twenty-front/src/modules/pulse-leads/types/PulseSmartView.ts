@@ -15,7 +15,8 @@ export type PulseSmartViewFilters = {
   calls: 'any' | 'never' | 'called';
   deals: 'any' | 'with' | 'without';
   tasks: 'any' | 'open' | 'overdue' | 'none';
-  owner: 'any' | 'me' | 'unassigned';
+  owner: 'any' | 'me' | 'unassigned' | `member:${string}`;
+  teamValue?: string;
   hasPhone: boolean;
   hasEmail: boolean;
 };

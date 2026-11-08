@@ -1,3 +1,8 @@
+import { PermissionFlagType } from 'twenty-shared/constants';
+import { AuthUserWorkspaceId } from 'src/engine/decorators/auth/auth-user-workspace-id.decorator';
+import { PermissionsService } from 'src/engine/metadata-modules/permissions/permissions.service';
+import { ForbiddenError } from 'src/engine/core-modules/graphql/utils/graphql-errors.util';
+import { parsePulseAssignmentTeams } from './utils/parse-pulse-assignment-teams.util';
 import { UseFilters, UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query } from '@nestjs/graphql';
 
@@ -47,6 +52,7 @@ export class PulseCrmResolver {
   constructor(
     private readonly pulseLeadsService: PulseLeadsService,
     private readonly pulseSettingsService: PulseSettingsService,
+    private readonly permissionsService: PermissionsService,
   ) {}
 
   @Query(() => GraphQLJSON)
@@ -67,12 +73,25 @@ export class PulseCrmResolver {
     @AuthWorkspace() workspace: WorkspaceEntity,
     @Args('key', { type: () => String }) key: string,
     @Args('value', { type: () => GraphQLJSON }) value: unknown,
+    @AuthUserWorkspaceId() userWorkspaceId: string,
   ) {
     if (JSON.stringify(value ?? null).length > MAX_SETTING_BYTES) {
       throw new UserInputError('That setting is too large to save');
     }
 
-    await this.pulseSettingsService.set(workspace.id, toSettingKey(key), value);
+    const settingKey = toSettingKey(key);
+    if (settingKey === 'assignmentTeams') {
+      const canManageTeams =
+        await this.permissionsService.userHasWorkspaceSettingPermission({
+          workspaceId: workspace.id,
+          userWorkspaceId,
+          setting: PermissionFlagType.WORKSPACE_MEMBERS,
+        });
+      if (!canManageTeams)
+        throw new ForbiddenError('You do not have permission to manage teams.');
+      value = parsePulseAssignmentTeams(value);
+    }
+    await this.pulseSettingsService.set(workspace.id, settingKey, value);
 
     return true;
   }

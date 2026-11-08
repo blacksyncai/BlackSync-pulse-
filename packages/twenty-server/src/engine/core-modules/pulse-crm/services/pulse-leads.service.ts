@@ -12,6 +12,7 @@ export type PulseLeadRow = {
   leadStatus: string | null;
   leadPond: string | null;
   ownerId: string | null;
+  assignmentTeam: string | null;
   createdAt: string;
   contactCount: number;
   primaryContact: {
@@ -47,23 +48,34 @@ export class PulseLeadsService {
   async listLeads(workspaceId: string): Promise<PulseLeadRow[]> {
     const schema = getWorkspaceSchemaName(workspaceId);
     const quotedSchema = `"${schema.replace(/"/g, '')}"`;
-    const [{ hasLeadStatus, hasLeadPond }] = await this.coreDataSource.query<
-      { hasLeadStatus: boolean; hasLeadPond: boolean }[]
-    >(
-      `SELECT EXISTS (
+    const [{ hasLeadStatus, hasLeadPond, hasAssignmentTeam }] =
+      await this.coreDataSource.query<
+        {
+          hasLeadStatus: boolean;
+          hasLeadPond: boolean;
+          hasAssignmentTeam: boolean;
+        }[]
+      >(
+        `SELECT EXISTS (
          SELECT 1 FROM information_schema.columns
          WHERE table_schema = $1 AND table_name = 'company' AND column_name = 'leadStatus'
        ) AS "hasLeadStatus", EXISTS (
          SELECT 1 FROM information_schema.columns
          WHERE table_schema = $1 AND table_name = 'company' AND column_name = 'leadPond'
-       ) AS "hasLeadPond"`,
-      [schema],
-    );
+       ) AS "hasLeadPond", EXISTS (
+         SELECT 1 FROM information_schema.columns
+         WHERE table_schema = $1 AND table_name = 'company' AND column_name = 'assignmentTeam'
+       ) AS "hasAssignmentTeam"`,
+        [schema],
+      );
     const leadStatusColumn = hasLeadStatus
       ? 'c."leadStatus"::text'
       : 'NULL::text';
 
     const leadPondColumn = hasLeadPond ? 'c."leadPond"::text' : 'NULL::text';
+    const assignmentTeamColumn = hasAssignmentTeam
+      ? 'c."assignmentTeam"::text'
+      : 'NULL::text';
     const rows = await this.coreDataSource.query<PulseLeadRow[]>(
       `WITH people AS (
          SELECT p."companyId" AS company_id,
@@ -120,6 +132,7 @@ export class PulseLeadsService {
          NULLIF(c."domainNamePrimaryLinkUrl", '') AS domain,
          ${leadStatusColumn} AS "leadStatus",
          ${leadPondColumn} AS "leadPond",
+         ${assignmentTeamColumn} AS "assignmentTeam",
          c."accountOwnerId" AS "ownerId",
          c."createdAt" AS "createdAt",
          COALESCE(people.contact_count, 0) AS "contactCount",

@@ -1,3 +1,7 @@
+import {
+  usePulseAssignment,
+  assignmentMemberName,
+} from '@/pulse-assignment/contexts/PulseAssignmentContext';
 import { PulseLastContact } from '@/pulse-leads/components/PulseLastContact';
 import { PulseLeadLogo } from '@/pulse-leads/components/PulseLeadLogo';
 import { PulseLeadStatusSelect } from '@/pulse-leads/components/PulseLeadStatusSelect';
@@ -204,6 +208,11 @@ export const PulseLeadsTable = ({
   isLoading,
 }: PulseLeadsTableProps) => {
   const { t } = useLingui();
+  const { members, teams } = usePulseAssignment();
+  const memberNames = new Map(
+    members.map((member) => [member.id, assignmentMemberName(member)]),
+  );
+  const teamNames = new Map(teams.map((team) => [team.id, team.name]));
   const { call, email } = usePulseContactActions();
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const visibleLeads = leads.slice(0, visibleCount);
@@ -303,6 +312,15 @@ export const PulseLeadsTable = ({
               <PulseLeadLogo name={lead.name} domain={lead.domain} />
               <StyledStack>
                 <StyledPrimary>{lead.name ?? t`Untitled lead`}</StyledPrimary>
+                <StyledSecondary>
+                  {memberNames.get(lead.ownerId ?? '') ??
+                    (lead.ownerId ? t`Unavailable member` : t`Unassigned`)}
+                  {lead.assignmentTeam
+                    ? ' · ' +
+                      (teamNames.get(lead.assignmentTeam) ??
+                        t`Unavailable team`)
+                    : ''}
+                </StyledSecondary>
                 {isDefined(lead.domain) && (
                   <StyledSecondary>
                     {lead.domain.replace(/^https?:\/\/(www\.)?/, '')}

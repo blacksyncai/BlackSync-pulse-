@@ -1,3 +1,7 @@
+import {
+  usePulseAssignment,
+  assignmentMemberName,
+} from '@/pulse-assignment/contexts/PulseAssignmentContext';
 import { PulseTaskQuickAdd } from '@/pulse-tasks/components/PulseTaskQuickAdd';
 import { PulseTaskRow } from '@/pulse-tasks/components/PulseTaskRow';
 import { usePulseTaskActions } from '@/pulse-tasks/hooks/usePulseTaskActions';
@@ -15,7 +19,7 @@ import { useState } from 'react';
 import { IconCheckbox } from 'twenty-ui/icon';
 import { themeCssVariables } from 'twenty-ui/theme';
 
-type Scope = 'mine' | 'everyone';
+type Scope = string;
 
 const StyledPage = styled.div`
   box-sizing: border-box;
@@ -128,11 +132,30 @@ const StyledEmpty = styled.div`
 export const PulseTodoPage = () => {
   const { t } = useLingui();
   const { currentWorkspaceMemberId } = usePulseTaskActions();
+  const { teams, members } = usePulseAssignment();
   const [scope, setScope] = useState<Scope>('mine');
   const [isUrgentOnly, setIsUrgentOnly] = useState(false);
   const [collapsed, setCollapsed] = useState<PulseTaskGroupId[]>(['done']);
-  const { tasks, loading } = usePulseTasks({
-    assigneeId: scope === 'mine' ? currentWorkspaceMemberId : null,
+  const { tasks, loading, refetch, hasNextPage } = usePulseTasks({
+    assigneeId:
+      scope === 'mine'
+        ? currentWorkspaceMemberId
+        : scope.startsWith('member:')
+          ? scope.slice(7)
+          : null,
+    unassigned: scope === 'unassigned',
+    teamValues:
+      scope === 'my-teams'
+        ? teams
+            .filter(
+              (team) =>
+                !team.archived &&
+                team.memberIds.includes(currentWorkspaceMemberId ?? ''),
+            )
+            .map((team) => team.id)
+        : scope.startsWith('team:')
+          ? [scope.slice(5)]
+          : undefined,
   });
 
   const now = new Date();
@@ -199,6 +222,33 @@ export const PulseTodoPage = () => {
         <PulseTaskQuickAdd autoFocus />
 
         <StyledToolbar>
+          <select
+            aria-label={t`Task assignment filter`}
+            value={scope}
+            onChange={(event) => setScope(event.target.value)}
+          >
+            <option value="mine">{t`My tasks`}</option>
+            <option value="my-teams">{t`My teams`}</option>
+            <option value="everyone">{t`Everyone`}</option>
+            <option value="unassigned">{t`No assigned user`}</option>
+            <optgroup label={t`Users`}>
+              {members.map((member) => (
+                <option key={member.id} value={'member:' + member.id}>
+                  {assignmentMemberName(member)}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label={t`Teams`}>
+              {teams.map((team) => (
+                <option key={team.id} value={'team:' + team.id}>
+                  {team.name}
+                </option>
+              ))}
+            </optgroup>
+          </select>
+          {hasNextPage && (
+            <span>{t`Showing the first 500 matching tasks. Narrow the assignment filter to find more.`}</span>
+          )}
           <StyledPill
             type="button"
             aria-pressed={scope === 'mine'}
@@ -244,6 +294,7 @@ export const PulseTodoPage = () => {
                     key={task.id}
                     task={task}
                     now={now}
+                    onChanged={() => void refetch()}
                     showAssignee={scope === 'everyone'}
                   />
                 ))}

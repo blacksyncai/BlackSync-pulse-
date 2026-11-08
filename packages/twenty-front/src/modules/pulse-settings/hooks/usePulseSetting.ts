@@ -10,7 +10,8 @@ export type PulseSettingKey =
   | 'dealCardLayout'
   | 'emailTemplates'
   | 'sequences'
-  | 'notificationPreferences';
+  | 'notificationPreferences'
+  | 'assignmentTeams';
 
 // Workspace-wide settings shared by every member, saved on the server.
 export const usePulseSetting = <TValue>(
@@ -27,14 +28,14 @@ export const usePulseSetting = <TValue>(
     : defaultValue;
 
   const save = async (nextValue: TValue) => {
+    await apolloClient.mutate({
+      mutation: SET_PULSE_SETTING,
+      variables: { key, value: nextValue },
+    });
     apolloClient.writeQuery({
       query: PULSE_SETTING,
       variables: { key },
       data: { pulseSetting: nextValue },
-    });
-    await apolloClient.mutate({
-      mutation: SET_PULSE_SETTING,
-      variables: { key, value: nextValue },
     });
   };
 

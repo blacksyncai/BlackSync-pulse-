@@ -1,3 +1,8 @@
+import { PulseAssignmentPicker } from '@/pulse-assignment/components/PulseAssignmentPicker';
+import {
+  usePulseAssignment,
+  type PulseAssignment,
+} from '@/pulse-assignment/contexts/PulseAssignmentContext';
 import {
   type PulseNewTask,
   usePulseTaskActions,
@@ -123,7 +128,13 @@ export const PulseTaskQuickAdd = ({
 }: PulseTaskQuickAddProps) => {
   const { t } = useLingui();
   const { enqueueToast } = useToast();
-  const { addTask, hasPriority } = usePulseTaskActions();
+  const { addTask, hasPriority, currentWorkspaceMemberId } =
+    usePulseTaskActions();
+  const { hasTaskTeam } = usePulseAssignment();
+  const [assignment, setAssignment] = useState<PulseAssignment>({
+    memberId: currentWorkspaceMemberId,
+    teamValue: null,
+  });
   const [title, setTitle] = useState('');
   const [dueAt, setDueAt] = useState(defaultDueDate);
   const [isUrgent, setIsUrgent] = useState(false);
@@ -142,6 +153,8 @@ export const PulseTaskQuickAdd = ({
       isUrgent,
       companyId,
       personId,
+      assigneeId: assignment.memberId,
+      teamValue: assignment.teamValue,
     };
 
     setIsSaving(true);
@@ -174,6 +187,12 @@ export const PulseTaskQuickAdd = ({
         value={dueAt}
         onChange={(event) => setDueAt(event.target.value)}
       />
+      <PulseAssignmentPicker
+        value={assignment}
+        onChange={setAssignment}
+        disabled={isSaving}
+        allowTeam={hasTaskTeam}
+      />
       {hasPriority && (
         <StyledUrgentToggle
           type="button"
@@ -184,7 +203,10 @@ export const PulseTaskQuickAdd = ({
           {t`Urgent`}
         </StyledUrgentToggle>
       )}
-      <StyledSubmit type="submit" disabled={title.trim().length === 0}>
+      <StyledSubmit
+        type="submit"
+        disabled={isSaving || title.trim().length === 0}
+      >
         <IconPlus size={14} />
         {t`Add task`}
       </StyledSubmit>

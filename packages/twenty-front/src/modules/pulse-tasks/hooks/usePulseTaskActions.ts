@@ -1,3 +1,8 @@
+import {
+  usePulseAssignment,
+  PULSE_ASSIGNMENT_TEAM_FIELD,
+  type PulseAssignment,
+} from '@/pulse-assignment/contexts/PulseAssignmentContext';
 import { currentWorkspaceMemberState } from '@/auth/states/currentWorkspaceMemberState';
 import { useCreateOneRecord } from '@/object-record/hooks/useCreateOneRecord';
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
@@ -14,6 +19,8 @@ export type PulseNewTask = {
   isUrgent: boolean;
   companyId?: string | null;
   personId?: string | null;
+  assigneeId?: string | null;
+  teamValue?: string | null;
 };
 
 export type PulseNewNote = {
@@ -23,6 +30,7 @@ export type PulseNewNote = {
 };
 
 export const usePulseTaskActions = () => {
+  const { hasTaskTeam } = usePulseAssignment();
   const currentWorkspaceMember = useAtomStateValue(currentWorkspaceMemberState);
   const { hasPriority } = usePulseTaskPriorityField();
   const { createOneRecord: createTask } = useCreateOneRecord({
@@ -45,12 +53,20 @@ export const usePulseTaskActions = () => {
     isUrgent,
     companyId,
     personId,
+    assigneeId,
+    teamValue,
   }: PulseNewTask) => {
     const task = await createTask({
       title: title.trim(),
       status: 'TODO',
       dueAt: dueAt?.toISOString() ?? null,
-      assigneeId: currentWorkspaceMember?.id ?? null,
+      assigneeId:
+        assigneeId === undefined
+          ? (currentWorkspaceMember?.id ?? null)
+          : assigneeId,
+      ...(hasTaskTeam
+        ? { [PULSE_ASSIGNMENT_TEAM_FIELD]: teamValue ?? null }
+        : {}),
       ...(hasPriority
         ? { priority: isUrgent ? PULSE_URGENT_PRIORITY : 'NORMAL' }
         : {}),
@@ -93,6 +109,14 @@ export const usePulseTaskActions = () => {
       updateOneRecordInput: update,
     });
 
+  const assignTask = (taskId: string, assignment: PulseAssignment) =>
+    updateTask(taskId, {
+      assigneeId: assignment.memberId,
+      ...(hasTaskTeam
+        ? { [PULSE_ASSIGNMENT_TEAM_FIELD]: assignment.teamValue }
+        : {}),
+    });
+
   const toggleDone = (task: PulseTask) =>
     updateTask(task.id, {
       status: task.status === 'DONE' ? 'TODO' : 'DONE',
@@ -121,6 +145,7 @@ export const usePulseTaskActions = () => {
 
   return {
     addTask,
+    assignTask,
     addNote,
     toggleDone,
     toggleUrgent,

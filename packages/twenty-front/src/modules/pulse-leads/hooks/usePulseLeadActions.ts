@@ -1,3 +1,7 @@
+import {
+  usePulseAssignment,
+  PULSE_ASSIGNMENT_TEAM_FIELD,
+} from '@/pulse-assignment/contexts/PulseAssignmentContext';
 import { useCreateOneRecord } from '@/object-record/hooks/useCreateOneRecord';
 import { useDeleteManyRecords } from '@/object-record/hooks/useDeleteManyRecords';
 import { useUpdateManyRecords } from '@/object-record/hooks/useUpdateManyRecords';
@@ -30,6 +34,7 @@ const splitPhone = (phone: string) => {
 };
 
 export const usePulseLeadActions = () => {
+  const { hasLeadTeam } = usePulseAssignment();
   const { addTask, currentWorkspaceMemberId } = usePulseTaskActions();
   const { updateManyRecords } = useUpdateManyRecords({
     objectNameSingular: CoreObjectNameSingular.Company,
@@ -50,15 +55,30 @@ export const usePulseLeadActions = () => {
       updateOneRecordInput: { leadStatus },
     });
 
-  const assignToMe = (leadIds: string[]) =>
+  const assignOwner = (leadIds: string[], memberId: string | null) =>
     updateManyRecords({
       recordIdsToUpdate: leadIds,
-      updateOneRecordInput: { accountOwnerId: currentWorkspaceMemberId },
+      updateOneRecordInput: { accountOwnerId: memberId },
     });
+  const assignTeam = (leadIds: string[], teamValue: string | null) => {
+    if (!hasLeadTeam) throw new Error('Create an assignment team first.');
+    return updateManyRecords({
+      recordIdsToUpdate: leadIds,
+      updateOneRecordInput: { [PULSE_ASSIGNMENT_TEAM_FIELD]: teamValue },
+    });
+  };
+  const assignToMe = (leadIds: string[]) =>
+    assignOwner(leadIds, currentWorkspaceMemberId);
 
   const addTaskToLeads = async (
     leadIds: string[],
-    task: { title: string; dueAt: Date | null; isUrgent: boolean },
+    task: {
+      title: string;
+      dueAt: Date | null;
+      isUrgent: boolean;
+      assigneeId?: string | null;
+      teamValue?: string | null;
+    },
   ) => {
     for (const leadId of leadIds) {
       await addTask({ ...task, companyId: leadId });
@@ -116,5 +136,13 @@ export const usePulseLeadActions = () => {
     return company;
   };
 
-  return { setStatus, assignToMe, addTaskToLeads, deleteLeads, createLead };
+  return {
+    setStatus,
+    assignToMe,
+    assignOwner,
+    assignTeam,
+    addTaskToLeads,
+    deleteLeads,
+    createLead,
+  };
 };

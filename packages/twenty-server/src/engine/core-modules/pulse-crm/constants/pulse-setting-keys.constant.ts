@@ -5,6 +5,7 @@ export const PULSE_SETTING_KEYS = [
   'emailTemplates',
   'sequences',
   'notificationPreferences',
+  'assignmentTeams',
 ] as const;
 
 export type PulseSettingKey = (typeof PULSE_SETTING_KEYS)[number];

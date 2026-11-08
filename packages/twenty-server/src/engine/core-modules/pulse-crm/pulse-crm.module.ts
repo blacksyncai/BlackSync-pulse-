@@ -1,3 +1,4 @@
+import { PermissionsModule } from 'src/engine/metadata-modules/permissions/permissions.module';
 import { Module } from '@nestjs/common';
 
 import { KeyValuePairModule } from 'src/engine/core-modules/key-value-pair/key-value-pair.module';
@@ -6,7 +7,7 @@ import { PulseLeadsService } from 'src/engine/core-modules/pulse-crm/services/pu
 import { PulseSettingsService } from 'src/engine/core-modules/pulse-crm/services/pulse-settings.service';
 
 @Module({
-  imports: [KeyValuePairModule],
+  imports: [KeyValuePairModule, PermissionsModule],
   providers: [PulseCrmResolver, PulseLeadsService, PulseSettingsService],
   exports: [PulseSettingsService],
 })

@@ -1,3 +1,5 @@
+import { PulseAssignmentPicker } from '@/pulse-assignment/components/PulseAssignmentPicker';
+import { usePulseAssignment } from '@/pulse-assignment/contexts/PulseAssignmentContext';
 import { usePulseTaskActions } from '@/pulse-tasks/hooks/usePulseTaskActions';
 import { type PulseTask } from '@/pulse-tasks/types/PulseTask';
 import { formatPulseTaskDue } from '@/pulse-tasks/utils/formatPulseTaskDue';
@@ -25,6 +27,7 @@ const StyledRow = styled.div`
   align-items: center;
   border-bottom: 1px solid ${themeCssVariables.border.color.light};
   display: flex;
+  flex-wrap: wrap;
   gap: ${themeCssVariables.spacing[3]};
   min-height: 48px;
   padding: ${themeCssVariables.spacing[2]} ${themeCssVariables.spacing[4]};
@@ -70,7 +73,7 @@ const StyledMain = styled.button`
   color: ${themeCssVariables.font.color.primary};
   cursor: pointer;
   display: flex;
-  flex: 1;
+  flex: 1 1 160px;
   flex-direction: column;
   font-family: inherit;
   gap: 2px;
@@ -178,7 +181,8 @@ export const PulseTaskRow = ({
       setIsSaving(false);
     }
   };
-  const { toggleDone, toggleUrgent, snooze, hasPriority } =
+  const { hasTaskTeam } = usePulseAssignment();
+  const { toggleDone, toggleUrgent, snooze, hasPriority, assignTask } =
     usePulseTaskActions();
   const { openRecordInSidePanel } = useOpenRecordInSidePanel();
   const isDone = isPulseTaskDone(task);
@@ -235,6 +239,14 @@ export const PulseTaskRow = ({
           )}
         </StyledMeta>
       </StyledMain>
+      <PulseAssignmentPicker
+        value={{ memberId: task.assigneeId, teamValue: task.teamValue ?? null }}
+        allowTeam={hasTaskTeam}
+        disabled={isSaving}
+        onChange={(assignment) =>
+          void runAction(() => assignTask(task.id, assignment))
+        }
+      />
       {isUrgent && <StyledUrgentBadge>{t`Urgent`}</StyledUrgentBadge>}
       {isDefined(accountLabel) && (
         <StyledHoverAction

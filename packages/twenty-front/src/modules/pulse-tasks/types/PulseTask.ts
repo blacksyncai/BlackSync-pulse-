@@ -13,13 +13,10 @@ export type PulseTask = {
   createdAt: Date;
   assigneeId: string | null;
   assigneeName: string | null;
+  teamValue?: string | null;
   priority: string | null;
   target: PulseTaskTarget | null;
 };
 
 export type PulseTaskGroupId =
-  | 'overdue'
-  | 'today'
-  | 'upcoming'
-  | 'someday'
-  | 'done';
+  'overdue' | 'today' | 'upcoming' | 'someday' | 'done';

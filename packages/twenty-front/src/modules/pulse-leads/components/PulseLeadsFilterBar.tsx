@@ -1,3 +1,7 @@
+import {
+  usePulseAssignment,
+  assignmentMemberName,
+} from '@/pulse-assignment/contexts/PulseAssignmentContext';
 import { type LeadStatusOption } from '@/pulse-leads/hooks/useLeadStatusOptions';
 import {
   type PulseLastContactFilter,
@@ -144,6 +148,7 @@ export const PulseLeadsFilterBar = ({
   hasChanges,
 }: PulseLeadsFilterBarProps) => {
   const { t } = useLingui();
+  const { members, teams } = usePulseAssignment();
   const [isStatusOpen, setIsStatusOpen] = useState(false);
 
   const update = (patch: Partial<PulseSmartViewFilters>) =>
@@ -281,7 +286,28 @@ export const PulseLeadsFilterBar = ({
         <option value="any">{t`Owner: anyone`}</option>
         <option value="me">{t`My leads`}</option>
         <option value="unassigned">{t`Unassigned`}</option>
+        {members.map((member) => (
+          <option key={member.id} value={'member:' + member.id}>
+            {assignmentMemberName(member)}
+          </option>
+        ))}
       </StyledSelect>
+      {teams.length > 0 && (
+        <StyledSelect
+          aria-label={t`Lead team`}
+          value={filters.teamValue ?? ''}
+          onChange={(event) =>
+            update({ teamValue: event.target.value || undefined })
+          }
+        >
+          <option value="">{t`All teams`}</option>
+          {teams.map((team) => (
+            <option key={team.id} value={team.id}>
+              {team.name}
+            </option>
+          ))}
+        </StyledSelect>
+      )}
 
       <StyledChip
         type="button"

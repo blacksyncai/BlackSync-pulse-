@@ -1,3 +1,4 @@
+import { PulseAssignmentProvider } from '@/pulse-assignment/contexts/PulseAssignmentContext';
 import { WorkspaceSetupChatSidePanelEffect } from '@/onboarding/effect-components/WorkspaceSetupChatSidePanelEffect';
 import { CommandMenuForMobile } from '@/command-menu/components/CommandMenuForMobile';
 import { useCommandMenuHotKeys } from '@/command-menu/hooks/useCommandMenuHotKeys';
@@ -71,17 +72,19 @@ export const MainAppLayoutWithSidePanel = () => {
   useCommandMenuHotKeys();
 
   return (
-    <StyledRow>
-      <RouteContextStoreProvider />
-      <SidePanelPathUrlSyncEffect />
-      <WorkspaceSetupChatSidePanelEffect />
-      <StyledMainColumn>
-        <StyledContent>
-          <Outlet />
-        </StyledContent>
-        <LogConsole />
-      </StyledMainColumn>
-      {isMobile ? <CommandMenuForMobile /> : <SidePanelForDesktop />}
-    </StyledRow>
+    <PulseAssignmentProvider>
+      <StyledRow>
+        <RouteContextStoreProvider />
+        <SidePanelPathUrlSyncEffect />
+        <WorkspaceSetupChatSidePanelEffect />
+        <StyledMainColumn>
+          <StyledContent>
+            <Outlet />
+          </StyledContent>
+          <LogConsole />
+        </StyledMainColumn>
+        {isMobile ? <CommandMenuForMobile /> : <SidePanelForDesktop />}
+      </StyledRow>
+    </PulseAssignmentProvider>
   );
 };

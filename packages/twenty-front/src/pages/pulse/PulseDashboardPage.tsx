@@ -253,9 +253,7 @@ export const PulseDashboardPage = () => {
 
   return (
     <PageCardLayout
-      header={
-        <PageHeader title={t`Sales workspace`} Icon={IconLayoutDashboard} />
-      }
+      header={<PageHeader title={t`Dashboard`} Icon={IconLayoutDashboard} />}
     >
       <StyledPage>
         <StyledContent>

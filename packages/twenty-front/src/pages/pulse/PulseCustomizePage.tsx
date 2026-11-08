@@ -1,3 +1,4 @@
+import { PulseTeamsEditor } from '@/pulse-assignment/components/PulseTeamsEditor';
 import { useObjectMetadataItem } from '@/object-metadata/hooks/useObjectMetadataItem';
 import { PulseTagsEditor } from '@/pulse-customize/components/PulseTagsEditor';
 import { PulseCustomFieldsEditor } from '@/pulse-customize/components/PulseCustomFieldsEditor';
@@ -21,6 +22,7 @@ import { IconAdjustments } from 'twenty-ui/icon';
 import { themeCssVariables } from 'twenty-ui/theme';
 
 type SectionId =
+  | 'teams'
   | 'tags'
   | 'statuses'
   | 'pipelines'
@@ -178,6 +180,7 @@ export const PulseCustomizePage = () => {
     { id: 'priorities', label: t`Task priorities` },
     { id: 'cards', label: t`Deal cards` },
     { id: 'notifications', label: t`Notifications` },
+    { id: 'teams', label: t`Teams & assignments` },
   ];
 
   return (
@@ -199,6 +202,16 @@ export const PulseCustomizePage = () => {
         </StyledMenu>
         <StyledContent>
           <StyledInner>
+            {section === 'teams' && (
+              <>
+                <StyledHeading>
+                  <h2>{t`Teams & assignments`}</h2>
+                </StyledHeading>
+                <StyledCard>
+                  <PulseTeamsEditor />
+                </StyledCard>
+              </>
+            )}
             {section === 'tags' && (
               <>
                 <StyledHeading>

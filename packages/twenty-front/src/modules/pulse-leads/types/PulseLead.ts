@@ -13,6 +13,7 @@ export type PulseLead = {
   leadStatus: string | null;
   leadPond?: string | null;
   ownerId: string | null;
+  assignmentTeam?: string | null;
   createdAt: string;
   contactCount: number;
   primaryContact: PulseLeadContact | null;

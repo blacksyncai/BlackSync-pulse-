@@ -52,7 +52,7 @@ export const PulseNavigationSection = () => {
       <StyledGroup>
         <NavigationDrawerSectionTitle label={t`Sell`} />
         <NavigationDrawerItem
-          label={t`Sales workspace`}
+          label={t`Dashboard`}
           to={AppPath.PulseDashboard}
           Icon={IconLayoutDashboard}
           active={pathname === AppPath.PulseDashboard}

@@ -1,3 +1,7 @@
+import {
+  usePulseAssignment,
+  PULSE_ASSIGNMENT_TEAM_FIELD,
+} from '@/pulse-assignment/contexts/PulseAssignmentContext';
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
 import { type ObjectRecord } from '@/object-record/types/ObjectRecord';
 import { usePulseTaskPriorityField } from '@/pulse-tasks/hooks/usePulseTaskPriorityField';
@@ -17,6 +21,7 @@ type TaskRecord = ObjectRecord & {
   createdAt: string;
   assigneeId: string | null;
   assignee: { name: FullName } | null;
+  assignmentTeam?: string | null;
   priority?: string | null;
   taskTargets: {
     targetCompany: { id: string; name: string | null } | null;
@@ -29,15 +34,20 @@ const formatName = (name: FullName) =>
 
 export const usePulseTasks = ({
   assigneeId,
+  teamValues,
+  unassigned = false,
   openOnly = false,
   limit = 500,
   skip = false,
 }: {
   assigneeId?: string | null;
+  teamValues?: string[];
+  unassigned?: boolean;
   openOnly?: boolean;
   limit?: number;
   skip?: boolean;
 } = {}) => {
+  const { hasTaskTeam } = usePulseAssignment();
   const { hasPriority } = usePulseTaskPriorityField();
   const doneSince = useMemo(
     () =>
@@ -59,6 +69,10 @@ export const usePulseTasks = ({
               ...(!openOnly ? [{ updatedAt: { gte: doneSince } }] : []),
             ],
           },
+          ...(unassigned ? [{ assigneeId: { is: 'NULL' as const } }] : []),
+          ...(hasTaskTeam && teamValues
+            ? [{ [PULSE_ASSIGNMENT_TEAM_FIELD]: { in: teamValues } }]
+            : []),
           ...(isDefined(assigneeId)
             ? [{ assigneeId: { eq: assigneeId } }]
             : []),
@@ -72,6 +86,7 @@ export const usePulseTasks = ({
         dueAt: true,
         createdAt: true,
         assigneeId: true,
+        ...(hasTaskTeam ? { [PULSE_ASSIGNMENT_TEAM_FIELD]: true } : {}),
         assignee: { name: { firstName: true, lastName: true } },
         ...(hasPriority ? { priority: true } : {}),
         taskTargets: {
@@ -80,7 +95,9 @@ export const usePulseTasks = ({
         },
       },
       limit,
-      skip,
+      skip:
+        skip ||
+        (teamValues !== undefined && (!hasTaskTeam || teamValues.length === 0)),
     });
 
   const tasks = useMemo<PulseTask[]>(
@@ -100,6 +117,7 @@ export const usePulseTasks = ({
           dueAt: isDefined(record.dueAt) ? new Date(record.dueAt) : null,
           createdAt: new Date(record.createdAt),
           assigneeId: record.assigneeId,
+          teamValue: record.assignmentTeam ?? null,
           assigneeName: formatName(record.assignee?.name ?? null),
           priority: record.priority ?? null,
           target:
