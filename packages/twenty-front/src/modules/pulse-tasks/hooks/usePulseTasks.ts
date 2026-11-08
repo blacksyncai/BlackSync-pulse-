@@ -29,7 +29,15 @@ const formatName = (name: FullName) =>
 
 export const usePulseTasks = ({
   assigneeId,
-}: { assigneeId?: string | null } = {}) => {
+  openOnly = false,
+  limit = 500,
+  skip = false,
+}: {
+  assigneeId?: string | null;
+  openOnly?: boolean;
+  limit?: number;
+  skip?: boolean;
+} = {}) => {
   const { hasPriority } = usePulseTaskPriorityField();
   const doneSince = useMemo(
     () =>
@@ -39,37 +47,41 @@ export const usePulseTasks = ({
     [],
   );
 
-  const { records, loading, refetch } = useFindManyRecords<TaskRecord>({
-    objectNameSingular: CoreObjectNameSingular.Task,
-    filter: {
-      and: [
-        {
-          or: [
-            { status: { neq: 'DONE' } },
-            { status: { is: 'NULL' } },
-            { updatedAt: { gte: doneSince } },
-          ],
-        },
-        ...(isDefined(assigneeId) ? [{ assigneeId: { eq: assigneeId } }] : []),
-      ],
-    },
-    orderBy: [{ dueAt: 'AscNullsLast' }],
-    recordGqlFields: {
-      id: true,
-      title: true,
-      status: true,
-      dueAt: true,
-      createdAt: true,
-      assigneeId: true,
-      assignee: { name: { firstName: true, lastName: true } },
-      ...(hasPriority ? { priority: true } : {}),
-      taskTargets: {
-        targetCompany: { id: true, name: true },
-        targetPerson: { id: true, name: { firstName: true, lastName: true } },
+  const { records, loading, refetch, error, totalCount, hasNextPage } =
+    useFindManyRecords<TaskRecord>({
+      objectNameSingular: CoreObjectNameSingular.Task,
+      filter: {
+        and: [
+          {
+            or: [
+              { status: { neq: 'DONE' } },
+              { status: { is: 'NULL' } },
+              ...(!openOnly ? [{ updatedAt: { gte: doneSince } }] : []),
+            ],
+          },
+          ...(isDefined(assigneeId)
+            ? [{ assigneeId: { eq: assigneeId } }]
+            : []),
+        ],
       },
-    },
-    limit: 500,
-  });
+      orderBy: [{ dueAt: 'AscNullsLast' }],
+      recordGqlFields: {
+        id: true,
+        title: true,
+        status: true,
+        dueAt: true,
+        createdAt: true,
+        assigneeId: true,
+        assignee: { name: { firstName: true, lastName: true } },
+        ...(hasPriority ? { priority: true } : {}),
+        taskTargets: {
+          targetCompany: { id: true, name: true },
+          targetPerson: { id: true, name: { firstName: true, lastName: true } },
+        },
+      },
+      limit,
+      skip,
+    });
 
   const tasks = useMemo<PulseTask[]>(
     () =>
@@ -104,5 +116,5 @@ export const usePulseTasks = ({
     [records],
   );
 
-  return { tasks, loading, refetch };
+  return { tasks, loading, refetch, error, totalCount, hasNextPage };
 };

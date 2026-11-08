@@ -8,6 +8,8 @@ import {
 import { useOpenRecordInSidePanel } from '@/side-panel/hooks/useOpenRecordInSidePanel';
 import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
+import { useState } from 'react';
+import { useToast } from 'twenty-ui/components';
 import { CoreObjectNameSingular } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 import {
@@ -29,6 +31,17 @@ const StyledRow = styled.div`
 
   &:hover {
     background: ${themeCssVariables.background.transparent.lighter};
+  }
+
+  &:focus-within [data-hover-action] {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    [data-hover-action] {
+      opacity: 1;
+    }
+    flex-wrap: wrap;
   }
 
   &:hover [data-hover-action] {
@@ -138,14 +151,33 @@ type PulseTaskRowProps = {
   task: PulseTask;
   now: Date;
   showAssignee?: boolean;
+  onChanged?: () => void;
 };
 
 export const PulseTaskRow = ({
   task,
   now,
   showAssignee = false,
+  onChanged,
 }: PulseTaskRowProps) => {
   const { t } = useLingui();
+  const { enqueueToast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
+  const runAction = async (action: () => Promise<unknown>) => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await action();
+      onChanged?.();
+    } catch {
+      enqueueToast({
+        variant: 'error',
+        children: t`Could not update the task. Please try again.`,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
   const { toggleDone, toggleUrgent, snooze, hasPriority } =
     usePulseTaskActions();
   const { openRecordInSidePanel } = useOpenRecordInSidePanel();
@@ -182,7 +214,8 @@ export const PulseTaskRow = ({
         role="checkbox"
         aria-checked={isDone}
         aria-label={isDone ? t`Mark as not done` : t`Mark as done`}
-        onClick={() => void toggleDone(task)}
+        disabled={isSaving}
+        onClick={() => void runAction(() => toggleDone(task))}
       >
         {isDone ? <IconSquareCheck size={20} /> : <IconSquare size={20} />}
       </StyledCheck>
@@ -218,7 +251,8 @@ export const PulseTaskRow = ({
         <StyledHoverAction
           type="button"
           data-hover-action
-          onClick={() => void snooze(task, 1)}
+          disabled={isSaving}
+          onClick={() => void runAction(() => snooze(task, 1))}
         >
           {t`+1 day`}
         </StyledHoverAction>
@@ -229,7 +263,8 @@ export const PulseTaskRow = ({
           data-hover-action
           aria-pressed={isUrgent}
           aria-label={isUrgent ? t`Remove urgent` : t`Mark urgent`}
-          onClick={() => void toggleUrgent(task)}
+          disabled={isSaving}
+          onClick={() => void runAction(() => toggleUrgent(task))}
         >
           <IconFlag size={14} />
         </StyledHoverAction>
