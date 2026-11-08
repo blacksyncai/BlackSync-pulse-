@@ -17,6 +17,8 @@ jobs:
       - name: Check Google email configuration without exposing credentials
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          AUTH_GOOGLE_CLIENT_ID: ${{ secrets.AUTH_GOOGLE_CLIENT_ID }}
+          AUTH_GOOGLE_CLIENT_SECRET: ${{ secrets.AUTH_GOOGLE_CLIENT_SECRET }}
         run: |
           python3 - <<'PY'
           import json, os, sys, urllib.request, urllib.error
@@ -38,9 +40,11 @@ jobs:
           try:
               environment = railway('query($id: String!) { environment(id: $id) { projectId } }', {'id': environment_id})
               project_id = environment['environment']['projectId']
+              configurations = {}
               for label, service_id in services.items():
                   data = railway('query($projectId: String!, $environmentId: String!, $serviceId: String!) { variables(projectId: $projectId, environmentId: $environmentId, serviceId: $serviceId) }',
                       {'projectId': project_id, 'environmentId': environment_id, 'serviceId': service_id})['variables']
+                  configurations[label] = data
                   report = {
                       'google_client_id_present': bool(data.get('AUTH_GOOGLE_CLIENT_ID')),
                       'google_client_secret_present': bool(data.get('AUTH_GOOGLE_CLIENT_SECRET')),
@@ -50,6 +54,26 @@ jobs:
                       'database_configuration_enabled': str(data.get('IS_CONFIG_VARIABLES_IN_DB_ENABLED', 'true')).lower() != 'false',
                   }
                   print(label + ': ' + json.dumps(report, sort_keys=True))
+              client_id = os.environ.get('AUTH_GOOGLE_CLIENT_ID') or configurations['server'].get('AUTH_GOOGLE_CLIENT_ID')
+              client_secret = os.environ.get('AUTH_GOOGLE_CLIENT_SECRET') or configurations['server'].get('AUTH_GOOGLE_CLIENT_SECRET')
+              if not client_id or not client_secret:
+                  print('::notice::Google email is NOT configured. Add AUTH_GOOGLE_CLIENT_ID and AUTH_GOOGLE_CLIENT_SECRET as repository Actions secrets, then rerun this job. Register https://crm.blacksync.cloud/auth/google-apis/get-access-token in that Google OAuth client first.')
+                  sys.exit(0)
+              settings = {
+                  'AUTH_GOOGLE_CLIENT_ID': client_id,
+                  'AUTH_GOOGLE_CLIENT_SECRET': client_secret,
+                  'AUTH_GOOGLE_APIS_CALLBACK_URL': 'https://crm.blacksync.cloud/auth/google-apis/get-access-token',
+                  'MESSAGING_PROVIDER_GMAIL_ENABLED': 'true',
+              }
+              for label, service_id in services.items():
+                  railway('mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }',
+                      {'input': {'projectId': project_id, 'environmentId': environment_id, 'serviceId': service_id,
+                                 'variables': settings, 'replace': False, 'skipDeploys': True}})
+                  print(label + ': Google email settings saved; credential values were not logged.')
+              for label, service_id in services.items():
+                  railway('mutation($serviceId: String!, $environmentId: String!) { serviceInstanceDeployV2(serviceId: $serviceId, environmentId: $environmentId) }',
+                      {'serviceId': service_id, 'environmentId': environment_id})
+                  print(label + ': deployment requested. Verify /client-config reports isGoogleMessagingEnabled=true after deployment; database configuration overrides may require an admin update.')
           except urllib.error.HTTPError as error:
               print('::error::Railway configuration request returned HTTP ' + str(error.code) + '. No credential values were logged.')
               sys.exit(1)
