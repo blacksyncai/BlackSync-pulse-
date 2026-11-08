@@ -79,6 +79,18 @@ jobs:
               from_address = current_from if current_from.lower().endswith('@'+domain.lower()) else 'notifications@'+domain
               settings = {'RESEND_API_KEY':key,'RESEND_FROM_DOMAIN':domain,'EMAIL_FROM_ADDRESS':from_address,'EMAIL_FROM_NAME':'BlackSync Cloud','EMAILING_DOMAIN_DRIVER':'RESEND','EMAIL_DRIVER':'SMTP','EMAIL_SMTP_HOST':'smtp.resend.com','EMAIL_SMTP_PORT':'587','EMAIL_SMTP_USER':'resend','EMAIL_SMTP_PASSWORD':key,'EMAIL_SMTP_NO_TLS':'false'}
               signing_secret = os.environ.get('RESEND_WEBHOOK_SIGNING_SECRET') or configurations['server'].get('RESEND_WEBHOOK_SIGNING_SECRET')
+              if not signing_secret:
+                  endpoint = 'https://crm.blacksync.cloud/webhooks/messaging/resend'
+                  registered = request_json('https://api.resend.com/webhooks', headers).get('data', [])
+                  existing = next((hook for hook in registered if hook.get('endpoint') == endpoint), None)
+                  if existing:
+                      webhook = request_json('https://api.resend.com/webhooks/' + existing['id'], headers)
+                  else:
+                      webhook = request_json('https://api.resend.com/webhooks', headers, {'endpoint':endpoint,'events':['email.sent','email.delivered','email.delivery_delayed','email.bounced','email.complained','email.failed','email.received']})
+                  signing_secret = webhook.get('signing_secret')
+                  if not signing_secret:
+                      raise RuntimeError('Webhook signing secret was not returned')
+                  print('Resend webhook registered for the CRM; signing secret was not logged.')
               if signing_secret:
                   settings['RESEND_WEBHOOK_SIGNING_SECRET'] = signing_secret
               print('Inbound webhook signing configured: ' + str(bool(signing_secret)))
