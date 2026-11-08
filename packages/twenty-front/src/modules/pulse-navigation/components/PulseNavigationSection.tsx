@@ -1,3 +1,4 @@
+import { PULSE_SALES_WORKSPACE_PATH } from '@/pulse-dashboard/constants/PulseSalesWorkspacePath';
 import { useSmartViews } from '@/pulse-leads/hooks/useSmartViews';
 import { NavigationDrawerItem } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerItem';
 import { NavigationDrawerSectionTitle } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerSectionTitle';
@@ -56,6 +57,12 @@ export const PulseNavigationSection = () => {
           to={AppPath.PulseDashboard}
           Icon={IconLayoutDashboard}
           active={pathname === AppPath.PulseDashboard}
+        />
+        <NavigationDrawerItem
+          label={t`Sales workspace`}
+          to={PULSE_SALES_WORKSPACE_PATH}
+          Icon={IconLayoutDashboard}
+          active={pathname === PULSE_SALES_WORKSPACE_PATH}
         />
         <NavigationDrawerItem
           label={t`Inbox`}

@@ -22,6 +22,8 @@ const CSS = `.pbn{font-family:var(--t-font-family);-webkit-font-smoothing:antial
 @media (max-width:767px){.pbn #alloc{grid-column:span 12;grid-row:auto;height:376px}.pbn .kpi{grid-column:span 6}
 .pbn #deals,.pbn #stages{grid-column:span 12}.pbn .grid{gap:12px}}
 @media (max-width:520px){.pbn .kpi{grid-column:span 12}}
+@media(prefers-reduced-motion:reduce){.pbn *{animation:none!important;transition:none!important}}
+@media(max-width:520px){.pbn .pipeline-total{flex-direction:column;align-items:flex-start!important;gap:6px!important}.pbn .cohort-caption{display:none}}
 .pbn .card{position:relative;border-radius:28px;overflow:hidden;opacity:0;transform:translateY(14px) scale(.985);transition:opacity .7s ease,transform .9s var(--ease)}
 .pbn .in .card{opacity:1;transform:none}
 .pbn .card .rim{position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 0 0 1px rgba(255,255,255,.06);pointer-events:none;z-index:9}
@@ -105,16 +107,13 @@ function mount(root, data) {
     p && p.appendChild(e);
     return e;
   };
-  const money = (v, { compact = false } = {}) => {
-    if (compact && Math.abs(v) >= 1000)
-      return (
-        '$' +
-        (v >= 1e6
-          ? (v / 1e6).toFixed(1) + 'M'
-          : (v / 1000).toFixed(Math.abs(v) >= 10000 ? 0 : 1) + 'K')
-      );
-    return '$' + Math.round(v).toLocaleString('en-US');
-  };
+  const money = (value, { compact = false } = {}) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: data.currencyCode || 'USD',
+      maximumFractionDigits: compact ? 1 : 0,
+      ...(compact ? { notation: 'compact' } : {}),
+    }).format(value);
   const bg = ({ top, base, bottom, core }) =>
     `<div class="g" style="background:linear-gradient(180deg,${top} 0%,${base} 36%,${base} 74%,${bottom} 100%)"></div><div class="core" style="background:${core}"></div>`;
   const GR = {
@@ -279,18 +278,23 @@ function mount(root, data) {
   /* ---- Pipeline: stream of early / late-stage / won value ---- */
   const nw = $id('nw');
   const H = data.pipelineHistory;
+  const lastOpen = data.openPipeline;
   const total = (p) => p.early + p.late + p.won;
-  const firstOpen = H[0].early + H[0].late,
-    lastOpen = data.openPipeline;
+
   nw.innerHTML = `${bg(GR.violet)}<div class="in-c">
     <div class="row" style="justify-content:space-between"><div class="ttl">Open pipeline</div>
       <div class="legend"><span><i style="background:${COL.early}"></i>Early</span><span><i style="background:${COL.late}"></i>Late stage</span><span><i style="background:${COL.won}"></i>Won</span></div></div>
-    <div class="row" style="margin-top:16px;align-items:flex-end;gap:16px"><div class="nwn"></div>
-      <div style="padding-bottom:6px"><div class="delta">${data.openCount} open deals</div><div class="muted" style="margin-top:3px">${firstOpen > 0 ? (lastOpen >= firstOpen ? '+' : '−') + money(Math.abs(lastOpen - firstOpen)) + ' vs 12 months ago' : 'Last 12 months'}</div></div></div>
+    <div class="row pipeline-total" style="margin-top:16px;align-items:flex-end;gap:16px"><div class="nwn"></div>
+      <div style="padding-bottom:6px"><div class="delta">${data.openCount} open deals</div><div class="muted cohort-caption" style="margin-top:3px">Open value now · chart: creation-month cohorts</div></div></div>
     <svg class="nws" style="position:absolute;left:0;right:0;bottom:0;display:block" aria-hidden="true"></svg></div><div class="rim"></div>`;
-  DotNumber(nw.querySelector('.nwn'), innerWidth < 520 ? 5.4 : 7).count(
-    lastOpen,
-  );
+  if (data.currencyCode === 'USD') {
+    DotNumber(nw.querySelector('.nwn'), innerWidth < 520 ? 5.4 : 7).count(
+      lastOpen,
+    );
+  } else {
+    nw.querySelector('.nwn').textContent = money(lastOpen);
+    nw.querySelector('.nwn').style.fontSize = '32px';
+  }
   let nwGrow = 0;
   function drawNW() {
     const svg = nw.querySelector('.nws'),
@@ -368,8 +372,9 @@ function mount(root, data) {
 
   /* ---- Win rate: half gauge of tick marks ---- */
   const al = $id('alloc');
-  const deals = data.wonCount + data.openCount,
-    wonShare = deals ? data.wonCount / deals : 0;
+  const deals = data.wonCount + data.openCount + data.lostCount,
+    closedDeals = data.wonCount + data.lostCount,
+    wonShare = closedDeals ? data.wonCount / closedDeals : 0;
   al.innerHTML = `${bg(GR.graph)}<div class="in-c"><div class="row" style="justify-content:space-between"><div class="ttl">Win rate</div><span class="chip" style="background:rgba(255,255,255,.12)">${deals} deals</span></div>
     <svg width="300" height="168" viewBox="-150 -150 300 168" style="position:absolute;left:50%;margin-left:-150px;top:70px" aria-hidden="true">${(() => {
       let s = '<style>@keyframes tk{to{opacity:1}}</style>';
@@ -384,13 +389,13 @@ function mount(root, data) {
       }
       return (
         s +
-        `<text y="-22" text-anchor="middle" font-weight="200" font-size="52" fill="#fff" letter-spacing="-2">${Math.round(wonShare * 100)}<tspan font-size="17" dy="-24" fill="${T2}">%</tspan></text><text y="0" text-anchor="middle" font-size="12" font-weight="500" fill="${T3}">deals won</text>`
+        `<text y="-22" text-anchor="middle" font-weight="200" font-size="52" fill="#fff" letter-spacing="-2">${closedDeals ? Math.round(wonShare * 100) : '—'}<tspan font-size="17" dy="-24" fill="${T2}">${closedDeals ? '%' : ''}</tspan></text><text y="0" text-anchor="middle" font-size="12" font-weight="500" fill="${T3}">of closed deals won</text>`
       );
     })()}</svg>
     <div style="position:absolute;left:24px;right:24px;bottom:20px">${[
       ['Won', data.wonCount, money(data.wonAmount), WON],
       ['Open', data.openCount, money(data.openPipeline), COL.late],
-      ['Contacts', data.peopleCount, data.companyCount + ' accounts', '#fff'],
+      ['Lost', data.lostCount, money(data.lostAmount), '#FF6AA8'],
     ]
       .map(
         ([k, c, v, col], i) =>
@@ -402,7 +407,7 @@ function mount(root, data) {
   const dials = $id('dials');
   dials.innerHTML = `${bg(GR.lime)}<div class="in-c"><div class="row" style="justify-content:space-between"><div class="cap">Dials today</div><span class="chip">${data.dialsThisWeek} this week</span></div>
     <div style="position:absolute;left:22px;bottom:32px"><span class="big dv" style="font-size:52px">0</span></div>
-    <div class="muted" style="position:absolute;left:24px;bottom:14px;font-size:11.5px;color:rgba(0,0,0,.55)">Logged from click-to-call</div></div><div class="rim"></div>`;
+    <div class="muted" style="position:absolute;left:24px;bottom:14px;font-size:11.5px;color:rgba(0,0,0,.55)">Calls recorded in the CRM</div></div><div class="rim"></div>`;
   tween(dials.querySelector('.dv'), data.dialsToday, (v) =>
     String(Math.round(v)),
   );
@@ -436,8 +441,8 @@ function mount(root, data) {
 
   /* ---- KPI: won this month ---- */
   const won = $id('won');
-  won.innerHTML = `<div class="in-c"><div class="row" style="justify-content:space-between"><div class="cap">Won this month</div><span class="muted">${data.wonThisMonthCount} deals</span></div>
-    <div style="margin-top:14px"><span class="big wv" style="font-size:38px">$0</span></div>
+  won.innerHTML = `<div class="in-c"><div class="row" style="justify-content:space-between"><div class="cap">Won by close date</div><span class="muted">${data.wonThisMonthCount} deals</span></div>
+    <div style="margin-top:14px"><span class="big wv" style="font-size:38px">${money(0)}</span></div>
     <div class="muted" style="position:absolute;left:24px;bottom:22px">${money(data.wonAmount, { compact: true })} won all time</div></div>`;
   tween(won.querySelector('.wv'), data.wonThisMonthAmount, (v) => money(v));
 
@@ -534,7 +539,7 @@ function mount(root, data) {
 
   /* ---- Deals by stage: capsule columns ---- */
   const st = $id('stages');
-  st.innerHTML = `${bg(GR.green)}<div class="in-c"><div class="ttl">Deals by stage</div>
+  st.innerHTML = `${bg(GR.green)}<div class="in-c"><div class="ttl">Deals by stage group</div>
     <div style="margin-top:14px"><span class="big sv" style="font-size:34px">0</span></div><div class="muted" style="margin-top:6px">deals in pipeline</div>
     <svg class="sts" style="position:absolute;left:18px;bottom:14px" aria-hidden="true"></svg></div><div class="rim"></div>`;
   tween(
@@ -550,7 +555,7 @@ function mount(root, data) {
       pb = 18,
       bw = 22,
       max = Math.max(1, ...S.map((s) => s.count)),
-      gap = (W - 8 - bw * S.length) / (S.length - 1);
+      gap = (W - 8 - bw * S.length) / Math.max(1, S.length - 1);
     svg.setAttribute('width', W);
     svg.setAttribute('height', Hh);
     const Y = (x) => (Hh - pb) * (1 - x / max);
@@ -624,16 +629,18 @@ export const PulseBento = ({
   subtitle = '',
 }: PulseBentoProps) => {
   const ref = React.useRef(null);
+  const snapshot = JSON.stringify(data);
+  const stableData = React.useMemo(() => JSON.parse(snapshot), [snapshot]);
   React.useEffect(() => {
     const node = ref.current;
     if (!node) return;
     node.innerHTML = markup({ title, subtitle });
-    const stop = mount(node, data);
+    const stop = mount(node, stableData);
     return () => {
       stop();
       node.innerHTML = '';
     };
-  }, [data, title, subtitle]);
+  }, [stableData, title, subtitle]);
   return (
     <>
       <style>{CSS}</style>

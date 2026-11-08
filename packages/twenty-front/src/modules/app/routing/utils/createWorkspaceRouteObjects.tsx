@@ -1,3 +1,4 @@
+import { PULSE_SALES_WORKSPACE_PATH } from '@/pulse-dashboard/constants/PulseSalesWorkspacePath';
 import { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AppPath, SettingsPath } from 'twenty-shared/types';
@@ -44,6 +45,12 @@ const AiChatPage = lazy(() =>
 const PulseFormsPage = lazy(() =>
   import('~/pages/pulse/PulseFormsPage').then((module) => ({
     default: module.PulseFormsPage,
+  })),
+);
+
+const PulseSalesWorkspacePage = lazy(() =>
+  import('~/pages/pulse/PulseSalesWorkspacePage').then((module) => ({
+    default: module.PulseSalesWorkspacePage,
   })),
 );
 
@@ -200,6 +207,14 @@ export const createWorkspaceRouteObjects = ({
       element: (
         <LazyRoute>
           <PulseDashboardPage />
+        </LazyRoute>
+      ),
+    },
+    {
+      path: PULSE_SALES_WORKSPACE_PATH,
+      element: (
+        <LazyRoute>
+          <PulseSalesWorkspacePage />
         </LazyRoute>
       ),
     },

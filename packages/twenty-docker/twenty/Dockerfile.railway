@@ -6,6 +6,8 @@
 # Dependency stages
 # ===========================================================================
 
+ARG RUNTIME_IMAGE=ghcr.io/blacksyncai/blacksync-pulse:latest
+
 FROM node:24.19.0-alpine3.23@sha256:244cc2b53f46f9e876304391d17682b0ddae9ac33491f4857e25e35a36ba7995 AS front-deps
 
 WORKDIR /app
@@ -189,9 +191,20 @@ USER 1000
 #   docker build --target twenty -f packages/twenty-docker/twenty/Dockerfile .
 # ===========================================================================
 
+# A frontend-only release reuses the last successful server image.
+FROM ${RUNTIME_IMAGE} AS twenty-front-only
+RUN rm -rf /app/packages/twenty-server/dist/front
+COPY --chown=1000 --from=twenty-front-build /app/packages/twenty-front/build /app/packages/twenty-server/dist/front
+ARG SOURCE_COMMIT
+ARG SERVER_COMMIT
+RUN printf '{"commit":"%s","serverCommit":"%s"}\n' "$SOURCE_COMMIT" "$SERVER_COMMIT" > /app/packages/twenty-server/dist/front/release.json
+
 FROM twenty-server AS twenty
 
 COPY --chown=1000 --from=twenty-front-build /app/packages/twenty-front/build /app/packages/twenty-server/dist/front
 
 LABEL org.opencontainers.image.description="Twenty image with backend and frontend."
 
+
+ARG SOURCE_COMMIT
+RUN printf '{"commit":"%s","serverCommit":"%s"}\n' "$SOURCE_COMMIT" "$SOURCE_COMMIT" > /app/packages/twenty-server/dist/front/release.json

@@ -1,4 +1,7 @@
 export type PulseDashboardData = {
+  currencyCode: string;
+  lostCount: number;
+  lostAmount: number;
   pipelineHistory: {
     label: string;
     early: number;

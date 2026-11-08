@@ -1,241 +1,198 @@
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
+import { usePulsePipelines } from '@/pulse-pipelines/hooks/usePulsePipelines';
+import { buildPulseBoardFilter } from '@/pulse-opportunities/utils/buildPulseBoardFilter';
+import {
+  buildPulseAnalytics,
+  type AnalyticsOpportunity,
+} from '@/pulse-dashboard/utils/buildPulseAnalytics';
 import { type PulseDashboardData } from '@/pulse-dashboard/types/PulseDashboardData';
-import { useMemo } from 'react';
-import { CoreObjectNameSingular } from 'twenty-shared/types';
-import { isDefined } from 'twenty-shared/utils';
-
-type OpportunityRow = {
-  id: string;
-  name: string | null;
-  stage: string | null;
-  createdAt: string;
-  closeDate: string | null;
-  amount: { amountMicros: number | null } | null;
-  company: { name: string | null } | null;
-};
-
-type TaskRow = {
-  id: string;
-  title: string | null;
-  status: string | null;
-  dueAt: string | null;
-};
-
-type CalendarEventRow = { id: string; startsAt: string | null };
-
-const WON_STAGE = 'CUSTOMER';
-const EARLY_STAGES = ['NEW', 'SCREENING'];
-const STAGE_ORDER = ['NEW', 'SCREENING', 'MEETING', 'PROPOSAL', 'CUSTOMER'];
-const STAGE_LABELS: Record<string, string> = {
-  NEW: 'New',
-  SCREENING: 'Screen',
-  MEETING: 'Meet',
-  PROPOSAL: 'Prop',
-  CUSTOMER: 'Won',
-};
-
-const toDollars = (opportunity: OpportunityRow) =>
-  (opportunity.amount?.amountMicros ?? 0) / 1_000_000;
-
-const startOfDay = (date: Date) =>
-  new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
-export const usePulseDashboardData = () => {
-  const { records: opportunities, loading: opportunitiesLoading } =
-    useFindManyRecords<OpportunityRow & { __typename: string }>({
+import { useMemo, useState } from 'react';
+import { CoreObjectNameSingular, FieldMetadataType } from 'twenty-shared/types';
+import { type ObjectRecord } from '@/object-record/types/ObjectRecord';
+export const usePulseDashboardData = (
+  pipelineId = 'all',
+  selectedCurrency = '',
+) => {
+  const { pipelines, opportunityMetadataItem } = usePulsePipelines();
+  const pipeline = pipelines.find(
+    (candidate) => candidate.viewId === pipelineId,
+  );
+  const stageFields = opportunityMetadataItem.fields.filter(
+    (field) =>
+      field.isActive !== false &&
+      field.type === FieldMetadataType.SELECT &&
+      (field.name === 'stage' ||
+        field.name.endsWith('Stage') ||
+        pipelines.some((pipeline) => pipeline.stageFieldName === field.name)),
+  );
+  const hasPipeline = opportunityMetadataItem.fields.some(
+    (field) => field.name === 'pipeline',
+  );
+  const opportunities = useFindManyRecords<AnalyticsOpportunity & ObjectRecord>(
+    {
       objectNameSingular: CoreObjectNameSingular.Opportunity,
       recordGqlFields: {
         id: true,
         name: true,
-        stage: true,
         createdAt: true,
         closeDate: true,
-        amount: { amountMicros: true },
+        amount: { amountMicros: true, currencyCode: true },
         company: { name: true },
+        ...(hasPipeline ? { pipeline: true } : {}),
+        ...Object.fromEntries(stageFields.map((field) => [field.name, true])),
       },
-      limit: 500,
-    });
-
-  const { records: tasks, loading: tasksLoading } = useFindManyRecords<
-    TaskRow & { __typename: string }
+      filter: pipeline
+        ? buildPulseBoardFilter(pipeline, hasPipeline)
+        : undefined,
+      limit: 1000,
+    },
+  );
+  const [now, setNow] = useState(() => new Date());
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekStart = new Date(today);
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 7);
+  const openTasks = useFindManyRecords({
+    objectNameSingular: CoreObjectNameSingular.Task,
+    recordGqlFields: { id: true },
+    filter: { or: [{ status: { neq: 'DONE' } }, { status: { is: 'NULL' } }] },
+    limit: 1,
+  });
+  const overdueTasks = useFindManyRecords({
+    objectNameSingular: CoreObjectNameSingular.Task,
+    recordGqlFields: { id: true },
+    filter: {
+      and: [
+        { or: [{ status: { neq: 'DONE' } }, { status: { is: 'NULL' } }] },
+        { dueAt: { lt: now.toISOString() } },
+      ],
+    },
+    limit: 1,
+  });
+  const nextTasks = useFindManyRecords<
+    ObjectRecord & { title: string | null; dueAt: string | null }
   >({
     objectNameSingular: CoreObjectNameSingular.Task,
-    recordGqlFields: { id: true, title: true, status: true, dueAt: true },
-    filter: { status: { neq: 'DONE' } },
-    limit: 200,
+    recordGqlFields: { id: true, title: true, dueAt: true },
+    filter: {
+      and: [
+        { or: [{ status: { neq: 'DONE' } }, { status: { is: 'NULL' } }] },
+        { dueAt: { is: 'NOT_NULL' } },
+      ],
+    },
+    orderBy: [{ dueAt: 'AscNullsLast' }],
+    limit: 3,
   });
-
-  const { totalCount: peopleCount } = useFindManyRecords({
+  const people = useFindManyRecords({
     objectNameSingular: CoreObjectNameSingular.Person,
     recordGqlFields: { id: true },
     limit: 1,
   });
-
-  const { totalCount: companyCount } = useFindManyRecords({
+  const companies = useFindManyRecords({
     objectNameSingular: CoreObjectNameSingular.Company,
     recordGqlFields: { id: true },
     limit: 1,
   });
-
-  const weekStart = startOfDay(new Date());
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekEnd.getDate() + 7);
-
-  const { records: meetings } = useFindManyRecords<
-    CalendarEventRow & { __typename: string }
-  >({
+  const meetings = useFindManyRecords({
     objectNameSingular: CoreObjectNameSingular.CalendarEvent,
-    recordGqlFields: { id: true, startsAt: true },
+    recordGqlFields: { id: true },
     filter: {
       and: [
         { startsAt: { gte: weekStart.toISOString() } },
         { startsAt: { lt: weekEnd.toISOString() } },
       ],
     },
-    limit: 200,
+    limit: 1,
   });
-
-  // Calls are notes titled "Outbound call · …", whether dialed in Pulse or imported.
-  const { records: dials, totalCount: dialsThisWeek } = useFindManyRecords<{
-    id: string;
-    createdAt: string;
-    __typename: string;
-  }>({
+  const todayCalls = useFindManyRecords({
     objectNameSingular: CoreObjectNameSingular.Note,
-    recordGqlFields: { id: true, createdAt: true },
+    recordGqlFields: { id: true },
+    filter: {
+      and: [
+        { title: { ilike: '%call ·%' } },
+        { createdAt: { gte: today.toISOString() } },
+        { createdAt: { lte: now.toISOString() } },
+      ],
+    },
+    limit: 1,
+  });
+  const weekCalls = useFindManyRecords({
+    objectNameSingular: CoreObjectNameSingular.Note,
+    recordGqlFields: { id: true },
     filter: {
       and: [
         { title: { ilike: '%call ·%' } },
         { createdAt: { gte: weekStart.toISOString() } },
+        { createdAt: { lte: now.toISOString() } },
       ],
     },
-    limit: 1000,
+    limit: 1,
   });
-
-  const data = useMemo<PulseDashboardData>(() => {
-    const now = new Date();
-    const today = startOfDay(now);
-
-    const months = Array.from({ length: 12 }, (_, index) => {
-      const date = new Date(now.getFullYear(), now.getMonth() - 11 + index, 1);
-      return {
-        label: date.toLocaleDateString('en-US', { month: 'short' }),
-        start: date,
-        end: new Date(date.getFullYear(), date.getMonth() + 1, 1),
-      };
-    });
-
-    // Open pipeline as it stood at each month end, split by how far deals had progressed.
-    const pipelineHistory = months.map((month) => {
-      const created = opportunities.filter(
-        (opportunity) => new Date(opportunity.createdAt) < month.end,
-      );
-      const sum = (predicate: (opportunity: OpportunityRow) => boolean) =>
-        created.filter(predicate).reduce((total, o) => total + toDollars(o), 0);
-      return {
-        label: month.label,
-        early: sum((o) => EARLY_STAGES.includes(o.stage ?? '')),
-        late: sum(
-          (o) => !EARLY_STAGES.includes(o.stage ?? '') && o.stage !== WON_STAGE,
+  const currencies = useMemo(
+    () =>
+      [
+        ...new Set(
+          opportunities.records.map(
+            (deal) => deal.amount?.currencyCode || 'USD',
+          ),
         ),
-        won: sum((o) => o.stage === WON_STAGE),
-      };
-    });
-
-    const stages = STAGE_ORDER.map((stage) => {
-      const inStage = opportunities.filter((o) => o.stage === stage);
-      return {
-        label: STAGE_LABELS[stage],
-        count: inStage.length,
-        amount: inStage.reduce((total, o) => total + toDollars(o), 0),
-      };
-    });
-
-    const openDeals = opportunities.filter((o) => o.stage !== WON_STAGE);
-    const wonDeals = opportunities.filter((o) => o.stage === WON_STAGE);
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const wonThisMonth = wonDeals.filter(
-      (o) =>
-        new Date(o.closeDate ?? o.createdAt) >= monthStart ||
-        new Date(o.createdAt) >= monthStart,
-    );
-
-    const lastSixMonths = months.slice(-6);
-    const activity = {
-      months: lastSixMonths.map((month) => month.label),
-      created: lastSixMonths.map(
-        (month) =>
-          opportunities.filter((o) => {
-            const createdAt = new Date(o.createdAt);
-            return createdAt >= month.start && createdAt < month.end;
-          }).length,
-      ),
-      won: lastSixMonths.map(
-        (month) =>
-          wonDeals.filter((o) => {
-            const closedAt = new Date(o.closeDate ?? o.createdAt);
-            return closedAt >= month.start && closedAt < month.end;
-          }).length,
-      ),
-    };
-
-    const dueTasks = tasks
-      .filter((task) => isDefined(task.dueAt))
-      .sort(
-        (a, b) =>
-          new Date(a.dueAt ?? 0).getTime() - new Date(b.dueAt ?? 0).getTime(),
-      );
-
-    return {
-      pipelineHistory,
-      stages,
-      openPipeline: openDeals.reduce((total, o) => total + toDollars(o), 0),
-      openCount: openDeals.length,
-      wonCount: wonDeals.length,
-      wonAmount: wonDeals.reduce((total, o) => total + toDollars(o), 0),
-      wonThisMonthCount: wonThisMonth.length,
-      wonThisMonthAmount: wonThisMonth.reduce(
-        (total, o) => total + toDollars(o),
-        0,
-      ),
-      dialsToday: dials.filter((dial) => new Date(dial.createdAt) >= today)
-        .length,
-      dialsThisWeek: dialsThisWeek ?? dials.length,
-      tasksOpen: tasks.length,
-      tasksOverdue: dueTasks.filter((task) => new Date(task.dueAt ?? 0) < today)
-        .length,
-      upcomingTasks: dueTasks.slice(0, 3).map((task) => ({
-        title: task.title || 'Untitled task',
-        due: new Date(task.dueAt ?? 0).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-        }),
-        isOverdue: new Date(task.dueAt ?? 0) < today,
-      })),
-      meetingsThisWeek: meetings.length,
-      peopleCount: peopleCount ?? 0,
-      companyCount: companyCount ?? 0,
-      activity,
-      topDeals: [...openDeals]
-        .sort((a, b) => toDollars(b) - toDollars(a))
-        .slice(0, 3)
-        .map((o) => ({
-          name: o.name || 'Untitled deal',
-          company: o.company?.name ?? '',
-          amount: toDollars(o),
-          stage: STAGE_LABELS[o.stage ?? ''] ?? o.stage ?? '',
-        })),
-    };
-  }, [
+      ].sort(),
+    [opportunities.records],
+  );
+  const currencyCode =
+    selectedCurrency ||
+    (currencies.includes('USD') ? 'USD' : (currencies[0] ?? 'USD'));
+  const data: PulseDashboardData = {
+    ...buildPulseAnalytics(
+      opportunities.records,
+      pipeline ? [pipeline] : pipelines,
+      currencyCode,
+      now,
+    ),
+    dialsToday: todayCalls.totalCount ?? 0,
+    dialsThisWeek: weekCalls.totalCount ?? 0,
+    tasksOpen: openTasks.totalCount ?? 0,
+    tasksOverdue: overdueTasks.totalCount ?? 0,
+    upcomingTasks: nextTasks.records.map((task) => ({
+      title: task.title || 'Untitled task',
+      due: task.dueAt
+        ? new Date(task.dueAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+          })
+        : '',
+      isOverdue: task.dueAt ? new Date(task.dueAt) < now : false,
+    })),
+    meetingsThisWeek: meetings.totalCount ?? 0,
+    peopleCount: people.totalCount ?? 0,
+    companyCount: companies.totalCount ?? 0,
+  };
+  const sources = [
     opportunities,
-    tasks,
+    openTasks,
+    overdueTasks,
+    nextTasks,
+    people,
+    companies,
     meetings,
-    peopleCount,
-    companyCount,
-    dials,
-    dialsThisWeek,
-  ]);
-
-  return { data, loading: opportunitiesLoading || tasksLoading };
+    todayCalls,
+    weekCalls,
+  ];
+  return {
+    data,
+    pipelines,
+    currencies: [...new Set([currencyCode, ...currencies])],
+    currencyCode,
+    loading: sources.some((source) => source.loading),
+    error: sources.find((source) => source.error)?.error,
+    totalCount: opportunities.totalCount,
+    loadedCount: opportunities.records.length,
+    hasNextPage: opportunities.hasNextPage,
+    loadMore: opportunities.fetchMoreRecords,
+    refresh: () => {
+      setNow(new Date());
+      return Promise.all(sources.map((source) => source.refetch()));
+    },
+  };
 };
