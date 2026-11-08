@@ -1,3 +1,4 @@
+import { buildPulseBoardFilter } from '@/pulse-opportunities/utils/buildPulseBoardFilter';
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
 import { type ObjectRecord } from '@/object-record/types/ObjectRecord';
 import { type PulsePipeline } from '@/pulse-pipelines/hooks/usePulsePipelines';
@@ -33,22 +34,19 @@ export type PulseBoardDeal = ObjectRecord & {
 export const usePulseBoardDeals = (
   pipeline: PulsePipeline | undefined,
   hasPipelineField: boolean,
+  options: { search?: string; skip?: boolean; limit?: number } = {},
 ) => {
-  // Named pipelines filter on the pipeline field; Cloud boards on having a stage of their
-  // own; the original board on deals that belong to no named pipeline.
-  const pipelineFilter = !isDefined(pipeline)
-    ? undefined
-    : isDefined(pipeline.pipelineValue)
-      ? { pipeline: { in: [pipeline.pipelineValue] } }
-      : !pipeline.isDefault
-        ? { [pipeline.stageFieldName]: { is: 'NOT_NULL' as const } }
-        : hasPipelineField
-          ? { pipeline: { is: 'NULL' as const } }
-          : undefined;
-
-  const { records, loading } = useFindManyRecords<PulseBoardDeal>({
+  const {
+    records,
+    loading,
+    error,
+    refetch,
+    totalCount,
+    hasNextPage,
+    fetchMoreRecords,
+  } = useFindManyRecords<PulseBoardDeal>({
     objectNameSingular: CoreObjectNameSingular.Opportunity,
-    filter: pipelineFilter,
+    filter: buildPulseBoardFilter(pipeline, hasPipelineField, options.search),
     recordGqlFields: {
       id: true,
       name: true,
@@ -67,9 +65,17 @@ export const usePulseBoardDeals = (
       },
     },
     orderBy: [{ position: 'AscNullsLast' }],
-    limit: 1000,
-    skip: !isDefined(pipeline),
+    limit: options.limit ?? 1000,
+    skip: !isDefined(pipeline) || options.skip,
   });
 
-  return { deals: records, loading };
+  return {
+    deals: records,
+    loading,
+    error,
+    refetch,
+    totalCount,
+    hasNextPage,
+    fetchMoreRecords,
+  };
 };

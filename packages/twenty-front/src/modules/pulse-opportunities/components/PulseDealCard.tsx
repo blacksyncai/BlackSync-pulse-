@@ -141,6 +141,25 @@ const StyledRow = styled.div`
   gap: ${themeCssVariables.spacing[2]};
 `;
 
+const StyledContact = styled.div`
+  background: ${themeCssVariables.accent.quaternary};
+  border-left: 3px solid ${themeCssVariables.accent.accent9};
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+`;
+
+const StyledContactName = styled.strong`
+  color: ${themeCssVariables.font.color.primary};
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+`;
+
 const StyledRowText = styled.span`
   flex: 1;
   min-width: 0;
@@ -420,40 +439,42 @@ export const PulseDealCard = ({
         </StyledForm>
       ) : (
         <StyledBody>
+          {fields.contact && isDefined(contact) && (
+            <StyledContact>
+              <StyledContactName>{contactName || t`Contact`}</StyledContactName>
+              <StyledRow>
+                <IconUser size={15} />
+                <StyledIconButton
+                  type="button"
+                  aria-label={t`Email`}
+                  onClick={() => email(contact.emails?.primaryEmail)}
+                >
+                  <IconMail size={15} />
+                </StyledIconButton>
+                <StyledIconButton
+                  type="button"
+                  aria-label={t`Call`}
+                  onClick={() =>
+                    call(phone, {
+                      personId: contact.id,
+                      companyId: deal.company?.id,
+                    })
+                  }
+                >
+                  <IconPhone size={15} />
+                </StyledIconButton>
+                <StyledIconButton
+                  type="button"
+                  aria-label={t`Text`}
+                  onClick={() => text(phone)}
+                >
+                  <IconMessage size={15} />
+                </StyledIconButton>
+              </StyledRow>
+            </StyledContact>
+          )}
           {fields.value && (
             <StyledAmount>{formatMoney(amount, currencyCode)}</StyledAmount>
-          )}
-          {fields.contact && isDefined(contact) && (
-            <StyledRow>
-              <IconUser size={15} />
-              <StyledRowText>{contactName || t`Contact`}</StyledRowText>
-              <StyledIconButton
-                type="button"
-                aria-label={t`Email`}
-                onClick={() => email(contact.emails?.primaryEmail)}
-              >
-                <IconMail size={15} />
-              </StyledIconButton>
-              <StyledIconButton
-                type="button"
-                aria-label={t`Call`}
-                onClick={() =>
-                  call(phone, {
-                    personId: contact.id,
-                    companyId: deal.company?.id,
-                  })
-                }
-              >
-                <IconPhone size={15} />
-              </StyledIconButton>
-              <StyledIconButton
-                type="button"
-                aria-label={t`Text`}
-                onClick={() => text(phone)}
-              >
-                <IconMessage size={15} />
-              </StyledIconButton>
-            </StyledRow>
           )}
           {fields.owner && ownerName.length > 0 && (
             <StyledRow>

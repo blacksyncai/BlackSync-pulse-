@@ -1,3 +1,4 @@
+import { PulsePipelineSearch } from '@/pulse-opportunities/components/PulsePipelineSearch';
 import { useCreateOneRecord } from '@/object-record/hooks/useCreateOneRecord';
 import { useDeleteOneRecord } from '@/object-record/hooks/useDeleteOneRecord';
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
@@ -17,7 +18,7 @@ import { PageCardLayout } from '@/ui/layout/page/components/PageCardLayout';
 import { PageHeader } from '@/ui/layout/page/components/PageHeader';
 import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CoreObjectNameSingular } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
@@ -108,6 +109,17 @@ const StyledBoard = styled.div`
   padding: ${themeCssVariables.spacing[4]};
 `;
 
+const StyledCardAnchor = styled.div`
+  border-radius: 12px;
+  flex-shrink: 0;
+  scroll-margin: 16px;
+  &[data-located='true'] {
+    outline: 3px solid ${themeCssVariables.accent.accent9};
+    outline-offset: 3px;
+    box-shadow: 0 0 0 7px ${themeCssVariables.accent.quaternary};
+  }
+`;
+
 const StyledColumn = styled.section`
   background: ${themeCssVariables.background.secondary};
   border: 1px solid ${themeCssVariables.border.color.light};
@@ -190,7 +202,39 @@ export const PulseOpportunitiesPage = () => {
       (pipeline) => pipeline.viewId === searchParams.get(PIPELINE_PARAM),
     ) ?? orderedPipelines[0];
 
-  const { deals } = usePulseBoardDeals(selectedPipeline, hasPipelineField);
+  const {
+    deals,
+    loading,
+    error,
+    refetch,
+    totalCount,
+    hasNextPage,
+    fetchMoreRecords,
+  } = usePulseBoardDeals(selectedPipeline, hasPipelineField);
+  const [located, setLocated] = useState<{
+    pipelineId: string;
+    deal: PulseBoardDeal;
+  } | null>(null);
+  const cardElements = useRef(new Map<string, HTMLDivElement>());
+  const locatedDeal =
+    located?.pipelineId === selectedPipeline?.viewId ? located.deal : null;
+  const boardDeals =
+    locatedDeal && !deals.some((deal) => deal.id === locatedDeal.id)
+      ? [...deals, locatedDeal]
+      : deals;
+  useEffect(() => {
+    if (!locatedDeal) return;
+    const element = cardElements.current.get(locatedDeal.id);
+    if (!element) return;
+    element.focus({ preventScroll: true });
+    element.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'auto'
+        : 'smooth',
+      block: 'nearest',
+      inline: 'center',
+    });
+  }, [locatedDeal]);
   const { updateOneRecord } = useUpdateOneRecord();
   const { deleteOneRecord } = useDeleteOneRecord({
     objectNameSingular: CoreObjectNameSingular.Opportunity,
@@ -214,14 +258,35 @@ export const PulseOpportunitiesPage = () => {
   }
 
   const stageField = selectedPipeline.stageFieldName;
-  const totalValue = deals.reduce((sum, deal) => sum + dealAmount(deal), 0);
+  const totalValue = boardDeals.reduce(
+    (sum, deal) => sum + dealAmount(deal),
+    0,
+  );
 
-  const moveDeal = (dealId: string, stageValue: string) => {
-    void updateOneRecord({
+  const knownStages = new Set(
+    selectedPipeline.stages.map((stage) => stage.value),
+  );
+  const hasUnassignedStage = boardDeals.some(
+    (deal) => !knownStages.has(String(deal[stageField] ?? '')),
+  );
+  const stages = [
+    ...selectedPipeline.stages,
+    ...(hasUnassignedStage
+      ? [{ value: '__UNASSIGNED__', label: t`Unassigned stage`, color: 'gray' }]
+      : []),
+  ];
+
+  const moveDeal = async (dealId: string, stageValue: string) => {
+    await updateOneRecord({
       objectNameSingular: CoreObjectNameSingular.Opportunity,
       idToUpdate: dealId,
       updateOneRecordInput: { [stageField]: stageValue },
     });
+    setLocated((current) =>
+      current?.deal.id === dealId
+        ? { ...current, deal: { ...current.deal, [stageField]: stageValue } }
+        : current,
+    );
   };
 
   const handleSave = async (deal: PulseBoardDeal, update: PulseDealUpdate) => {
@@ -239,11 +304,36 @@ export const PulseOpportunitiesPage = () => {
         ...(hasPipelineField ? { pipeline: update.pipelineValue } : {}),
       },
     });
+    setLocated((current) => {
+      if (current?.deal.id !== deal.id) return current;
+      if (
+        update.stageFieldName !== stageField ||
+        update.pipelineValue !== selectedPipeline.pipelineValue
+      )
+        return null;
+      return {
+        ...current,
+        deal: {
+          ...deal,
+          name: update.name,
+          closeDate: update.closeDate,
+          amount: {
+            amountMicros: Math.round(update.amount * 1_000_000),
+            currencyCode: deal.amount?.currencyCode || 'USD',
+          },
+          [update.stageFieldName]: update.stageValue,
+        },
+      };
+    });
   };
 
   const handleDelete = (deal: PulseBoardDeal) => {
     if (window.confirm(t`Delete this deal?`)) {
-      void deleteOneRecord(deal.id);
+      void deleteOneRecord(deal.id).then(() =>
+        setLocated((current) =>
+          current?.deal.id === deal.id ? null : current,
+        ),
+      );
     }
   };
 
@@ -295,9 +385,19 @@ export const PulseOpportunitiesPage = () => {
               </StyledPipelineTab>
             ))}
           </StyledPipelineTabs>
+          <PulsePipelineSearch
+            key={selectedPipeline.viewId}
+            pipeline={selectedPipeline}
+            hasPipelineField={hasPipelineField}
+            onSelect={(deal) =>
+              setLocated({ pipelineId: selectedPipeline.viewId, deal })
+            }
+            onClear={() => setLocated(null)}
+          />
           <StyledTotals>
-            <strong>{deals.length}</strong> {t`deals`} ·{' '}
+            <strong>{totalCount ?? deals.length}</strong> {t`deals`} ·{' '}
             <strong>{formatCompactMoney(totalValue)}</strong>
+            {hasNextPage && <> · {t`loaded value`}</>}
           </StyledTotals>
           <PulseDealCardSettingsButton />
           <StyledNewButton type="button" onClick={handleNewDeal}>
@@ -305,10 +405,51 @@ export const PulseOpportunitiesPage = () => {
             {t`New deal`}
           </StyledNewButton>
         </StyledBar>
+        {loading && deals.length === 0 && (
+          <StyledEmpty role="status">{t`Loading pipeline…`}</StyledEmpty>
+        )}
+        {error && (
+          <StyledEmpty role="alert">
+            {t`This pipeline couldn't load.`}{' '}
+            <button
+              type="button"
+              onClick={() => {
+                void refetch();
+              }}
+            >{t`Try again`}</button>
+          </StyledEmpty>
+        )}
+        {locatedDeal && (
+          <StyledEmpty role="status">
+            {t`Located card`}:{' '}
+            {[
+              locatedDeal.pointOfContact?.name?.firstName,
+              locatedDeal.pointOfContact?.name?.lastName,
+            ]
+              .filter(Boolean)
+              .join(' ') ||
+              locatedDeal.company?.name ||
+              locatedDeal.name}
+          </StyledEmpty>
+        )}
+        {hasNextPage && (
+          <StyledEmpty>
+            <button
+              type="button"
+              onClick={() => {
+                void fetchMoreRecords();
+              }}
+            >{t`Load more cards`}</button>{' '}
+            · {t`Search can find deals beyond the loaded cards.`}
+          </StyledEmpty>
+        )}
         <StyledBoard>
-          {selectedPipeline.stages.map((stage) => {
-            const stageDeals = deals.filter(
-              (deal) => deal[stageField] === stage.value,
+          {stages.map((stage) => {
+            const unassigned = stage.value === '__UNASSIGNED__';
+            const stageDeals = boardDeals.filter((deal) =>
+              unassigned
+                ? !knownStages.has(String(deal[stageField] ?? ''))
+                : deal[stageField] === stage.value,
             );
             const stageValue = stageDeals.reduce(
               (sum, deal) => sum + dealAmount(deal),
@@ -320,6 +461,7 @@ export const PulseOpportunitiesPage = () => {
                 key={stage.value}
                 data-over={overStage === stage.value}
                 onDragOver={(event) => {
+                  if (unassigned) return;
                   event.preventDefault();
                   setOverStage(stage.value);
                 }}
@@ -330,8 +472,8 @@ export const PulseOpportunitiesPage = () => {
 
                   const dealId = event.dataTransfer.getData('text/plain');
 
-                  if (dealId.length > 0) {
-                    moveDeal(dealId, stage.value);
+                  if (!unassigned && dealId.length > 0) {
+                    void moveDeal(dealId, stage.value);
                   }
                 }}
               >
@@ -344,22 +486,32 @@ export const PulseOpportunitiesPage = () => {
                 </StyledColumnHeader>
                 <StyledCards>
                   {stageDeals.map((deal) => (
-                    <PulseDealCard
+                    <StyledCardAnchor
                       key={deal.id}
-                      deal={deal}
-                      pipeline={selectedPipeline}
-                      pipelines={orderedPipelines}
-                      onOpen={handleOpen}
-                      onSave={handleSave}
-                      onDelete={handleDelete}
-                      lastContact={
-                        isDefined(deal.company)
-                          ? leadById.get(deal.company.id)
-                          : undefined
-                      }
-                    />
+                      tabIndex={-1}
+                      data-located={locatedDeal?.id === deal.id}
+                      data-deal-id={deal.id}
+                      ref={(element) => {
+                        if (element) cardElements.current.set(deal.id, element);
+                        else cardElements.current.delete(deal.id);
+                      }}
+                    >
+                      <PulseDealCard
+                        deal={deal}
+                        pipeline={selectedPipeline}
+                        pipelines={orderedPipelines}
+                        onOpen={handleOpen}
+                        onSave={handleSave}
+                        onDelete={handleDelete}
+                        lastContact={
+                          isDefined(deal.company)
+                            ? leadById.get(deal.company.id)
+                            : undefined
+                        }
+                      />
+                    </StyledCardAnchor>
                   ))}
-                  {stageDeals.length === 0 && (
+                  {stageDeals.length === 0 && !loading && !error && (
                     <StyledEmpty>{t`No deals`}</StyledEmpty>
                   )}
                 </StyledCards>
