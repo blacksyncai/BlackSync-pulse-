@@ -19,7 +19,7 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           python3 - <<'PY'
-          import json, os, sys, urllib.request
+          import json, os, sys, urllib.request, urllib.error
           environment_id = '8ab88842-edce-4c68-a73d-4c91f6f5b51e'
           services = {'server': 'a5950130-0787-4c89-8f14-841138ad4da7', 'worker': '66f02f54-1b92-4f2a-964e-b3cf7ddea1af'}
           token = os.environ.get('RAILWAY_TOKEN')
@@ -29,7 +29,7 @@ jobs:
           def railway(query, variables):
               request = urllib.request.Request('https://backboard.railway.com/graphql/v2',
                   data=json.dumps({'query': query, 'variables': variables}).encode(),
-                  headers={'Content-Type': 'application/json', 'Project-Access-Token': token})
+                  headers={'Content-Type': 'application/json', 'User-Agent': 'BlackSync-Configuration-Check/1.0', 'Project-Access-Token': token})
               with urllib.request.urlopen(request, timeout=30) as response:
                   result = json.load(response)
               if result.get('errors'):
@@ -50,6 +50,9 @@ jobs:
                       'database_configuration_enabled': str(data.get('IS_CONFIG_VARIABLES_IN_DB_ENABLED', 'true')).lower() != 'false',
                   }
                   print(label + ': ' + json.dumps(report, sort_keys=True))
+          except urllib.error.HTTPError as error:
+              print('::error::Railway configuration request returned HTTP ' + str(error.code) + '. No credential values were logged.')
+              sys.exit(1)
           except Exception as error:
               print('::error::Configuration check failed (' + type(error).__name__ + '); response bodies and credential values were not logged.')
               sys.exit(1)
