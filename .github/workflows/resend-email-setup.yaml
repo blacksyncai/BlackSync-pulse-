@@ -27,7 +27,7 @@ jobs:
               with urllib.request.urlopen(request, timeout=30) as response:
                   return json.load(response)
           def railway(query, variables):
-              result = request_json('https://backboard.railway.com/graphql/v2', {'Content-Type':'application/json','Project-Access-Token':token}, {'query':query,'variables':variables})
+              result = request_json('https://backboard.railway.com/graphql/v2', {'Content-Type':'application/json','Project-Access-Token':token,'User-Agent':'BlackSync-Configuration-Check/1.0'}, {'query':query,'variables':variables})
               if result.get('errors'):
                   raise RuntimeError('Railway rejected request')
               return result['data']
