@@ -29,10 +29,12 @@ const setup = () => {
     createManyFields: jest
       .fn()
       .mockImplementation(async ({ createFieldInputs }) => {
-        const created = createFieldInputs.map((input: { name: string }) => ({
-          ...input,
-          id: input.name,
-        }));
+        const created = createFieldInputs.map(
+          (input: { name: string; objectMetadataId: string }) => ({
+            ...input,
+            id: input.name,
+          }),
+        );
         fields.push(...created);
         return created;
       }),
