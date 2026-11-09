@@ -1,3 +1,4 @@
+import { PulseTicketEmailService } from 'src/engine/core-modules/pulse-tickets/services/pulse-ticket-email.service';
 import { PulseWelcomeService } from 'src/engine/core-modules/pulse-welcome/services/pulse-welcome.service';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,6 +23,7 @@ export class PulseTaskReminderCronJob {
     private readonly workspaceRepository: Repository<WorkspaceEntity>,
     private readonly pulseTaskReminderService: PulseTaskReminderService,
     private readonly welcome: PulseWelcomeService,
+    private readonly ticketEmail: PulseTicketEmailService,
   ) {}
 
   @Process(PulseTaskReminderCronJob.name)
@@ -42,6 +44,13 @@ export class PulseTaskReminderCronJob {
     });
 
     for (const workspace of workspaces) {
+      await this.ticketEmail
+        .scanWorkspace(workspace.id)
+        .catch(() =>
+          this.logger.error(
+            `Client ticket capture could not run for workspace ${workspace.id}.`,
+          ),
+        );
       await this.pulseTaskReminderService
         .sendWorkspaceReminders(workspace)
         .catch((error) => {

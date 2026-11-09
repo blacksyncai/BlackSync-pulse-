@@ -1,3 +1,4 @@
+import { useClientTickets } from '@/pulse-tickets/hooks/useClientTickets';
 import { PULSE_SALES_WORKSPACE_PATH } from '@/pulse-dashboard/constants/PulseSalesWorkspacePath';
 import { PULSE_ANALYTICS_PATH } from '@/pulse-dashboard/constants/PulseAnalyticsPath';
 import { useSmartViews } from '@/pulse-leads/hooks/useSmartViews';
@@ -41,6 +42,7 @@ export const PulseNavigationSection = () => {
   const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
   const { smartViews } = useSmartViews();
+  const { settings: ticketSettings } = useClientTickets();
   const isOnLeads = pathname === AppPath.PulseLeads;
   const activeViewId = isOnLeads
     ? (searchParams.get('view') ?? smartViews[0]?.id)
@@ -110,6 +112,21 @@ export const PulseNavigationSection = () => {
           to={AppPath.PulseTodo}
           Icon={IconCheckbox}
           active={pathname === AppPath.PulseTodo}
+        />
+      </StyledGroup>
+      <StyledGroup>
+        <NavigationDrawerSectionTitle label={t`Client delivery`} />
+        <NavigationDrawerItem
+          label={t`Client tickets`}
+          to={ticketSettings?.board?.href ?? '/client-tickets'}
+          Icon={IconCheckbox}
+          active={pathname === '/objects/clientTickets'}
+        />
+        <NavigationDrawerItem
+          label={t`Ticket email rules`}
+          to="/client-tickets"
+          Icon={IconMail}
+          active={pathname === '/client-tickets'}
         />
       </StyledGroup>
       <StyledGroup>

@@ -43,6 +43,12 @@ const AiChatPage = lazy(() =>
   })),
 );
 
+const PulseClientTicketsPage = lazy(() =>
+  import('~/pages/pulse/PulseClientTicketsPage').then((module) => ({
+    default: module.PulseClientTicketsPage,
+  })),
+);
+
 const PulseFormsPage = lazy(() =>
   import('~/pages/pulse/PulseFormsPage').then((module) => ({
     default: module.PulseFormsPage,
@@ -198,6 +204,14 @@ export const createWorkspaceRouteObjects = ({
       element: (
         <LazyRoute>
           <AiChatPage />
+        </LazyRoute>
+      ),
+    },
+    {
+      path: '/client-tickets',
+      element: (
+        <LazyRoute>
+          <PulseClientTicketsPage />
         </LazyRoute>
       ),
     },

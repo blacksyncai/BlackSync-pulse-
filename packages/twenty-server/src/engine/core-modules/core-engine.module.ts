@@ -1,3 +1,4 @@
+import { PulseTicketsModule } from 'src/engine/core-modules/pulse-tickets/pulse-tickets.module';
 import { Module } from '@nestjs/common';
 import { APP_FILTER, HttpAdapterHost } from '@nestjs/core';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
@@ -137,6 +138,7 @@ import { FileApiModule } from './file/file-api.module';
     CloseImportModule,
     PulseCrmModule,
     PulseFormsModule,
+    PulseTicketsModule,
     PulseOutreachModule,
     PulseCallsModule,
     DnsManagerModule,

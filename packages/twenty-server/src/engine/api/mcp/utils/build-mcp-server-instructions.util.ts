@@ -19,6 +19,7 @@ export const buildMcpServerInstructions = ({
     ``,
     `Available objects: ${objectNames}.`,
     ``,
+    `Client delivery work: when clientTicket is available, use clientTicket / clientTickets for client requests and projects, not opportunity or task. Inspect its field metadata before writing: clientId links company, assigneeId links workspaceMember, project groups related work, status tracks New → To do → In progress → Waiting on client → Done. Set source MCP for assistant-created tickets. Resolve the client and assignee by searching; never guess record IDs. Reconnect after enabling Client Tickets to refresh tools.`,
     `Key relations:`,
     `  person.companyId → company`,
     `  note / task / activity are attachable to any object via targetRecordId`,
