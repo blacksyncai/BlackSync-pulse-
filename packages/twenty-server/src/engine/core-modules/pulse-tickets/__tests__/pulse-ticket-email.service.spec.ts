@@ -52,7 +52,7 @@ const setup = () => {
   const association = {
     id: 'association',
     messageId: 'message',
-    createdAt: new Date('2026-11-09T01:00:00Z'),
+    createdAt: '2026-11-09T01:00:00.123456Z',
   };
   const message = {
     id: 'message',
@@ -91,7 +91,9 @@ const setup = () => {
     runInWorkspaceTransaction: jest.fn(async (work) =>
       work({ executeRawQuery: jest.fn() }),
     ),
-    executeInWorkspaceContext: jest.fn(async (work) => work()),
+    executeInWorkspaceContext: jest
+      .fn()
+      .mockImplementation(async (work) => work()),
   };
   const service = new PulseTicketEmailService(
     storage as never,
@@ -209,7 +211,14 @@ describe('client ticket email capture', () => {
     context.message.receivedAt = new Date('2026-11-08T00:00:00Z');
     await context.service.scanWorkspace('workspace');
     expect(context.tickets.insert).not.toHaveBeenCalled();
-    expect(context.storage.update).toHaveBeenCalled();
+    expect(context.storage.update).toHaveBeenCalledWith(
+      'rule',
+      expect.objectContaining({
+        value: expect.objectContaining({
+          cursorAt: '2026-11-09T01:00:00.123456Z',
+        }),
+      }),
+    );
   });
   it('preserves cursor for retry if record permissions reject ticket creation', async () => {
     const context = setup();

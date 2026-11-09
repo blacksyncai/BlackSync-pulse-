@@ -17,18 +17,22 @@ const setup = () => {
     work({ query: jest.fn(), getRepository: () => storage }),
   );
   const objectService = {
-    createOneObject: jest.fn(async ({ createObjectInput }) => {
-      const object = { ...createObjectInput, id: 'tickets' };
-      objects.push(object);
-      return object;
-    }),
+    createOneObject: jest
+      .fn()
+      .mockImplementation(async ({ createObjectInput }) => {
+        const object = { ...createObjectInput, id: 'tickets' };
+        objects.push(object);
+        return object;
+      }),
   };
   const fieldService = {
-    createOneField: jest.fn(async ({ createFieldInput }) => {
-      const field = { ...createFieldInput, id: createFieldInput.name };
-      fields.push(field);
-      return field;
-    }),
+    createOneField: jest
+      .fn()
+      .mockImplementation(async ({ createFieldInput }) => {
+        const field = { ...createFieldInput, id: createFieldInput.name };
+        fields.push(field);
+        return field;
+      }),
     updateOneField: jest.fn(),
   };
   const cache = {
@@ -46,7 +50,7 @@ const setup = () => {
     })),
   };
   const boards = {
-    ensureSelectField: jest.fn(async ({ fieldName }) => ({
+    ensureSelectField: jest.fn().mockImplementation(async ({ fieldName }) => ({
       fieldId: fieldName,
     })),
     ensureKanbanBoard: jest.fn().mockResolvedValue('board'),

@@ -326,7 +326,7 @@ export class PulseTicketEmailService {
                 }
               }
             }
-            rule.cursorAt = new Date(association.createdAt).toISOString();
+            rule.cursorAt = association.createdAt;
             rule.cursorId = association.id;
           }
         });
