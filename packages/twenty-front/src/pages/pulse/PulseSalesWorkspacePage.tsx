@@ -1,3 +1,4 @@
+import { PulseDashboardTabs } from '@/pulse-dashboard/components/PulseDashboardTabs';
 import {
   formatSalesWorkspaceAmount,
   getSalesWorkspaceCloseDate,
@@ -253,9 +254,8 @@ export const PulseSalesWorkspacePage = () => {
 
   return (
     <PageCardLayout
-      header={
-        <PageHeader title={t`Sales workspace`} Icon={IconLayoutDashboard} />
-      }
+      secondaryBar={<PulseDashboardTabs />}
+      header={<PageHeader title={t`Dashboard`} Icon={IconLayoutDashboard} />}
     >
       <StyledPage>
         <StyledContent>

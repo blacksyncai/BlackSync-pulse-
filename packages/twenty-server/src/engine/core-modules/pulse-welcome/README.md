@@ -1,0 +1,9 @@
+# Automatic welcome email
+
+Every new account gets one welcome email, regardless of whether registration uses a password, Google/Microsoft, or an invitation. An existing account joining a workspace for the first time after this feature also gets a welcome if it has not already received one. Normal sign-in does not create a welcome, and deployment does not backfill the existing user list.
+
+Account and membership creation insert a per-user pending marker into the existing core key/value table in the same database transaction. Unique per-user storage prevents duplicate signup/join markers. Rollbacks discard the marker. After commit, the welcome is handed to the existing email queue; queue failures leave it pending and do not fail registration. The five-minute background notification job retries pending work. Each user is committed separately, with row locks and queue deduplication protecting simultaneous dispatches. Existing transport retries remain unchanged.
+
+The email goes to the account's current email address, uses the configured EMAIL_FROM_NAME / EMAIL_FROM_ADDRESS (production: BlackSync Cloud <crm@blacksync.ai>), and links to the configured CRM base URL. It is independent of the email-verification setting and task-notification preferences. Logger mode leaves welcomes pending until a real SMTP sender is configured. No migration or new entity is required.
+
+Validation: 16 focused tests cover transactional markers, repeated joins, arbitrary recipient domains, queue failures and retries, per-user commits, disabled email configuration, missing/deleted users, competing dispatchers, no backfill, content escaping, and preservation of normal email retry settings. Repository/queue boundaries are mocked in those tests. They do not establish provider acceptance or inbox delivery. Production build and rollout are checked separately.

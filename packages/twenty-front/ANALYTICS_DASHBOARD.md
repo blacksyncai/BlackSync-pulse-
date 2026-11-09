@@ -1,6 +1,6 @@
 # Analytics dashboard
 
-`/dashboard` restores the original nine-card analytics layout: open deal value, closed-deal win rate, logged calls, tasks, upcoming work, won value by close date, monthly deal activity, top open deals, and stage groups. The follow-up workspace remains available separately at `/sales-workspace`; both are in the sidebar.
+`/analytics` contains the original nine-card analytics layout: open deal value, closed-deal win rate, logged calls, tasks, upcoming work, won value by close date, monthly deal activity, top open deals, and stage groups. The day-to-day follow-up workspace is the default Dashboard at `/dashboard`, with `/sales-workspace` kept as a compatible alias. Dashboard and Analytics are available as shared tabs and sidebar links.
 
 Sales analytics read configured pipeline stage fields, including custom won/lost labels, and separate currencies. Lost deals are excluded from open value. Win rate uses won divided by won plus lost. Monthly value charts group deals by creation month and their current state; they do not claim historical stage snapshots. Won-by-month requires a recorded close date and excludes future dates. Workspace-wide call/task/contact/meeting counts are labeled separately. Deal queries expose partial results and a Load more control.
 

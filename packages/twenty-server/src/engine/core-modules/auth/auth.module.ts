@@ -1,3 +1,4 @@
+import { PulseWelcomeModule } from 'src/engine/core-modules/pulse-welcome/pulse-welcome.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -85,6 +86,7 @@ import { JwtAuthStrategy } from './strategies/jwt.auth.strategy';
 
 @Module({
   imports: [
+    PulseWelcomeModule,
     JwtModule,
     WorkspaceDomainsModule,
     TokenModule,

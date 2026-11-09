@@ -1,10 +1,17 @@
+import { PulseWelcomeService } from 'src/engine/core-modules/pulse-welcome/services/pulse-welcome.service';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { type APP_LOCALES, SOURCE_LOCALE } from 'twenty-shared/translations';
 import { FileFolder, OpenRecordIn } from 'twenty-shared/types';
 import { assertIsDefinedOrThrow, isDefined } from 'twenty-shared/utils';
-import { IsNull, Not, type QueryRunner, type Repository } from 'typeorm';
+import {
+  IsNull,
+  Not,
+  type EntityManager,
+  type QueryRunner,
+  type Repository,
+} from 'typeorm';
 
 import { CoreEntityCacheService } from 'src/engine/core-entity-cache/services/core-entity-cache.service';
 import { FileStorageExceptionCode } from 'src/engine/core-modules/file-storage/interfaces/file-storage-exception';
@@ -70,6 +77,7 @@ export class UserWorkspaceService {
     private readonly onboardingService: OnboardingService,
     private readonly coreEntityCacheService: CoreEntityCacheService,
     private readonly twentyConfigService: TwentyConfigService,
+    private readonly welcome: PulseWelcomeService,
     private readonly workflowRunRecordShareService: WorkflowRunRecordShareService,
   ) {}
 
@@ -153,9 +161,16 @@ export class UserWorkspaceService {
       locale: locale ?? SOURCE_LOCALE,
     });
 
-    return queryRunner
-      ? queryRunner.manager.save(UserWorkspaceEntity, userWorkspace)
-      : this.userWorkspaceRepository.save(userWorkspace);
+    const persist = async (manager: EntityManager) => {
+      const membership = await manager.save(UserWorkspaceEntity, userWorkspace);
+      await this.welcome.schedule(userId, manager);
+      return membership;
+    };
+    const membership = queryRunner
+      ? await persist(queryRunner.manager)
+      : await this.userWorkspaceRepository.manager.transaction(persist);
+    if (!queryRunner) void this.welcome.queueForUser(userId);
+    return membership;
   }
 
   async createWorkspaceMember(

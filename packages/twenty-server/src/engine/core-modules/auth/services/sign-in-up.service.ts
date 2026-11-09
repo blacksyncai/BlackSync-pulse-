@@ -1,3 +1,4 @@
+import { PulseWelcomeService } from 'src/engine/core-modules/pulse-welcome/services/pulse-welcome.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 
@@ -10,6 +11,7 @@ import {
   QueryFailedError,
   Repository,
   type DataSource,
+  type EntityManager,
   type QueryRunner,
 } from 'typeorm';
 import { v4 } from 'uuid';
@@ -91,6 +93,7 @@ export class SignInUpService {
     private readonly twentyConfigService: TwentyConfigService,
     private readonly subdomainManagerService: SubdomainManagerService,
     private readonly userService: UserService,
+    private readonly welcome: PulseWelcomeService,
     private readonly metricsService: MetricsService,
     private readonly workspaceCacheService: WorkspaceCacheService,
     private readonly applicationService: ApplicationService,
@@ -419,9 +422,15 @@ export class SignInUpService {
       canAccessFullAdminPanel,
     });
 
+    const persist = async (manager: EntityManager) => {
+      const user = await manager.save(UserEntity, userCreated);
+      await this.welcome.schedule(user.id, manager);
+      return user;
+    };
     const savedUser = queryRunner
-      ? await queryRunner.manager.save(UserEntity, userCreated)
-      : await this.userRepository.save(userCreated);
+      ? await persist(queryRunner.manager)
+      : await this.userRepository.manager.transaction(persist);
+    if (!queryRunner) void this.welcome.queueForUser(savedUser.id);
 
     this.workspaceEventEmitter.emitCustomBatchEvent<TelemetryEventType>(
       USER_SIGNUP_EVENT_NAME,
@@ -824,6 +833,8 @@ export class SignInUpService {
               customApplication.universalIdentifier,
           };
         });
+
+      void this.welcome.queueForUser(user.id);
 
       if (isWorkEmailFound) {
         const inferredLogoFileId = await this.uploadInferredWorkspaceLogo({

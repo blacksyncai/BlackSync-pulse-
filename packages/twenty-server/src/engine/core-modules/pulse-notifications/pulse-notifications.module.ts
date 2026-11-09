@@ -1,3 +1,4 @@
+import { PulseWelcomeModule } from 'src/engine/core-modules/pulse-welcome/pulse-welcome.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -12,6 +13,7 @@ import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.ent
 
 @Module({
   imports: [
+    PulseWelcomeModule,
     TypeOrmModule.forFeature([WorkspaceEntity]),
     KeyValuePairModule,
     CloseImportModule,

@@ -1,3 +1,4 @@
+import { type QueueJobOptions } from 'src/engine/core-modules/message-queue/drivers/interfaces/job-options.interface';
 import { Injectable } from '@nestjs/common';
 
 import { type SendMailOptions } from 'nodemailer';
@@ -15,11 +16,14 @@ export class EmailService {
     private readonly messageQueueService: MessageQueueService,
   ) {}
 
-  async send(sendMailOptions: SendMailOptions): Promise<void> {
+  async send(
+    sendMailOptions: SendMailOptions,
+    queueOptions?: Pick<QueueJobOptions, 'id' | 'deduplication'>,
+  ): Promise<void> {
     await this.messageQueueService.add<SendMailOptions>(
       EmailSenderJob.name,
       sendMailOptions,
-      { retryLimit: 3, backoff: EMAIL_SEND_RETRY_BACKOFF },
+      { ...queueOptions, retryLimit: 3, backoff: EMAIL_SEND_RETRY_BACKOFF },
     );
   }
 }

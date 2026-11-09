@@ -1,3 +1,4 @@
+import { PulseWelcomeService } from 'src/engine/core-modules/pulse-welcome/services/pulse-welcome.service';
 import { Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -20,6 +21,7 @@ export class PulseTaskReminderCronJob {
     @InjectRepository(WorkspaceEntity)
     private readonly workspaceRepository: Repository<WorkspaceEntity>,
     private readonly pulseTaskReminderService: PulseTaskReminderService,
+    private readonly welcome: PulseWelcomeService,
   ) {}
 
   @Process(PulseTaskReminderCronJob.name)
@@ -28,6 +30,13 @@ export class PulseTaskReminderCronJob {
     PULSE_TASK_REMINDER_CRON_PATTERN,
   )
   async handle(): Promise<void> {
+    await this.welcome
+      .dispatchPending()
+      .catch(() =>
+        this.logger.error(
+          'Pending welcome emails could not be queued; the next run will retry.',
+        ),
+      );
     const workspaces = await this.workspaceRepository.find({
       where: { activationStatus: WorkspaceActivationStatus.ACTIVE },
     });

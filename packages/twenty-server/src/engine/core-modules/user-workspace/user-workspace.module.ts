@@ -1,3 +1,4 @@
+import { PulseWelcomeModule } from 'src/engine/core-modules/pulse-welcome/pulse-welcome.module';
 import { UserWorkspaceAuthContextService } from 'src/engine/core-modules/user-workspace/services/user-workspace-auth-context.service';
 import { WorkflowRunRecordShareModule } from 'src/engine/core-modules/workflow/workflow-run-record-share.module';
 import { WorkspaceCacheModule } from 'src/engine/workspace-cache/workspace-cache.module';
@@ -27,6 +28,7 @@ import { WorkspaceDataSourceModule } from 'src/engine/workspace-datasource/works
 
 @Module({
   imports: [
+    PulseWelcomeModule,
     WorkspaceCacheModule,
     TypeOrmModule.forFeature([
       UserWorkspaceEntity,

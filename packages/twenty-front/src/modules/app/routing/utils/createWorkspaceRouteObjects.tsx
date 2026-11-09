@@ -1,3 +1,4 @@
+import { PULSE_ANALYTICS_PATH } from '@/pulse-dashboard/constants/PulseAnalyticsPath';
 import { PULSE_SALES_WORKSPACE_PATH } from '@/pulse-dashboard/constants/PulseSalesWorkspacePath';
 import { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
@@ -51,6 +52,12 @@ const PulseFormsPage = lazy(() =>
 const PulseSalesWorkspacePage = lazy(() =>
   import('~/pages/pulse/PulseSalesWorkspacePage').then((module) => ({
     default: module.PulseSalesWorkspacePage,
+  })),
+);
+
+const PulseAnalyticsPage = lazy(() =>
+  import('~/pages/pulse/PulseAnalyticsPage').then((module) => ({
+    default: module.PulseAnalyticsPage,
   })),
 );
 
@@ -207,6 +214,14 @@ export const createWorkspaceRouteObjects = ({
       element: (
         <LazyRoute>
           <PulseDashboardPage />
+        </LazyRoute>
+      ),
+    },
+    {
+      path: PULSE_ANALYTICS_PATH,
+      element: (
+        <LazyRoute>
+          <PulseAnalyticsPage />
         </LazyRoute>
       ),
     },
