@@ -97,7 +97,7 @@ export class PlivoResolver {
     await this.numbers.refresh(workspace.id);
     return true;
   }
-  @Mutation(() => String)
+  @Mutation(() => GraphQLJSON)
   crmPhoneCallGrant(
     @AuthWorkspace() workspace: WorkspaceEntity,
     @AuthUser() user: AuthContextUser,

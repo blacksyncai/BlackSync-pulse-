@@ -57,7 +57,7 @@ jobs:
           import json, os, urllib.request
           def api(query, variables):
               payload=json.dumps({'query':query,'variables':variables}).encode()
-              request=urllib.request.Request('https://backboard.railway.com/graphql/v2',data=payload,headers={'Content-Type':'application/json','Project-Access-Token':os.environ['RAILWAY_TOKEN']})
+              request=urllib.request.Request('https://backboard.railway.com/graphql/v2',data=payload,headers={'Content-Type':'application/json','Project-Access-Token':os.environ['RAILWAY_TOKEN'],'User-Agent':'BlackSync-Deployment/1.0'})
               with urllib.request.urlopen(request,timeout=30) as response: result=json.load(response)
               if result.get('errors'): raise RuntimeError('Billing configuration query failed; no credentials were logged.')
               return result['data']

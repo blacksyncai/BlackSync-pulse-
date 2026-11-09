@@ -149,7 +149,7 @@ describe('workspace-owned CRM phone numbers', () => {
     jest
       .spyOn(context.service, 'list')
       .mockResolvedValue([{ number: phone, label: 'CRM number' }]);
-    const token = await context.service.callGrant(
+    const { token } = await context.service.callGrant(
       actor,
       '+14155550199',
       phone,
@@ -181,7 +181,7 @@ describe('workspace-owned CRM phone numbers', () => {
     jest
       .spyOn(context.service, 'list')
       .mockResolvedValue([{ number: phone, label: 'CRM number' }]);
-    const token = await context.service.callGrant(
+    const { token } = await context.service.callGrant(
       actor,
       '+14155550199',
       phone,
@@ -205,7 +205,7 @@ describe('workspace-owned CRM phone numbers', () => {
     jest
       .spyOn(context.service, 'list')
       .mockResolvedValue([{ number: phone, label: 'CRM number' }]);
-    const token = await context.service.callGrant(
+    const { token } = await context.service.callGrant(
       actor,
       '+14155550199',
       phone,
@@ -360,5 +360,22 @@ describe('workspace-owned CRM phone numbers', () => {
       'Test payments',
     );
     expect(context.plivo.plivoRequest).not.toHaveBeenCalled();
+  });
+  it('normalizes US local numbers before the SDK places a call', async () => {
+    const context = setup();
+    context.addNumber();
+    jest
+      .spyOn(context.service, 'list')
+      .mockResolvedValue([{ number: phone, label: 'CRM number' }]);
+    const grant = await context.service.callGrant(
+      actor,
+      '(415) 555-0199',
+      phone,
+      false,
+    );
+    expect(grant.destination).toBe('+14155550199');
+    await expect(
+      context.service.answer(grant.token, grant.destination, 'call-us-local'),
+    ).resolves.toBe(`dial:${phone}:+14155550199:false`);
   });
 });

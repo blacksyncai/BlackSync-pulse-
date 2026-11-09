@@ -605,7 +605,10 @@ export class CrmPhoneNumbersService {
     requestedNumber: string | null,
     record: boolean,
   ) {
-    const to = normalize(destination);
+    const compact = destination.replace(/[\s()-]/g, '');
+    const to = /^[2-9]\d{9}$/.test(compact)
+      ? `+1${compact}`
+      : normalize(compact);
     if (!/^\+[1-9]\d{5,14}$/.test(to))
       throw new BadRequestException('Enter a valid destination.');
     const numbers = await this.list(actor.workspaceId);
@@ -628,7 +631,7 @@ export class CrmPhoneNumbersService {
         expiresAt: new Date(Date.now() + 90000).toISOString(),
       } satisfies CallGrant,
     );
-    return token;
+    return { token, destination: to };
   }
   async answer(
     token: string | undefined,

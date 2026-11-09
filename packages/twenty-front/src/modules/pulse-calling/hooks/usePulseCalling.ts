@@ -226,22 +226,22 @@ export const usePulseCalling = () => {
       )
         ? settings.callerId
         : null;
-      const { data } = await apolloClient.mutate<{ crmPhoneCallGrant: string }>(
-        {
-          mutation: CRM_PHONE_CALL_GRANT,
-          variables: {
-            destination: phoneNumber,
-            number: ownedCaller,
-            record: settings.autoRecord,
-          },
+      const { data } = await apolloClient.mutate<{
+        crmPhoneCallGrant: { token: string; destination: string };
+      }>({
+        mutation: CRM_PHONE_CALL_GRANT,
+        variables: {
+          destination: phoneNumber,
+          number: ownedCaller,
+          record: settings.autoRecord,
         },
-      );
+      });
       if (!data?.crmPhoneCallGrant)
         throw new PulseCallingUnavailableError(
           'Purchase a CRM number before calling.',
         );
-      const isPlaced = client.call(phoneNumber, {
-        'X-PH-Grant': data.crmPhoneCallGrant,
+      const isPlaced = client.call(data.crmPhoneCallGrant.destination, {
+        'X-PH-Grant': data.crmPhoneCallGrant.token,
       });
 
       if (isPlaced === false) {
