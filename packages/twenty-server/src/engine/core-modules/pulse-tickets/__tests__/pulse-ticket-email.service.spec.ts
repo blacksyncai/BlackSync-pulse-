@@ -52,7 +52,7 @@ const setup = () => {
   const association = {
     id: 'association',
     messageId: 'message',
-    createdAt: '2026-11-09T01:00:00.123456Z',
+    createdAt: new Date('2026-11-09T01:00:00.123Z'),
   };
   const message = {
     id: 'message',
@@ -62,7 +62,17 @@ const setup = () => {
     messageThreadId: 'thread',
     isDraft: false,
   };
-  const associations = { find: jest.fn().mockResolvedValue([association]) };
+  const cursorQuery = {
+    select: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    getRawOne: jest
+      .fn()
+      .mockResolvedValue({ cursorAt: '2026-11-09T01:00:00.123456Z' }),
+  };
+  const associations = {
+    find: jest.fn().mockResolvedValue([association]),
+    createQueryBuilder: jest.fn().mockReturnValue(cursorQuery),
+  };
   const messages = { findOneBy: jest.fn().mockResolvedValue(message) };
   const participants = {
     find: jest.fn().mockResolvedValue([{ personId: 'contact' }]),

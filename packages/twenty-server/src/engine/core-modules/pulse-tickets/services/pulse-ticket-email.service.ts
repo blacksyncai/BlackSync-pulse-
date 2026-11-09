@@ -326,8 +326,19 @@ export class PulseTicketEmailService {
                 }
               }
             }
-            rule.cursorAt = association.createdAt;
-            rule.cursorId = association.id;
+          }
+          const last = batch[batch.length - 1];
+          if (last) {
+            // pg decodes timestamps as JS Dates, which loses sub-millisecond precision.
+            const cursor = await associations
+              .createQueryBuilder('ticketEmailAssociation')
+              .select('"ticketEmailAssociation"."createdAt"::text', 'cursorAt')
+              .where({ id: last.id })
+              .getRawOne<{ cursorAt: string }>();
+            if (!cursor?.cursorAt)
+              throw new Error('Email capture cursor is unavailable.');
+            rule.cursorAt = cursor.cursorAt;
+            rule.cursorId = last.id;
           }
         });
       }, context);
