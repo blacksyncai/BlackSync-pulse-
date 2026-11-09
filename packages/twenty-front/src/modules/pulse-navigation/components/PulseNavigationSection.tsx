@@ -21,6 +21,7 @@ import {
   IconInbox,
   IconLayoutDashboard,
   IconMail,
+  IconMessageCircle,
   IconPhone,
   IconTargetArrow,
 } from 'twenty-ui/icon';
@@ -75,6 +76,12 @@ export const PulseNavigationSection = () => {
           to={AppPath.PulseInbox}
           Icon={IconInbox}
           active={pathname === AppPath.PulseInbox}
+        />
+        <NavigationDrawerItem
+          label={t`Conversations`}
+          to="/conversations"
+          Icon={IconMessageCircle}
+          active={pathname === '/conversations'}
         />
         <NavigationDrawerItem
           label={t`Leads`}

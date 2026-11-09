@@ -336,9 +336,13 @@ const highlight = (text: string, query: string) => {
 
 type PulseCallCardBodyProps = {
   item: PulseTimelineItem;
+  initialTranscriptOpen?: boolean;
 };
 
-export const PulseCallCardBody = ({ item }: PulseCallCardBodyProps) => {
+export const PulseCallCardBody = ({
+  item,
+  initialTranscriptOpen = false,
+}: PulseCallCardBodyProps) => {
   const { t } = useLingui();
   const { enqueueToast } = useToast();
   const apolloClient = useApolloClient();
@@ -350,7 +354,9 @@ export const PulseCallCardBody = ({ item }: PulseCallCardBodyProps) => {
   );
   const [aiSummary, setAiSummary] = useState<string[] | null>(null);
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
-  const [isTranscriptOpen, setIsTranscriptOpen] = useState(false);
+  const [isTranscriptOpen, setIsTranscriptOpen] = useState(
+    initialTranscriptOpen,
+  );
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);

@@ -43,6 +43,12 @@ const AiChatPage = lazy(() =>
   })),
 );
 
+const PulseConversationsPage = lazy(() =>
+  import('~/pages/pulse/PulseConversationsPage').then((module) => ({
+    default: module.PulseConversationsPage,
+  })),
+);
+
 const PulsePhoneNumbersPage = lazy(() =>
   import('~/pages/pulse/PulsePhoneNumbersPage').then((module) => ({
     default: module.PulsePhoneNumbersPage,
@@ -210,6 +216,14 @@ export const createWorkspaceRouteObjects = ({
       element: (
         <LazyRoute>
           <AiChatPage />
+        </LazyRoute>
+      ),
+    },
+    {
+      path: '/conversations',
+      element: (
+        <LazyRoute>
+          <PulseConversationsPage />
         </LazyRoute>
       ),
     },
