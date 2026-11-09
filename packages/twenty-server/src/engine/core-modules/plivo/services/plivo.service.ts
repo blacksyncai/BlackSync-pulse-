@@ -11,8 +11,8 @@ const ACCESS_TOKEN_LIFETIME_SECONDS = 60 * 60;
 const PHONE_NUMBER_PATTERN = /^\+?[0-9]{6,15}$/;
 
 const PLIVO_API_BASE_URL = 'https://api.plivo.com/v1/Account';
-const PLIVO_APPLICATION_NAME = 'blacksync_pulse';
-const PLIVO_ENDPOINT_ALIAS = 'blacksync_pulse_browser';
+const PLIVO_APPLICATION_NAME = 'blacksync_crm_voice_v2';
+const PLIVO_ENDPOINT_ALIAS = 'blacksync_crm_browser_v2';
 const PLIVO_ENDPOINT_USERNAME_PREFIX = 'pulse';
 
 export type PlivoVoiceSetup = {
@@ -36,15 +36,7 @@ type PlivoEndpoint = {
   application: string | null;
 };
 
-type PlivoNumber = {
-  number: string;
-  voice_enabled: boolean;
-  alias: string | null;
-};
-
 export type PlivoCallerId = { number: string; label: string | null };
-
-const CALLER_IDS_CACHE_MS = 5 * 60 * 1000;
 
 const escapeXml = (value: string) =>
   value
@@ -54,17 +46,10 @@ const escapeXml = (value: string) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
 
-const toE164 = (number: string) =>
-  number.startsWith('+') ? number : `+${number}`;
-
 @Injectable()
 export class PlivoService {
   private readonly logger = new Logger(PlivoService.name);
   private voiceSetup: Promise<PlivoVoiceSetup | null> | null = null;
-  private callerIdsCache: {
-    expiresAt: number;
-    callerIds: PlivoCallerId[];
-  } | null = null;
 
   constructor(private readonly twentyConfigService: TwentyConfigService) {}
 
@@ -78,15 +63,6 @@ export class PlivoService {
   // Only the Auth ID and Token are required: the calling application, browser
   // endpoint and caller ID are found or created in the Plivo account on first use.
   async getVoiceSetup(): Promise<PlivoVoiceSetup | null> {
-    const endpointUsername = this.twentyConfigService.get(
-      'PLIVO_ENDPOINT_USERNAME',
-    );
-    const callerId = this.twentyConfigService.get('PLIVO_CALLER_ID');
-
-    if (isNonEmptyString(endpointUsername) && isNonEmptyString(callerId)) {
-      return { endpointUsername, callerId };
-    }
-
     if (!this.hasCredentials()) {
       return null;
     }
@@ -162,38 +138,6 @@ export class PlivoService {
     );
   }
 
-  // Voice-enabled numbers in the Plivo account that callers may present as caller ID.
-  async listCallerIds(): Promise<PlivoCallerId[]> {
-    if (
-      this.callerIdsCache !== null &&
-      this.callerIdsCache.expiresAt > Date.now()
-    ) {
-      return this.callerIdsCache.callerIds;
-    }
-
-    if (!this.hasCredentials()) {
-      return [];
-    }
-
-    const numbers = await this.plivoRequest<PlivoList<PlivoNumber>>(
-      'GET',
-      '/Number/?limit=50',
-    );
-    const callerIds = numbers.objects
-      .filter((number) => number.voice_enabled)
-      .map((number) => ({
-        number: toE164(number.number),
-        label: isNonEmptyString(number.alias) ? number.alias : null,
-      }));
-
-    this.callerIdsCache = {
-      expiresAt: Date.now() + CALLER_IDS_CACHE_MS,
-      callerIds,
-    };
-
-    return callerIds;
-  }
-
   // Recordings show up in Plivo a little after the call ends; null until then.
   async findRecordingUrl(callUuid: string): Promise<string | null> {
     const recordings = await this.plivoRequest<
@@ -210,24 +154,6 @@ export class PlivoService {
     return {
       Authorization: `Basic ${Buffer.from(`${authId}:${authToken}`).toString('base64')}`,
     };
-  }
-
-  // The browser may ask for another caller ID, but only one of the account's own numbers.
-  async resolveCallerId(requestedCallerId: string | undefined) {
-    const voiceSetup = await this.getVoiceSetup();
-
-    if (!isNonEmptyString(requestedCallerId)) {
-      return voiceSetup?.callerId;
-    }
-
-    const callerIds: PlivoCallerId[] = await this.listCallerIds().catch(
-      () => [],
-    );
-    const requested = toE164(requestedCallerId.replace(/[\s()-]/g, ''));
-
-    return callerIds.some((callerId) => callerId.number === requested)
-      ? requested
-      : voiceSetup?.callerId;
   }
 
   buildAnswerXml(
@@ -316,34 +242,18 @@ export class PlivoService {
       );
     }
 
-    const configuredCallerId = this.twentyConfigService.get('PLIVO_CALLER_ID');
-    const callerId = isNonEmptyString(configuredCallerId)
-      ? configuredCallerId
-      : (
-          await this.plivoRequest<PlivoList<PlivoNumber>>(
-            'GET',
-            '/Number/?limit=20',
-          )
-        ).objects.find((number) => number.voice_enabled)?.number;
-
-    if (!isNonEmptyString(endpointUsername) || !isNonEmptyString(callerId)) {
-      this.logger.warn(
-        'Plivo calling needs a voice-enabled phone number in the Plivo account',
-      );
-
-      return null;
-    }
+    if (!isNonEmptyString(endpointUsername)) return null;
 
     this.logger.log(`Plivo calling ready as ${endpointUsername}`);
 
     return {
       endpointUsername,
-      callerId: toE164(callerId),
+      callerId: '',
       applicationId,
     };
   }
 
-  private async plivoRequest<TResponse>(
+  async plivoRequest<TResponse>(
     method: 'GET' | 'POST',
     path: string,
     body?: Record<string, unknown>,
@@ -352,6 +262,7 @@ export class PlivoService {
     const authToken = this.twentyConfigService.get('PLIVO_AUTH_TOKEN');
     const response = await fetch(`${PLIVO_API_BASE_URL}/${authId}${path}`, {
       method,
+      signal: AbortSignal.timeout(15000),
       headers: {
         Authorization: `Basic ${Buffer.from(`${authId}:${authToken}`).toString('base64')}`,
         'Content-Type': 'application/json',
@@ -360,8 +271,9 @@ export class PlivoService {
     });
 
     if (!response.ok) {
-      throw new Error(
-        `Plivo ${method} ${path} failed with ${response.status}: ${(await response.text()).slice(0, 300)}`,
+      throw Object.assign(
+        new Error(`Plivo request failed (${response.status}).`),
+        { status: response.status },
       );
     }
 

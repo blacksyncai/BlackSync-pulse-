@@ -1,6 +1,6 @@
+import { CrmPhoneNumbersService } from '../services/crm-phone-numbers.service';
 import {
   Controller,
-  Logger,
   Header,
   HttpCode,
   Post,
@@ -11,7 +11,6 @@ import {
 import { Request } from 'express';
 import { ApiPath } from 'twenty-shared/types';
 
-import { PlivoService } from 'src/engine/core-modules/plivo/services/plivo.service';
 import { NoPermissionGuard } from 'src/engine/guards/no-permission.guard';
 import { PublicEndpointGuard } from 'src/engine/guards/public-endpoint.guard';
 
@@ -20,9 +19,7 @@ import { PublicEndpointGuard } from 'src/engine/guards/public-endpoint.guard';
 // authenticated endpoint started.
 @Controller()
 export class PlivoWebhookController {
-  private readonly logger = new Logger(PlivoWebhookController.name);
-
-  constructor(private readonly plivoService: PlivoService) {}
+  constructor(private readonly numbers: CrmPhoneNumbersService) {}
 
   @Post(`${ApiPath.Webhooks}/plivo/answer`)
   @HttpCode(200)
@@ -43,18 +40,10 @@ export class PlivoWebhookController {
     };
     const destination = params.To;
 
-    const callerId = await this.plivoService.resolveCallerId(
-      header('x-ph-callerid'),
-    );
-
-    this.logger.log(
-      `Plivo answer for ${String(destination)} from ${String(callerId)}`,
-    );
-
-    return this.plivoService.buildAnswerXml(
+    return this.numbers.answer(
+      header('x-ph-grant'),
       typeof destination === 'string' ? destination : undefined,
-      callerId,
-      header('x-ph-record') === '1',
+      typeof params.CallUUID === 'string' ? params.CallUUID : undefined,
     );
   }
 }

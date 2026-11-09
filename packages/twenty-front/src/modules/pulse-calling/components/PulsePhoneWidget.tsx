@@ -207,7 +207,11 @@ export const PulsePhoneWidget = () => {
   });
   const access = data?.plivoVoiceAccess;
   const callerIds = access?.callerIds ?? [];
-  const selectedCallerId = settings.callerId ?? access?.defaultCallerId ?? '';
+  const selectedCallerId = callerIds.some(
+    (entry) => entry.number === settings.callerId,
+  )
+    ? (settings.callerId ?? '')
+    : (access?.defaultCallerId ?? '');
   const isLive = ['connecting', 'ringing', 'in-call'].includes(call.status);
 
   const loadDevices = async () => {
@@ -330,10 +334,11 @@ export const PulsePhoneWidget = () => {
               ) : (
                 <StyledMuted>
                   {access?.isEnabled === false
-                    ? t`Calling is not set up yet.`
+                    ? t`Purchase a dedicated CRM number to start calling.`
                     : t`Loading your numbers...`}
                 </StyledMuted>
               )}
+              <a href="/phone-numbers">{t`Manage CRM numbers · $3.50/month`}</a>
             </StyledSection>
 
             <StyledSection>

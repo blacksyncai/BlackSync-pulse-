@@ -1,3 +1,4 @@
+import { CrmPhoneNumbersService } from 'src/engine/core-modules/plivo/services/crm-phone-numbers.service';
 import { PulseTicketEmailService } from 'src/engine/core-modules/pulse-tickets/services/pulse-ticket-email.service';
 import { PulseWelcomeService } from 'src/engine/core-modules/pulse-welcome/services/pulse-welcome.service';
 import { Logger } from '@nestjs/common';
@@ -24,6 +25,7 @@ export class PulseTaskReminderCronJob {
     private readonly pulseTaskReminderService: PulseTaskReminderService,
     private readonly welcome: PulseWelcomeService,
     private readonly ticketEmail: PulseTicketEmailService,
+    private readonly numbers: CrmPhoneNumbersService,
   ) {}
 
   @Process(PulseTaskReminderCronJob.name)
@@ -39,6 +41,12 @@ export class PulseTaskReminderCronJob {
           'Pending welcome emails could not be queued; the next run will retry.',
         ),
       );
+    await this.numbers
+      .refresh()
+      .catch(() =>
+        this.logger.error('CRM phone billing reconciliation will retry.'),
+      );
+    await this.numbers.cleanupGrants();
     const workspaces = await this.workspaceRepository.find({
       where: { activationStatus: WorkspaceActivationStatus.ACTIVE },
     });

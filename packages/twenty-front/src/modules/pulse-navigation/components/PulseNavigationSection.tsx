@@ -141,6 +141,12 @@ export const PulseNavigationSection = () => {
       <StyledGroup>
         <NavigationDrawerSectionTitle label={t`Setup`} />
         <NavigationDrawerItem
+          label={t`CRM phone numbers`}
+          to="/phone-numbers"
+          Icon={IconPhone}
+          active={pathname === '/phone-numbers'}
+        />
+        <NavigationDrawerItem
           label={t`Forms & submissions`}
           to="/forms"
           Icon={IconFileText}

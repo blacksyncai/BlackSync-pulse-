@@ -1,3 +1,4 @@
+import { CRM_PHONE_CALL_GRANT } from '@/pulse-calling/graphql/mutations/crmPhoneCallGrant';
 import { LOG_PULSE_CALL } from '@/pulse-calling/graphql/mutations/logPulseCall';
 import { PLIVO_VOICE_ACCESS } from '@/pulse-calling/graphql/queries/plivoVoiceAccess';
 import {
@@ -217,12 +218,30 @@ export const usePulseCalling = () => {
       const settings = store.get(pulseCallSettingsState.atom);
 
       applyAudioDevices(client, settings);
-      // Plivo forwards X-PH- headers to the answer webhook, which validates them.
+      const cachedAccess = apolloClient.readQuery<PlivoVoiceAccessResult>({
+        query: PLIVO_VOICE_ACCESS,
+      })?.plivoVoiceAccess;
+      const ownedCaller = cachedAccess?.callerIds.some(
+        (entry) => entry.number === settings.callerId,
+      )
+        ? settings.callerId
+        : null;
+      const { data } = await apolloClient.mutate<{ crmPhoneCallGrant: string }>(
+        {
+          mutation: CRM_PHONE_CALL_GRANT,
+          variables: {
+            destination: phoneNumber,
+            number: ownedCaller,
+            record: settings.autoRecord,
+          },
+        },
+      );
+      if (!data?.crmPhoneCallGrant)
+        throw new PulseCallingUnavailableError(
+          'Purchase a CRM number before calling.',
+        );
       const isPlaced = client.call(phoneNumber, {
-        ...(isDefined(settings.callerId)
-          ? { 'X-PH-Callerid': settings.callerId }
-          : {}),
-        ...(settings.autoRecord ? { 'X-PH-Record': '1' } : {}),
+        'X-PH-Grant': data.crmPhoneCallGrant,
       });
 
       if (isPlaced === false) {

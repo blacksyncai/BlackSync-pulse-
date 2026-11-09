@@ -16,11 +16,42 @@ const buildService = (config: Record<string, string> = CONFIG) =>
   } as unknown as TwentyConfigService);
 
 describe('PlivoService', () => {
-  it('uses the configured endpoint and caller ID without calling Plivo', async () => {
-    await expect(buildService().getVoiceSetup()).resolves.toEqual({
-      endpointUsername: 'pulse-browser',
-      callerId: '+14155550100',
+  it('creates only a dedicated CRM application and endpoint; legacy shared numbers are not used', async () => {
+    const service = buildService();
+    const request = jest
+      .spyOn(service, 'plivoRequest')
+      .mockImplementation(async (_method, path) => {
+        if (path.startsWith('/Application'))
+          return {
+            objects: [
+              {
+                app_id: 'crm-app',
+                app_name: 'blacksync_crm_voice_v2',
+                answer_url: 'undefined/webhooks/plivo/answer',
+              },
+            ],
+          } as never;
+        if (path.startsWith('/Endpoint'))
+          return {
+            objects: [
+              {
+                endpoint_id: 'crm-endpoint',
+                username: 'crm-browser',
+                alias: 'blacksync_crm_browser_v2',
+                application: 'crm-app',
+              },
+            ],
+          } as never;
+        throw new Error('Shared carrier numbers must not be queried');
+      });
+    await expect(service.getVoiceSetup()).resolves.toEqual({
+      endpointUsername: 'crm-browser',
+      callerId: '',
+      applicationId: 'crm-app',
     });
+    expect(
+      request.mock.calls.some((call) => call[1].startsWith('/Number')),
+    ).toBe(false);
   });
 
   it('stays disabled without Plivo credentials', async () => {
@@ -39,13 +70,11 @@ describe('PlivoService', () => {
     afterEach(() => jest.restoreAllMocks());
 
     it("uses the token Plivo's token API issues", async () => {
-      const fetchSpy = jest
-        .spyOn(global, 'fetch')
-        .mockResolvedValue(
-          new Response(JSON.stringify({ token: 'plivo-issued' }), {
-            status: 200,
-          }),
-        );
+      const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify({ token: 'plivo-issued' }), {
+          status: 200,
+        }),
+      );
 
       await expect(
         buildService().createAccessToken('user-1', setup),

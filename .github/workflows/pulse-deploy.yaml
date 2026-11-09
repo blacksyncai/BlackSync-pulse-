@@ -44,6 +44,47 @@ env:
   RAILWAY_WORKER_SERVICE_ID: 66f02f54-1b92-4f2a-964e-b3cf7ddea1af
 
 jobs:
+  crm-phone-billing-config:
+    runs-on: ubuntu-latest
+    if: ${{ vars.PULSE_RAILWAY_IMAGE_DEPLOYS == 'true' }}
+    steps:
+      - name: Check and reuse existing CRM billing credentials
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          EXISTING_STRIPE_KEY: ${{ secrets.BILLING_STRIPE_API_KEY || secrets.STRIPE_SECRET_KEY || secrets.STRIPE_API_KEY }}
+        run: |
+          python3 - <<'PYCONFIG'
+          import json, os, urllib.request
+          def api(query, variables):
+              payload=json.dumps({'query':query,'variables':variables}).encode()
+              request=urllib.request.Request('https://backboard.railway.com/graphql/v2',data=payload,headers={'Content-Type':'application/json','Project-Access-Token':os.environ['RAILWAY_TOKEN']})
+              with urllib.request.urlopen(request,timeout=30) as response: result=json.load(response)
+              if result.get('errors'): raise RuntimeError('Billing configuration query failed; no credentials were logged.')
+              return result['data']
+          environment=os.environ['RAILWAY_ENVIRONMENT_ID']
+          services=[os.environ['RAILWAY_MAIN_SERVICE_ID'],os.environ['RAILWAY_WORKER_SERVICE_ID']]
+          project=api('query($id:String!){service(id:$id){projectId}}',{'id':services[0]})['service']['projectId']
+          def variables(service):
+              return api('query($project:String!,$environment:String!,$service:String!){variables(projectId:$project,environmentId:$environment,serviceId:$service)}',{'project':project,'environment':environment,'service':service})['variables']
+          names=('BILLING_STRIPE_API_KEY','STRIPE_SECRET_KEY','STRIPE_API_KEY')
+          key=os.environ.get('EXISTING_STRIPE_KEY','')
+          live=lambda value: isinstance(value,str) and value.startswith(('sk_live_','rk_live_'))
+          if not live(key):
+              key=next((value for service in services for name,value in variables(service).items() if name in names and live(value)), '')
+          if not live(key):
+              candidates=api('query($id:String!){project(id:$id){services{edges{node{id name}}}}}',{'id':project})['project']['services']['edges']
+              for item in candidates:
+                  service=item['node']
+                  if service['id'] in services: continue
+                  if not any(word in service['name'].lower() for word in ('api','backend','calling','server')): continue
+                  key=next((value for name,value in variables(service['id']).items() if name in names and live(value)), '')
+                  if key: break
+          for service in services:
+              current=variables(service)
+              if live(key) and current.get('BILLING_STRIPE_API_KEY') != key:
+                  api('mutation($input:VariableUpsertInput!){variableUpsert(input:$input)}',{'input':{'projectId':project,'environmentId':environment,'serviceId':service,'name':'BILLING_STRIPE_API_KEY','value':key}})
+              print(json.dumps({'service':service,'crmPhoneCheckoutConfigured':live(key) or live(current.get('BILLING_STRIPE_API_KEY','')),'carrierConfigured':bool(current.get('PLIVO_AUTH_ID')) and bool(current.get('PLIVO_AUTH_TOKEN'))}))
+          PYCONFIG
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -114,7 +155,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy:
-    needs: build
+    needs: [build, crm-phone-billing-config]
     runs-on: ubuntu-latest
     if: ${{ vars.PULSE_RAILWAY_IMAGE_DEPLOYS == 'true' }}
     steps:
@@ -146,6 +187,8 @@ jobs:
                       health=json.load(response)
                   if release.get('commit') == os.environ['GITHUB_SHA'] and health.get('status') == 'ok':
                       print('Verified live CRM release: '+release['commit'])
+                      with urllib.request.urlopen('https://crm.blacksync.cloud/webhooks/crm-phone-numbers/status',timeout=10) as response:
+                          print('CRM phone capabilities: '+json.dumps(json.load(response)))
                       break
               except Exception:
                   pass

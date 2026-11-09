@@ -1,3 +1,4 @@
+import { PlivoModule } from 'src/engine/core-modules/plivo/plivo.module';
 import { PulseTicketsModule } from 'src/engine/core-modules/pulse-tickets/pulse-tickets.module';
 import { PulseWelcomeModule } from 'src/engine/core-modules/pulse-welcome/pulse-welcome.module';
 import { Module } from '@nestjs/common';
@@ -15,6 +16,7 @@ import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.ent
 @Module({
   imports: [
     PulseWelcomeModule,
+    PlivoModule,
     PulseTicketsModule,
     TypeOrmModule.forFeature([WorkspaceEntity]),
     KeyValuePairModule,
