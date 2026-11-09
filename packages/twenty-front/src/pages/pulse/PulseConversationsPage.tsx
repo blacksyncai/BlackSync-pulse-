@@ -227,9 +227,14 @@ const ConversationDetail = ({
   const { openRecordInSidePanel } = useOpenRecordInSidePanel();
   useEffect(() => {
     const element = dialog.current;
-    document.querySelectorAll('audio').forEach((audio) => audio.pause());
+    document
+      .querySelectorAll<HTMLAudioElement>('audio[data-conversation-recording]')
+      .forEach((audio) => audio.pause());
     element?.showModal();
-    return () => element?.close();
+    return () => {
+      element?.querySelectorAll('audio').forEach((audio) => audio.pause());
+      element?.close();
+    };
   }, []);
   return createPortal(
     <StyledDialog
@@ -450,13 +455,16 @@ export const PulseConversationsPage = () => {
                       {call.recordingUrl ? (
                         <audio
                           controls
+                          data-conversation-recording="true"
                           preload="none"
                           aria-label={t`Recording for ${call.title}`}
                           src={call.recordingUrl}
                           onPlay={(event) => {
                             const playing = event.currentTarget;
                             document
-                              .querySelectorAll('audio')
+                              .querySelectorAll<HTMLAudioElement>(
+                                'audio[data-conversation-recording]',
+                              )
                               .forEach((audio) => {
                                 if (audio !== playing) audio.pause();
                               });
