@@ -26,14 +26,16 @@ const setup = () => {
       }),
   };
   const fieldService = {
-    createOneField: jest
+    createManyFields: jest
       .fn()
-      .mockImplementation(async ({ createFieldInput }) => {
-        const field = { ...createFieldInput, id: createFieldInput.name };
-        fields.push(field);
-        return field;
+      .mockImplementation(async ({ createFieldInputs }) => {
+        const created = createFieldInputs.map((input: { name: string }) => ({
+          ...input,
+          id: input.name,
+        }));
+        fields.push(...created);
+        return created;
       }),
-    updateOneField: jest.fn(),
   };
   const cache = {
     getOrRecomputeManyOrAllFlatEntityMaps: jest.fn(async () => ({
@@ -93,24 +95,23 @@ describe('client ticket setup', () => {
     await expect(
       context.service.setup('workspace', 'membership'),
     ).resolves.toMatchObject({ href: '/objects/clientTickets?viewId=board' });
-    expect(context.fieldService.createOneField).toHaveBeenCalledWith(
+    expect(context.fieldService.createManyFields).toHaveBeenCalledWith(
       expect.objectContaining({
-        createFieldInput: expect.objectContaining({
-          name: 'client',
-          relationCreationPayload: expect.objectContaining({
-            targetObjectMetadataId: 'company',
+        createFieldInputs: expect.arrayContaining([
+          expect.objectContaining({
+            name: 'client',
+            relationCreationPayload: expect.objectContaining({
+              targetObjectMetadataId: 'company',
+            }),
           }),
-        }),
-      }),
-    );
-    expect(context.fieldService.createOneField).toHaveBeenCalledWith(
-      expect.objectContaining({
-        createFieldInput: expect.objectContaining({
-          name: 'assignee',
-          relationCreationPayload: expect.objectContaining({
-            targetObjectMetadataId: 'member',
+          expect.objectContaining({
+            name: 'assignee',
+            relationCreationPayload: expect.objectContaining({
+              targetObjectMetadataId: 'member',
+            }),
           }),
-        }),
+          expect.objectContaining({ name: 'status', defaultValue: "'NEW'" }),
+        ]),
       }),
     );
     expect(
@@ -128,10 +129,11 @@ describe('client ticket setup', () => {
   it('reuses existing fields on retry instead of duplicating them', async () => {
     const context = setup();
     await context.service.setup('workspace', 'membership');
-    const fieldsCreated = context.fieldService.createOneField.mock.calls.length;
+    const fieldsCreated =
+      context.fieldService.createManyFields.mock.calls.length;
     await context.service.setup('workspace', 'membership');
     expect(context.objectService.createOneObject).toHaveBeenCalledTimes(1);
-    expect(context.fieldService.createOneField).toHaveBeenCalledTimes(
+    expect(context.fieldService.createManyFields).toHaveBeenCalledTimes(
       fieldsCreated,
     );
   });
@@ -145,6 +147,6 @@ describe('client ticket setup', () => {
     await expect(
       context.service.setup('workspace', 'membership'),
     ).rejects.toThrow('review');
-    expect(context.fieldService.createOneField).not.toHaveBeenCalled();
+    expect(context.fieldService.createManyFields).not.toHaveBeenCalled();
   });
 });

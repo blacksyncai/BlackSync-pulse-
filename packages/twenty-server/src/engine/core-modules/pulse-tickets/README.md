@@ -4,7 +4,7 @@ Open **Client delivery → Client tickets**. A member with DATA_MODEL permission
 
 ## MCP
 
-Reconnect BlackSync MCP after setup to refresh the tool catalog. Learn the `create_one_clientTicket`, `find_many_clientTickets`, and `update_one_clientTicket` schemas through the existing MCP tool discovery. Inspect field metadata for option values. Resolve `clientId` and `assigneeId` from real records, then set `source: MCP`. Existing OAuth/API-key role intersections apply. No second MCP server or permission bypass is introduced.
+Reconnect BlackSync MCP after setup to refresh the tool catalog. Learn the `create_one_client_ticket`, `find_many_client_tickets`, and `update_one_client_ticket` schemas through the existing MCP tool discovery. Inspect field metadata for option values. Resolve `clientId` and `assigneeId` from real records, then set `source: MCP`. Existing OAuth/API-key role intersections apply. If the MCP connection uses an application role with explicit object grants, grant that role access to Client tickets under permissions before reconnecting. No second MCP server or permission bypass is introduced.
 
 ## Email capture
 

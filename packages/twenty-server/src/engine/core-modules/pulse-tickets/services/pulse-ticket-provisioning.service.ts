@@ -1,3 +1,5 @@
+import { v4 } from 'uuid';
+import { type CreateFieldInput } from 'src/engine/metadata-modules/field-metadata/dtos/create-field.input';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
@@ -85,21 +87,18 @@ export class PulseTicketProvisioningService {
           },
         });
       const objectMetadataId = object.id;
-      const addField = async (
+      maps = await metadata();
+      const existingFields = Object.values(
+        maps.flatFieldMetadataMaps.byUniversalIdentifier,
+      ).filter((field) => field?.objectMetadataId === objectMetadataId);
+      const inputs: Omit<CreateFieldInput, 'workspaceId'>[] = [];
+      const addField = (
         name: string,
         label: string,
         type: FieldMetadataType,
         target?: string,
       ) => {
-        maps = await metadata();
-        if (
-          Object.values(maps.flatFieldMetadataMaps.byUniversalIdentifier).some(
-            (field) =>
-              field?.objectMetadataId === objectMetadataId &&
-              field.name === name,
-          )
-        )
-          return;
+        if (existingFields.some((field) => field?.name === name)) return;
         const targetObject = target
           ? Object.values(
               maps.flatObjectMetadataMaps.byUniversalIdentifier,
@@ -107,104 +106,97 @@ export class PulseTicketProvisioningService {
           : undefined;
         if (target && !targetObject)
           throw new Error(`Missing ticket relation target: ${target}`);
-        await this.fields.createOneField({
-          workspaceId,
-          createFieldInput: {
-            objectMetadataId,
-            name,
-            label,
-            type,
-            isNullable: true,
-            ...(targetObject
-              ? {
-                  relationCreationPayload: {
-                    type: RelationType.MANY_TO_ONE,
-                    targetObjectMetadataId: targetObject.id,
-                    targetFieldLabel: 'Client tickets',
-                    targetFieldIcon: 'IconCheckbox',
-                  },
-                }
-              : {}),
-          },
+        inputs.push({
+          objectMetadataId,
+          name,
+          label,
+          type,
+          isNullable: true,
+          ...(targetObject
+            ? {
+                relationCreationPayload: {
+                  type: RelationType.MANY_TO_ONE,
+                  targetObjectMetadataId: targetObject.id,
+                  targetFieldLabel: 'Client tickets',
+                  targetFieldIcon: 'IconCheckbox',
+                },
+              }
+            : {}),
         });
       };
-      await addField('description', 'Description', FieldMetadataType.TEXT);
-      await addField('project', 'Project', FieldMetadataType.TEXT);
-      await addField('dueAt', 'Due date', FieldMetadataType.DATE_TIME);
-      await addField('client', 'Client', FieldMetadataType.RELATION, 'company');
-      await addField(
+      addField('description', 'Description', FieldMetadataType.TEXT);
+      addField('project', 'Project', FieldMetadataType.TEXT);
+      addField('dueAt', 'Due date', FieldMetadataType.DATE_TIME);
+      addField('client', 'Client', FieldMetadataType.RELATION, 'company');
+      addField(
         'assignee',
         'Assignee',
         FieldMetadataType.RELATION,
         'workspaceMember',
       );
-      await addField(
-        'sourceMessageId',
-        'Source message ID',
-        FieldMetadataType.UUID,
+      addField('sourceMessageId', 'Source message ID', FieldMetadataType.UUID);
+      addField('sourceThreadId', 'Source thread ID', FieldMetadataType.UUID);
+      const addSelect = (
+        name: string,
+        label: string,
+        defaultValue: string,
+        options: [string, string, string][],
+      ) => {
+        if (existingFields.some((field) => field?.name === name)) return;
+        inputs.push({
+          objectMetadataId,
+          name,
+          label,
+          type: FieldMetadataType.SELECT,
+          isNullable: true,
+          defaultValue: `'${defaultValue}'`,
+          options: options.map(([value, optionLabel, color], position) => ({
+            id: v4(),
+            value,
+            label: optionLabel,
+            color,
+            position,
+          })),
+        });
+      };
+      addSelect('status', 'Status', 'NEW', [
+        ['NEW', 'New', 'blue'],
+        ['TO_DO', 'To do', 'gray'],
+        ['IN_PROGRESS', 'In progress', 'orange'],
+        ['WAITING_ON_CLIENT', 'Waiting on client', 'purple'],
+        ['DONE', 'Done', 'green'],
+      ]);
+      addSelect('priority', 'Priority', 'NORMAL', [
+        ['LOW', 'Low', 'gray'],
+        ['NORMAL', 'Normal', 'blue'],
+        ['HIGH', 'High', 'orange'],
+        ['URGENT', 'Urgent', 'red'],
+      ]);
+      addSelect('source', 'Source', 'MANUAL', [
+        ['MANUAL', 'Manual', 'gray'],
+        ['EMAIL', 'Email', 'blue'],
+        ['MCP', 'MCP', 'purple'],
+      ]);
+      // One metadata migration for all fields, instead of rebuilding the workspace schema per field.
+      const createdFields = inputs.length
+        ? await this.fields.createManyFields({
+            workspaceId,
+            createFieldInputs: inputs,
+          })
+        : [];
+      const status = [...existingFields, ...createdFields].find(
+        (field) => field?.name === 'status',
       );
-      await addField(
-        'sourceThreadId',
-        'Source thread ID',
-        FieldMetadataType.UUID,
-      );
-      const status = await this.boards.ensureSelectField({
-        workspaceId,
-        objectNameSingular: 'clientTicket',
-        fieldName: 'status',
-        label: 'Status',
-        icon: 'IconCheckbox',
-        options: [
-          { label: 'New', color: 'blue' },
-          { label: 'To do', color: 'gray' },
-          { label: 'In progress', color: 'orange' },
-          { label: 'Waiting on client', color: 'purple' },
-          { label: 'Done', color: 'green' },
-        ],
-      });
-      const priority = await this.boards.ensureSelectField({
-        workspaceId,
-        objectNameSingular: 'clientTicket',
-        fieldName: 'priority',
-        label: 'Priority',
-        icon: 'IconFlag',
-        options: [
-          { label: 'Low', color: 'gray' },
-          { label: 'Normal', color: 'blue' },
-          { label: 'High', color: 'orange' },
-          { label: 'Urgent', color: 'red' },
-        ],
-      });
-      const source = await this.boards.ensureSelectField({
-        workspaceId,
-        objectNameSingular: 'clientTicket',
-        fieldName: 'source',
-        label: 'Source',
-        icon: 'IconInbox',
-        options: [
-          { label: 'Manual', color: 'gray' },
-          { label: 'Email', color: 'blue' },
-          { label: 'MCP', color: 'purple' },
-        ],
-      });
-      await this.fields.updateOneField({
-        workspaceId,
-        updateFieldInput: { id: status.fieldId, defaultValue: "'NEW'" },
-      });
-      await this.fields.updateOneField({
-        workspaceId,
-        updateFieldInput: { id: priority.fieldId, defaultValue: "'NORMAL'" },
-      });
-      await this.fields.updateOneField({
-        workspaceId,
-        updateFieldInput: { id: source.fieldId, defaultValue: "'MANUAL'" },
-      });
+      if (!status)
+        throw new Error(
+          'Client ticket status field is unavailable. Retry setup.',
+        );
       const viewId = await this.boards.ensureKanbanBoard({
         workspaceId,
         userWorkspaceId,
         objectNameSingular: 'clientTicket',
         name: 'Client tickets',
-        groupByFieldId: status.fieldId,
+        groupByFieldId: status.id,
         cardFieldNames: [
           'name',
           'client',
