@@ -142,6 +142,7 @@ describe('client ticket email capture', () => {
         clientId: 'client',
         assigneeId: 'member',
       }),
+      { onConflictDoNothing: true },
     );
     expect(JSON.stringify(context.tickets.insert.mock.calls)).not.toContain(
       'PRIVATE BODY',

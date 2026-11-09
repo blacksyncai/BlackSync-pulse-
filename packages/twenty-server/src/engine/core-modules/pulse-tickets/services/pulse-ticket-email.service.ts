@@ -306,23 +306,26 @@ export class PulseTicketEmailService {
                 if (
                   !(await tickets.findOne({ where: { id }, withDeleted: true }))
                 ) {
-                  await tickets.insert({
-                    id,
-                    name: (message.subject || 'Client email request').slice(
-                      0,
-                      250,
-                    ),
-                    description:
-                      'Created from a matching incoming email. Review the original conversation in Inbox before starting work. Email body is not copied.',
-                    status: 'NEW',
-                    priority: 'NORMAL',
-                    source: 'EMAIL',
-                    sourceMessageId: message.id,
-                    sourceThreadId: message.messageThreadId,
-                    clientId: [...clientIds][0],
-                    assigneeId: memberId,
-                    position: Date.now(),
-                  });
+                  await tickets.insert(
+                    {
+                      id,
+                      name: (message.subject || 'Client email request').slice(
+                        0,
+                        250,
+                      ),
+                      description:
+                        'Created from a matching incoming email. Review the original conversation in Inbox before starting work. Email body is not copied.',
+                      status: 'NEW',
+                      priority: 'NORMAL',
+                      source: 'EMAIL',
+                      sourceMessageId: message.id,
+                      sourceThreadId: message.messageThreadId,
+                      clientId: [...clientIds][0],
+                      assigneeId: memberId,
+                      position: Date.now(),
+                    },
+                    { onConflictDoNothing: true },
+                  );
                 }
               }
             }
