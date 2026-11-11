@@ -1,3 +1,4 @@
+import GlassWorkspace from '@/components/ui/adjustable-glass-dashboard';
 import { PulseDashboardTabs } from '@/pulse-dashboard/components/PulseDashboardTabs';
 import {
   formatSalesWorkspaceAmount,
@@ -67,12 +68,15 @@ const StyledContent = styled.div`
   max-width: 1320px;
 `;
 const StyledHero = styled.header`
-  background: linear-gradient(
-    120deg,
-    ${themeCssVariables.accent.quaternary},
-    transparent
+  background: var(
+    --dashboard-glass-surface,
+    ${themeCssVariables.background.primary}
   );
-  border: 1px solid ${themeCssVariables.border.color.medium};
+  backdrop-filter: blur(var(--dashboard-blur, 22px))
+    saturate(var(--dashboard-saturation, 1.2));
+  box-shadow: var(--bs-shadow);
+  border: 1px solid
+    var(--dashboard-glass-edge, ${themeCssVariables.border.color.medium});
   border-radius: 20px;
   margin-bottom: 24px;
   padding: 28px;
@@ -124,9 +128,16 @@ const StyledColumn = styled.div`
   min-width: 0;
 `;
 const StyledPanel = styled.section`
-  background: ${themeCssVariables.background.primary};
-  border: 1px solid ${themeCssVariables.border.color.medium};
-  border-radius: 16px;
+  background: var(
+    --dashboard-glass-surface,
+    ${themeCssVariables.background.primary}
+  );
+  backdrop-filter: blur(var(--dashboard-blur, 22px))
+    saturate(var(--dashboard-saturation, 1.2));
+  border: 1px solid
+    var(--dashboard-glass-edge, ${themeCssVariables.border.color.medium});
+  box-shadow: var(--bs-shadow);
+  border-radius: 24px;
   min-width: 0;
   overflow: hidden;
 `;
@@ -259,200 +270,204 @@ export const PulseSalesWorkspacePage = () => {
     >
       <StyledPage>
         <StyledContent>
-          <StyledHero>
-            <small>BLACKSYNC CLOUD</small>
-            <h1>{t`Make your next move.`}</h1>
-            <p>{t`Your follow-ups, closing deals, and conversations. One place to get to work.`}</p>
-            <StyledActions>
-              <Link to={AppPath.PulseDialer}>{t`Start calling`}</Link>
-              <Link to={AppPath.PulseLeads}>{t`Find a contact`}</Link>
-              <Link to={AppPath.PulseOpportunities}>{t`Open pipeline`}</Link>
-            </StyledActions>
-          </StyledHero>
-          <StyledGrid>
-            <StyledColumn>
-              <StyledPanel>
-                <StyledPanelHeader>
-                  <h2>{t`Capture the next step`}</h2>
-                </StyledPanelHeader>
-                <StyledBody>
-                  <PulseTaskQuickAdd
-                    onCreated={() => {
-                      void tasks.refetch();
-                    }}
-                  />
-                </StyledBody>
-              </StyledPanel>
-              <StyledPanel>
-                <StyledPanelHeader>
-                  <h2>{t`Follow-through`}</h2>
-                  <StyledTabs aria-label={t`Task ownership`}>
-                    <StyledButton
-                      aria-pressed={scope === 'mine'}
-                      onClick={() => setScope('mine')}
-                    >{t`My work`}</StyledButton>
-                    <StyledButton
-                      aria-pressed={scope === 'team'}
-                      onClick={() => setScope('team')}
-                    >{t`Team`}</StyledButton>
-                  </StyledTabs>
-                </StyledPanelHeader>
-                <StyledBody>
-                  <StyledTabs aria-label={t`Task timing`}>
-                    <StyledButton
-                      aria-pressed={filter === 'today'}
-                      onClick={() => setFilter('today')}
-                    >{t`Due & overdue`}</StyledButton>
-                    <StyledButton
-                      aria-pressed={filter === 'upcoming'}
-                      onClick={() => setFilter('upcoming')}
-                    >{t`Upcoming`}</StyledButton>
-                    <StyledButton
-                      aria-pressed={filter === 'someday'}
-                      onClick={() => setFilter('someday')}
-                    >{t`Unscheduled`}</StyledButton>
-                  </StyledTabs>
-                </StyledBody>
-                <SectionState
-                  loading={tasks.loading}
-                  error={tasks.error}
-                  empty={tasks.tasks.length === 0}
-                  retry={() => {
-                    void tasks.refetch();
-                  }}
-                >
-                  {visibleTasks.slice(0, 10).map((task) => (
-                    <PulseTaskRow
-                      key={task.id}
-                      task={task}
-                      now={now}
-                      showAssignee={scope === 'team'}
-                      onChanged={() => {
+          <GlassWorkspace>
+            <StyledHero>
+              <small>BLACKSYNC CLOUD</small>
+              <h1>{t`Make your next move.`}</h1>
+              <p>{t`Your follow-ups, closing deals, and conversations. One place to get to work.`}</p>
+              <StyledActions>
+                <Link to={AppPath.PulseDialer}>{t`Start calling`}</Link>
+                <Link to={AppPath.PulseLeads}>{t`Find a contact`}</Link>
+                <Link to={AppPath.PulseOpportunities}>{t`Open pipeline`}</Link>
+              </StyledActions>
+            </StyledHero>
+            <StyledGrid>
+              <StyledColumn>
+                <StyledPanel>
+                  <StyledPanelHeader>
+                    <h2>{t`Capture the next step`}</h2>
+                  </StyledPanelHeader>
+                  <StyledBody>
+                    <PulseTaskQuickAdd
+                      onCreated={() => {
                         void tasks.refetch();
                       }}
                     />
-                  ))}
-                  {visibleTasks.length === 0 && (
-                    <StyledBody>
-                      <p>{t`No tasks in this view. Capture a next step above or check another view.`}</p>
-                    </StyledBody>
-                  )}
-                  <StyledBody>
-                    <Link to={AppPath.PulseTodo}>
-                      {tasks.hasNextPage
-                        ? t`See all tasks — showing the earliest 60 here`
-                        : t`See all tasks`}{' '}
-                      →
-                    </Link>
                   </StyledBody>
-                </SectionState>
-              </StyledPanel>
-            </StyledColumn>
-            <StyledColumn>
-              <StyledPanel>
-                <StyledPanelHeader>
-                  <div>
-                    <h2>{t`Closing soon`}</h2>
-                    <p>{t`Open deals due in the next 14 days, including overdue.`}</p>
-                  </div>
-                </StyledPanelHeader>
-                <SectionState
-                  loading={deals.loading}
-                  error={deals.error}
-                  empty={deals.records.length === 0}
-                  retry={() => {
-                    void deals.refetch();
-                  }}
-                >
-                  {deals.records.map((deal) => {
-                    const closeDate = getSalesWorkspaceCloseDate(
-                      deal.closeDate,
-                    );
-                    const today = new Date(now);
-                    today.setHours(0, 0, 0, 0);
-                    const overdue = closeDate !== null && closeDate < today;
-                    return (
+                </StyledPanel>
+                <StyledPanel>
+                  <StyledPanelHeader>
+                    <h2>{t`Follow-through`}</h2>
+                    <StyledTabs aria-label={t`Task ownership`}>
+                      <StyledButton
+                        aria-pressed={scope === 'mine'}
+                        onClick={() => setScope('mine')}
+                      >{t`My work`}</StyledButton>
+                      <StyledButton
+                        aria-pressed={scope === 'team'}
+                        onClick={() => setScope('team')}
+                      >{t`Team`}</StyledButton>
+                    </StyledTabs>
+                  </StyledPanelHeader>
+                  <StyledBody>
+                    <StyledTabs aria-label={t`Task timing`}>
+                      <StyledButton
+                        aria-pressed={filter === 'today'}
+                        onClick={() => setFilter('today')}
+                      >{t`Due & overdue`}</StyledButton>
+                      <StyledButton
+                        aria-pressed={filter === 'upcoming'}
+                        onClick={() => setFilter('upcoming')}
+                      >{t`Upcoming`}</StyledButton>
+                      <StyledButton
+                        aria-pressed={filter === 'someday'}
+                        onClick={() => setFilter('someday')}
+                      >{t`Unscheduled`}</StyledButton>
+                    </StyledTabs>
+                  </StyledBody>
+                  <SectionState
+                    loading={tasks.loading}
+                    error={tasks.error}
+                    empty={tasks.tasks.length === 0}
+                    retry={() => {
+                      void tasks.refetch();
+                    }}
+                  >
+                    {visibleTasks.slice(0, 10).map((task) => (
+                      <PulseTaskRow
+                        key={task.id}
+                        task={task}
+                        now={now}
+                        showAssignee={scope === 'team'}
+                        onChanged={() => {
+                          void tasks.refetch();
+                        }}
+                      />
+                    ))}
+                    {visibleTasks.length === 0 && (
+                      <StyledBody>
+                        <p>{t`No tasks in this view. Capture a next step above or check another view.`}</p>
+                      </StyledBody>
+                    )}
+                    <StyledBody>
+                      <Link to={AppPath.PulseTodo}>
+                        {tasks.hasNextPage
+                          ? t`See all tasks — showing the earliest 60 here`
+                          : t`See all tasks`}{' '}
+                        →
+                      </Link>
+                    </StyledBody>
+                  </SectionState>
+                </StyledPanel>
+              </StyledColumn>
+              <StyledColumn>
+                <StyledPanel>
+                  <StyledPanelHeader>
+                    <div>
+                      <h2>{t`Closing soon`}</h2>
+                      <p>{t`Open deals due in the next 14 days, including overdue.`}</p>
+                    </div>
+                  </StyledPanelHeader>
+                  <SectionState
+                    loading={deals.loading}
+                    error={deals.error}
+                    empty={deals.records.length === 0}
+                    retry={() => {
+                      void deals.refetch();
+                    }}
+                  >
+                    {deals.records.map((deal) => {
+                      const closeDate = getSalesWorkspaceCloseDate(
+                        deal.closeDate,
+                      );
+                      const today = new Date(now);
+                      today.setHours(0, 0, 0, 0);
+                      const overdue = closeDate !== null && closeDate < today;
+                      return (
+                        <StyledRecord
+                          key={deal.id}
+                          onClick={() =>
+                            open(CoreObjectNameSingular.Opportunity, deal.id)
+                          }
+                        >
+                          <span>
+                            <strong>{deal.name || t`Untitled deal`}</strong>
+                            <small>{deal.company?.name}</small>
+                            <small data-overdue={overdue}>
+                              {overdue
+                                ? t`Close date overdue`
+                                : t`Expected close`}{' '}
+                              ·{' '}
+                              {closeDate?.toLocaleDateString(
+                                undefined,
+                                dateFormat,
+                              ) ?? '—'}
+                            </small>
+                          </span>
+                          <span>{formatSalesWorkspaceAmount(deal.amount)}</span>
+                        </StyledRecord>
+                      );
+                    })}
+                    {deals.records.length === 0 && (
+                      <StyledBody>
+                        <p>{t`No deals with a close date in this window. Add expected close dates in your pipeline to plan your week.`}</p>
+                      </StyledBody>
+                    )}
+                    <StyledBody>
+                      <Link to={AppPath.PulseOpportunities}>
+                        {deals.hasNextPage
+                          ? t`See all deals — showing the earliest 12 here`
+                          : t`Review pipeline`}{' '}
+                        →
+                      </Link>
+                    </StyledBody>
+                  </SectionState>
+                </StyledPanel>
+                <StyledPanel>
+                  <StyledPanelHeader>
+                    <h2>{t`Recent calls`}</h2>
+                    <StyledButton
+                      disabled={calls.loading}
+                      onClick={() => {
+                        void calls.refetch();
+                      }}
+                    >{t`Refresh`}</StyledButton>
+                  </StyledPanelHeader>
+                  <SectionState
+                    loading={calls.loading}
+                    error={calls.error}
+                    empty={calls.records.length === 0}
+                    retry={() => {
+                      void calls.refetch();
+                    }}
+                  >
+                    {calls.records.map((call) => (
                       <StyledRecord
-                        key={deal.id}
+                        key={call.id}
                         onClick={() =>
-                          open(CoreObjectNameSingular.Opportunity, deal.id)
+                          open(CoreObjectNameSingular.Note, call.id)
                         }
                       >
                         <span>
-                          <strong>{deal.name || t`Untitled deal`}</strong>
-                          <small>{deal.company?.name}</small>
-                          <small data-overdue={overdue}>
-                            {overdue
-                              ? t`Close date overdue`
-                              : t`Expected close`}{' '}
-                            ·{' '}
-                            {closeDate?.toLocaleDateString(
-                              undefined,
-                              dateFormat,
-                            ) ?? '—'}
+                          <strong>{call.title || t`Call`}</strong>
+                          <small>
+                            {new Date(call.createdAt).toLocaleString()}
                           </small>
                         </span>
-                        <span>{formatSalesWorkspaceAmount(deal.amount)}</span>
+                        <span aria-hidden="true">↗</span>
                       </StyledRecord>
-                    );
-                  })}
-                  {deals.records.length === 0 && (
-                    <StyledBody>
-                      <p>{t`No deals with a close date in this window. Add expected close dates in your pipeline to plan your week.`}</p>
-                    </StyledBody>
-                  )}
-                  <StyledBody>
-                    <Link to={AppPath.PulseOpportunities}>
-                      {deals.hasNextPage
-                        ? t`See all deals — showing the earliest 12 here`
-                        : t`Review pipeline`}{' '}
-                      →
-                    </Link>
-                  </StyledBody>
-                </SectionState>
-              </StyledPanel>
-              <StyledPanel>
-                <StyledPanelHeader>
-                  <h2>{t`Recent calls`}</h2>
-                  <StyledButton
-                    disabled={calls.loading}
-                    onClick={() => {
-                      void calls.refetch();
-                    }}
-                  >{t`Refresh`}</StyledButton>
-                </StyledPanelHeader>
-                <SectionState
-                  loading={calls.loading}
-                  error={calls.error}
-                  empty={calls.records.length === 0}
-                  retry={() => {
-                    void calls.refetch();
-                  }}
-                >
-                  {calls.records.map((call) => (
-                    <StyledRecord
-                      key={call.id}
-                      onClick={() => open(CoreObjectNameSingular.Note, call.id)}
-                    >
-                      <span>
-                        <strong>{call.title || t`Call`}</strong>
-                        <small>
-                          {new Date(call.createdAt).toLocaleString()}
-                        </small>
-                      </span>
-                      <span aria-hidden="true">↗</span>
-                    </StyledRecord>
-                  ))}
-                  {calls.records.length === 0 && (
-                    <StyledBody>
-                      <p>{t`Your logged calls will appear here. Open a call to review its notes and any synced transcript.`}</p>
-                      <Link to={AppPath.PulseDialer}>{t`Open dialer`} →</Link>
-                    </StyledBody>
-                  )}
-                </SectionState>
-              </StyledPanel>
-            </StyledColumn>
-          </StyledGrid>
+                    ))}
+                    {calls.records.length === 0 && (
+                      <StyledBody>
+                        <p>{t`Your logged calls will appear here. Open a call to review its notes and any synced transcript.`}</p>
+                        <Link to={AppPath.PulseDialer}>{t`Open dialer`} →</Link>
+                      </StyledBody>
+                    )}
+                  </SectionState>
+                </StyledPanel>
+              </StyledColumn>
+            </StyledGrid>
+          </GlassWorkspace>
         </StyledContent>
       </StyledPage>
     </PageCardLayout>

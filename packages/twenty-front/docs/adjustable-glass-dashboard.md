@@ -1,0 +1,9 @@
+# Adjustable glass dashboard
+
+The project already supports TypeScript, Tailwind 3 and shadcn-style components; no CLI reinitialization is needed. `components.json` maps `@/components/ui` to `src/modules/components/ui`. Keeping reusable UI in this existing folder makes imports and the shadcn registry consistent. `@/lib/utils` provides the shared class utility. Tailwind configuration is `tailwind.config.cjs`; its utility entry point is `src/modules/components/styles/landing.css`.
+
+The supplied finance dashboard was adapted into `src/modules/components/ui/adjustable-glass-dashboard.tsx`. It wraps the real `/dashboard` task, opportunity and call components rather than substituting banking demo data or adding a second navigation system. The existing Analytics tab is unchanged.
+
+Props: `children` is the native CRM content, `glass` supplies initial material settings, `onGlassChange` receives user adjustments, and `className` supports host styling. No context provider is required beyond the app's existing Lingui provider. Preferences are saved per browser in local storage, with safe defaults if storage is unavailable. Reset restores the default material. Controls support keyboard navigation and Escape, collapse inline on narrow screens, and honor reduced-transparency preferences.
+
+Styles use the CRM's existing Linaria and theme variables so light/dark themes work without importing landing-page Tailwind resets into the CRM. Lucide React is already installed. GSAP and `@gsap/react` are unnecessary in this adaptation: removing the demo's entrance animation avoids extra dependencies and preserves immediate access to working CRM controls. No stock banking assets, fake metrics, pulse logo, or new network image dependency is introduced. The companion demo illustrates the component in isolation; it is not a production route.
