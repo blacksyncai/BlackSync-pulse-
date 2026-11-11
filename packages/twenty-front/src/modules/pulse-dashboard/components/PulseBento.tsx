@@ -8,7 +8,7 @@ import * as React from 'react';
 
 const CSS = `.pbn{font-family:var(--t-font-family);-webkit-font-smoothing:antialiased;color:var(--t-font-color-primary);width:100%;
   --acc:var(--bs-accent);--t1:var(--t-font-color-primary);--t2:var(--t-font-color-secondary);--t3:var(--t-font-color-tertiary);--hair:var(--t-border-color-medium);--ease:cubic-bezier(.32,.72,0,1);
-  --early:#d6ae96;--late:#c96442;--won:#866449}
+  --early:var(--t-accent-accent6);--late:var(--bs-accent);--won:var(--t-accent-accent11)}
 .pbn *{box-sizing:border-box}
 .pbn .top{display:flex;align-items:center;gap:14px;margin-bottom:16px}
 .pbn .top h1{margin:0;font-size:28px;font-weight:700;letter-spacing:-.03em;flex:1}
