@@ -5,7 +5,7 @@ const StyledBrand = styled(Link)`
   align-items: center;
   display: flex;
   gap: 10px;
-  color: #effbf5;
+  color: var(--t-font-color-primary);
   text-decoration: none;
   padding: 22px 16px 16px;
   div {
@@ -23,10 +23,10 @@ const StyledBrand = styled(Link)`
     font-size: 9px;
     font-weight: 650;
     letter-spacing: 0.15em;
-    color: #9bbeb3;
+    color: var(--t-font-color-secondary);
   }
   &:focus-visible {
-    outline: 2px solid #66e3bf;
+    outline: 2px solid var(--t-accent-accent9);
     outline-offset: -4px;
     border-radius: 12px;
   }

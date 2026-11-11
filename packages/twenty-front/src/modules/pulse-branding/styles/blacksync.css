@@ -1,91 +1,87 @@
 /* BlackSync's product palette overrides inherited tokens, including portaled menus. */
 html.light {
-  --bs-canvas: #eaf0ef;
-  --bs-ambient:
-    radial-gradient(ellipse at 96% 2%, #c0e5da 0, transparent 44%),
-    radial-gradient(ellipse at 16% 100%, #c9d8ea 0, transparent 54%), #edf2f1;
-  --bs-glass: rgba(255, 255, 255, 0.82);
-  --bs-panel: rgba(255, 255, 255, 0.9);
-  --bs-edge: rgba(255, 255, 255, 0.96);
-  --bs-shadow:
-    0 20px 60px -36px rgba(22, 48, 43, 0.36),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  --bs-ink: #162b2a;
-  --bs-muted: #607573;
-  --bs-accent: #0f766e;
-  --bs-accent-soft: #e5f3ef;
-  --t-background-primary: #fff;
-  --t-background-secondary: #f4f7f6;
-  --t-background-tertiary: #e8eeeb;
-  --t-background-quaternary: #dee7e3;
+  --bs-canvas: #faf9f5;
+  --bs-ambient: linear-gradient(135deg, #faf9f5, #f0ede4);
+  --bs-glass: rgba(250, 249, 245, 0.94);
+  --bs-panel: #faf9f5;
+  --bs-edge: #dad9d4;
+  --bs-shadow: 0 2px 6px #3d39290a, 0 1px 2px #3d392908;
+  --bs-ink: #28261b;
+  --bs-muted: #706e64;
+  --bs-accent: #c96442;
+  --bs-accent-soft: #f4e6dd;
+  --t-background-primary: #faf9f5;
+  --t-background-secondary: #f1efe7;
+  --t-background-tertiary: #e9e6dc;
+  --t-background-quaternary: #e1ddd1;
   --t-background-noisy: transparent;
-  --t-font-color-primary: #162b2a;
-  --t-font-color-secondary: #526765;
-  --t-font-color-tertiary: #6c807c;
-  --t-font-color-light: #8d9d99;
-  --t-border-color-medium: #dce6e2;
-  --t-border-color-light: #e9efec;
-  --t-border-color-strong: #c6d6d0;
-  --t-accent-primary: #d5ebe4;
-  --t-accent-secondary: #d5ebe4;
-  --t-accent-tertiary: #f0f8f4;
-  --t-accent-quaternary: #e7f4ee;
-  --t-accent-accent1: #fbfefd;
-  --t-accent-accent2: #f3fbf7;
-  --t-accent-accent3: #e7f4ee;
-  --t-accent-accent4: #daeee6;
-  --t-accent-accent5: #c7e6da;
-  --t-accent-accent6: #abdbcb;
-  --t-accent-accent7: #83c7b2;
-  --t-accent-accent8: #48a78d;
-  --t-accent-accent9: #0f766e;
-  --t-accent-accent10: #0a655e;
-  --t-accent-accent11: #09695e;
-  --t-accent-accent12: #123d34;
-  --t-buttons-secondary-text-color: #09695e;
+  --t-font-color-primary: #28261b;
+  --t-font-color-secondary: #535146;
+  --t-font-color-tertiary: #706e64;
+  --t-font-color-light: #8a887f;
+  --t-border-color-medium: #dad9d4;
+  --t-border-color-light: #e8e5dc;
+  --t-border-color-strong: #b4b2a7;
+  --t-accent-primary: #ecd6c9;
+  --t-accent-secondary: #ecd6c9;
+  --t-accent-tertiary: #f8f0e8;
+  --t-accent-quaternary: #f4e6dd;
+  --t-accent-accent1: #fdfbf8;
+  --t-accent-accent2: #fbf6ef;
+  --t-accent-accent3: #f7ece1;
+  --t-accent-accent4: #f1dfcf;
+  --t-accent-accent5: #ead0bb;
+  --t-accent-accent6: #dfb99c;
+  --t-accent-accent7: #d39e7b;
+  --t-accent-accent8: #c9825b;
+  --t-accent-accent9: #b45537;
+  --t-accent-accent10: #a3482d;
+  --t-accent-accent11: #9b472d;
+  --t-accent-accent12: #492e20;
+  --t-buttons-secondary-text-color: #9b472d;
+  --bs-nav-background: #efede6;
 }
 html.dark {
-  --bs-canvas: #0b151b;
-  --bs-ambient:
-    radial-gradient(ellipse at 96% 2%, #173c38 0, transparent 45%),
-    radial-gradient(ellipse at 15% 100%, #182a40 0, transparent 52%), #0b151b;
-  --bs-glass: rgba(19, 34, 40, 0.86);
-  --bs-panel: rgba(23, 39, 45, 0.95);
-  --bs-edge: rgba(191, 229, 218, 0.11);
-  --bs-shadow: 0 20px 60px -30px #0008, inset 0 1px 0 rgba(220, 255, 243, 0.06);
-  --bs-ink: #e8f4ef;
-  --bs-muted: #a0b8b0;
-  --bs-accent: #5ee0bf;
-  --bs-accent-soft: #183a34;
-  --t-background-primary: #132228;
-  --t-background-secondary: #192b31;
-  --t-background-tertiary: #263b40;
-  --t-background-quaternary: #30494c;
+  --bs-canvas: #262624;
+  --bs-ambient: linear-gradient(135deg, #262624, #2d2925);
+  --bs-glass: rgba(44, 43, 39, 0.96);
+  --bs-panel: #2c2b27;
+  --bs-edge: #45443e;
+  --bs-shadow: 0 2px 8px #0003;
+  --bs-ink: #faf9f5;
+  --bs-muted: #b7b5a9;
+  --bs-accent: #d97757;
+  --bs-accent-soft: #49352d;
+  --t-background-primary: #2c2b27;
+  --t-background-secondary: #262624;
+  --t-background-tertiary: #36352f;
+  --t-background-quaternary: #45443d;
   --t-background-noisy: transparent;
-  --t-font-color-primary: #e8f4ef;
-  --t-font-color-secondary: #b1c8c0;
-  --t-font-color-tertiary: #89a69c;
-  --t-font-color-light: #728e85;
-  --t-border-color-medium: #2a4244;
-  --t-border-color-light: #23383c;
-  --t-border-color-strong: #3e5c5b;
-  --t-accent-primary: #26574b;
-  --t-accent-secondary: #26574b;
-  --t-accent-tertiary: #152f29;
-  --t-accent-quaternary: #193d32;
-  --t-accent-accent1: #0c1d19;
-  --t-accent-accent2: #102820;
-  --t-accent-accent3: #193d32;
-  --t-accent-accent4: #204d3f;
-  --t-accent-accent5: #285e4e;
-  --t-accent-accent6: #327360;
-  --t-accent-accent7: #448f78;
-  --t-accent-accent8: #50b693;
-  --t-accent-accent9: #5ee0bf;
-  --t-accent-accent10: #80ebce;
-  --t-accent-accent11: #8aebce;
-  --t-accent-accent12: #c8f8e8;
-  --t-buttons-secondary-text-color: #8aebce;
+  --t-font-color-primary: #faf9f5;
+  --t-font-color-secondary: #c3c0b6;
+  --t-font-color-tertiary: #b7b5a9;
+  --t-font-color-light: #918e83;
+  --t-border-color-medium: #45443e;
+  --t-border-color-light: #3a3933;
+  --t-border-color-strong: #68665b;
+  --t-accent-primary: #654433;
+  --t-accent-secondary: #654433;
+  --t-accent-tertiary: #332b26;
+  --t-accent-quaternary: #49352d;
+  --t-accent-accent1: #241e1a;
+  --t-accent-accent2: #2e231d;
+  --t-accent-accent3: #3a2a21;
+  --t-accent-accent4: #493329;
+  --t-accent-accent5: #5b3e2e;
+  --t-accent-accent6: #704c35;
+  --t-accent-accent7: #8e6041;
+  --t-accent-accent8: #af744e;
+  --t-accent-accent9: #b45537;
+  --t-accent-accent10: #c05e3d;
+  --t-accent-accent11: #e9b299;
+  --t-accent-accent12: #fae4d4;
+  --t-buttons-secondary-text-color: #e9b299;
+  --bs-nav-background: #24231f;
 }
 html.light,
 html.dark {
@@ -98,12 +94,12 @@ html.dark {
 }
 @media (prefers-reduced-transparency: reduce) {
   html.light {
-    --bs-glass: #fff;
-    --bs-panel: #fff;
+    --bs-glass: #faf9f5;
+    --bs-panel: #faf9f5;
   }
   html.dark {
-    --bs-glass: #132228;
-    --bs-panel: #192b31;
+    --bs-glass: #2c2b27;
+    --bs-panel: #2c2b27;
   }
 }
 @media print {
@@ -111,8 +107,8 @@ html.dark {
   html.dark {
     --bs-canvas: #fff;
     --bs-ambient: #fff;
-    --bs-glass: #fff;
-    --bs-panel: #fff;
+    --bs-glass: #faf9f5;
+    --bs-panel: #faf9f5;
     --bs-shadow: none;
   }
 }

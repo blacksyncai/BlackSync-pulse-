@@ -1,5 +1,3 @@
-import { ThemeProvider } from 'twenty-ui/theme';
-import { BLACKSYNC_SIDEBAR_THEME } from '@/pulse-branding/constants';
 import { useIsSettingsDrawer } from '@/navigation/hooks/useIsSettingsDrawer';
 
 import { MainNavigationDrawerContent } from '@/navigation/components/MainNavigationDrawerContent';
@@ -26,27 +24,21 @@ export const AppNavigationDrawer = ({
   }
 
   return (
-    <ThemeProvider
-      colorScheme="dark"
-      applyToRoot={false}
-      overrides={BLACKSYNC_SIDEBAR_THEME}
-    >
-      <NavigationDrawer className={className}>
-        {/* Mobile switches modes from the bottom navigation bar instead. */}
-        {!isMobile && (
-          <NavigationDrawerFixedContent>
-            <MainNavigationDrawerModeSwitcher />
-          </NavigationDrawerFixedContent>
-        )}
+    <NavigationDrawer className={className}>
+      {/* Mobile switches modes from the bottom navigation bar instead. */}
+      {!isMobile && (
+        <NavigationDrawerFixedContent>
+          <MainNavigationDrawerModeSwitcher />
+        </NavigationDrawerFixedContent>
+      )}
 
-        <NavigationDrawerModeTransition>
-          {isSettingsDrawer ? (
-            <SettingsNavigationDrawerContent />
-          ) : (
-            <MainNavigationDrawerContent />
-          )}
-        </NavigationDrawerModeTransition>
-      </NavigationDrawer>
-    </ThemeProvider>
+      <NavigationDrawerModeTransition>
+        {isSettingsDrawer ? (
+          <SettingsNavigationDrawerContent />
+        ) : (
+          <MainNavigationDrawerContent />
+        )}
+      </NavigationDrawerModeTransition>
+    </NavigationDrawer>
   );
 };

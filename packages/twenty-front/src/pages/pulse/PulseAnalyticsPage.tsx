@@ -8,8 +8,8 @@ import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
 import { IconLayoutDashboard } from 'twenty-ui/icon';
 const StyledPage = styled.div`
-  background: #101014;
-  color: #fff;
+  background: var(--bs-canvas);
+  color: var(--t-font-color-primary);
   box-sizing: border-box;
   flex: 1;
   min-height: 0;
@@ -29,9 +29,9 @@ const StyledToolbar = styled.div`
   select,
   button,
   a {
-    background: #23232d;
-    color: #fff;
-    border: 1px solid #454252;
+    background: var(--t-background-primary);
+    color: var(--t-font-color-primary);
+    border: 1px solid var(--t-border-color-strong);
     border-radius: 9px;
     padding: 8px 12px;
     font: inherit;
@@ -43,7 +43,7 @@ const StyledToolbar = styled.div`
   }
 `;
 const StyledNotice = styled.p`
-  color: #c4c2d2;
+  color: var(--t-font-color-secondary);
   font-size: 13px;
   line-height: 1.5;
   margin: 12px 0;

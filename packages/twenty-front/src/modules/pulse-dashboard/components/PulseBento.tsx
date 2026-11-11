@@ -6,9 +6,9 @@
 import { type PulseDashboardData } from '@/pulse-dashboard/types/PulseDashboardData';
 import * as React from 'react';
 
-const CSS = `.pbn{font-family:var(--t-font-family);-webkit-font-smoothing:antialiased;color:#fff;width:100%;
-  --acc:#B9A6FF;--t1:#fff;--t2:rgba(255,255,255,.56);--t3:rgba(255,255,255,.38);--hair:rgba(255,255,255,.14);--ease:cubic-bezier(.32,.72,0,1);
-  --early:#FFFFFF;--late:#A9B2FF;--won:#E8FF1F}
+const CSS = `.pbn{font-family:var(--t-font-family);-webkit-font-smoothing:antialiased;color:var(--t-font-color-primary);width:100%;
+  --acc:var(--bs-accent);--t1:var(--t-font-color-primary);--t2:var(--t-font-color-secondary);--t3:var(--t-font-color-tertiary);--hair:var(--t-border-color-medium);--ease:cubic-bezier(.32,.72,0,1);
+  --early:#d6ae96;--late:#c96442;--won:#866449}
 .pbn *{box-sizing:border-box}
 .pbn .top{display:flex;align-items:center;gap:14px;margin-bottom:16px}
 .pbn .top h1{margin:0;font-size:28px;font-weight:700;letter-spacing:-.03em;flex:1}
@@ -24,27 +24,27 @@ const CSS = `.pbn{font-family:var(--t-font-family);-webkit-font-smoothing:antial
 @media (max-width:520px){.pbn .kpi{grid-column:span 12}}
 @media(prefers-reduced-motion:reduce){.pbn *{animation:none!important;transition:none!important}}
 @media(max-width:520px){.pbn .pipeline-total{flex-direction:column;align-items:flex-start!important;gap:6px!important}.pbn .cohort-caption{display:none}}
-.pbn .card{position:relative;border-radius:28px;overflow:hidden;opacity:0;transform:translateY(14px) scale(.985);transition:opacity .7s ease,transform .9s var(--ease)}
+.pbn .card{background:var(--t-background-primary);border:1px solid var(--t-border-color-medium);box-shadow:var(--bs-shadow);position:relative;border-radius:28px;overflow:hidden;opacity:0;transform:translateY(14px) scale(.985);transition:opacity .7s ease,transform .9s var(--ease)}
 .pbn .in .card{opacity:1;transform:none}
-.pbn .card .rim{position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 0 0 1px rgba(255,255,255,.06);pointer-events:none;z-index:9}
+.pbn .card .rim{position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 1px 0 color-mix(in srgb,var(--t-background-primary) 70%,transparent);pointer-events:none;z-index:9}
 .pbn .g{position:absolute;inset:0}
 .pbn .core{position:absolute;left:10%;right:10%;top:16%;bottom:-6%;border-radius:90px;filter:blur(60px)}
-.pbn .glass{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(20px)}
+.pbn .glass{background:var(--t-background-primary);border:1px solid var(--t-border-color-medium)}
 .pbn .in-c{position:absolute;inset:0;padding:22px 24px;z-index:2}
 .pbn .ttl{font-size:18px;font-weight:600;letter-spacing:-.02em}
 .pbn .cap{font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t2)}
-.pbn .solid .cap{color:rgba(0,0,0,.55)}
+.pbn .solid .cap{color:var(--t-font-color-secondary)}
 .pbn .big{font-size:40px;font-weight:200;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
 .pbn .delta{font:600 12.5px ui-monospace,monospace;color:var(--won)}
 .pbn .muted{font-size:12.5px;color:var(--t3);font-weight:500}
-.pbn .chip{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:11px;background:rgba(0,0,0,.85);color:#fff;font:600 11px ui-monospace,monospace}
+.pbn .chip{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:11px;background:var(--t-background-tertiary);color:var(--t-font-color-primary);font:600 11px ui-monospace,monospace}
 .pbn .legend{display:flex;gap:16px;font-size:12px;font-weight:500;color:var(--t2)}
 .pbn .legend span{display:inline-flex;align-items:center;gap:6px}
 .pbn .legend i{width:8px;height:8px;border-radius:50%}
 .pbn .row{display:flex;align-items:center;gap:12px}
 .pbn .mono{font-family:ui-monospace,monospace;font-variant-numeric:tabular-nums}
 .pbn .dots circle{transition:opacity .26s,transform .26s;transform-box:fill-box;transform-origin:center}
-.pbn .tip{position:fixed;z-index:50;pointer-events:none;background:rgba(14,14,16,.92);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:9px 11px;font-size:12px;
+.pbn .tip{position:fixed;z-index:50;pointer-events:none;background:var(--t-background-primary);color:var(--t-font-color-primary);border:1px solid var(--t-border-color-medium);border-radius:14px;padding:9px 11px;font-size:12px;
   backdrop-filter:blur(16px);opacity:0;transform:translateY(4px);transition:opacity .15s,transform .15s;white-space:nowrap;min-width:150px}
 .pbn .tip.on{opacity:1;transform:none}
 .pbn .tip .t{color:var(--t2);margin-bottom:5px;font-weight:500}
@@ -93,12 +93,16 @@ function mount(root, data) {
   };
   const $id = (id) => root.querySelector('#' + id);
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const ACC = '#B9A6FF',
-    WON = '#E8FF1F',
-    T2 = 'rgba(255,255,255,.56)',
-    T3 = 'rgba(255,255,255,.38)',
-    HAIR = 'rgba(255,255,255,.14)';
-  const COL = { early: '#FFFFFF', late: '#A9B2FF', won: WON };
+  const ACC = 'var(--bs-accent)',
+    WON = 'var(--t-accent-accent7)',
+    T2 = 'var(--t-font-color-secondary)',
+    T3 = 'var(--t-font-color-tertiary)',
+    HAIR = 'var(--t-border-color-medium)';
+  const COL = {
+    early: 'var(--t-accent-accent6)',
+    late: 'var(--bs-accent)',
+    won: WON,
+  };
   const ease = (t) => 1 - Math.pow(1 - t, 3);
   const NS = 'http://www.w3.org/2000/svg';
   const el = (t, a = {}, p) => {
@@ -114,46 +118,8 @@ function mount(root, data) {
       maximumFractionDigits: compact ? 1 : 0,
       ...(compact ? { notation: 'compact' } : {}),
     }).format(value);
-  const bg = ({ top, base, bottom, core }) =>
-    `<div class="g" style="background:linear-gradient(180deg,${top} 0%,${base} 36%,${base} 74%,${bottom} 100%)"></div><div class="core" style="background:${core}"></div>`;
-  const GR = {
-    violet: {
-      top: '#c9b8ff',
-      base: '#4b2fd6',
-      bottom: '#7d64ff',
-      core: '#0b0626',
-    },
-    graph: {
-      top: '#9a9aa8',
-      base: '#3a3a44',
-      bottom: '#55555f',
-      core: '#060608',
-    },
-    pink: {
-      top: '#ffb3d6',
-      base: '#ff2a85',
-      bottom: '#ff6aa8',
-      core: '#3a031c',
-    },
-    copper: {
-      top: '#f6bf96',
-      base: '#c2683a',
-      bottom: '#dc8a5c',
-      core: '#1d0b05',
-    },
-    green: {
-      top: '#a6e8c8',
-      base: '#36956f',
-      bottom: '#58b58c',
-      core: '#061d15',
-    },
-    lime: {
-      top: '#f4ffb8',
-      base: '#a3c400',
-      bottom: '#c9e03a',
-      core: '#121700',
-    },
-  };
+  const bg = () =>
+    '<div class="g" style="background:var(--t-background-primary)"></div>';
   const smoothPath = (P, move = true) => {
     let d = (move ? 'M' : 'L') + `${P[0][0]},${P[0][1]}`;
     for (let i = 0; i < P.length - 1; i++) {
@@ -197,7 +163,7 @@ function mount(root, data) {
             cx: c * pitch + pitch / 2,
             cy: r * pitch + pitch / 2,
             r: pitch * 0.36,
-            fill: '#fff',
+            fill: 'var(--t-font-color-primary)',
             opacity: 0,
           },
           svg,
@@ -281,7 +247,7 @@ function mount(root, data) {
   const lastOpen = data.openPipeline;
   const total = (p) => p.early + p.late + p.won;
 
-  nw.innerHTML = `${bg(GR.violet)}<div class="in-c">
+  nw.innerHTML = `${bg()}<div class="in-c">
     <div class="row" style="justify-content:space-between"><div class="ttl">Open pipeline</div>
       <div class="legend"><span><i style="background:${COL.early}"></i>Early</span><span><i style="background:${COL.late}"></i>Late stage</span><span><i style="background:${COL.won}"></i>Won</span></div></div>
     <div class="row pipeline-total" style="margin-top:16px;align-items:flex-end;gap:16px"><div class="nwn"></div>
@@ -332,11 +298,11 @@ function mount(root, data) {
         .map((i, k) => {
           const x = Math.min(W - 36, Math.max(36, X(i)));
           return `<g style="opacity:${g > 0.6 ? 1 : 0};transition:opacity .4s ${k * 0.08}s">
-        <rect x="${x - 34}" y="${top - 14}" width="68" height="22" rx="11" fill="#000"/><text x="${x}" y="${top + 1}" text-anchor="middle" font-size="11" font-weight="600" fill="#fff" font-family="ui-monospace,monospace">${money(total(H[i]), { compact: true })}</text>
-        <rect x="${x - 26}" y="${Hh - bot - 8}" width="52" height="22" rx="11" fill="#000"/><text x="${x}" y="${Hh - bot + 7}" text-anchor="middle" font-size="10.5" fill="rgba(255,255,255,.7)" font-family="ui-monospace,monospace">${H[i].label}</text></g>`;
+        <rect x="${x - 34}" y="${top - 14}" width="68" height="22" rx="11" fill="var(--t-background-tertiary)"/><text x="${x}" y="${top + 1}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--t-font-color-primary)" font-family="ui-monospace,monospace">${money(total(H[i]), { compact: true })}</text>
+        <rect x="${x - 26}" y="${Hh - bot - 8}" width="52" height="22" rx="11" fill="var(--t-background-tertiary)"/><text x="${x}" y="${Hh - bot + 7}" text-anchor="middle" font-size="10.5" fill="var(--t-font-color-secondary)" font-family="ui-monospace,monospace">${H[i].label}</text></g>`;
         })
         .join('')}
-      <line class="hl" y1="${top}" y2="${Hh - bot}" stroke="#fff" stroke-width="1.5" opacity="0"/><rect width="${W}" height="${Hh}" fill="transparent" class="hit"/>`;
+      <line class="hl" y1="${top}" y2="${Hh - bot}" stroke="var(--bs-accent)" stroke-width="1.5" opacity="0"/><rect width="${W}" height="${Hh}" fill="transparent" class="hit"/>`;
     const hit = svg.querySelector('.hit'),
       hl = svg.querySelector('.hl');
     hit.onpointermove = (e) => {
@@ -375,7 +341,7 @@ function mount(root, data) {
   const deals = data.wonCount + data.openCount + data.lostCount,
     closedDeals = data.wonCount + data.lostCount,
     wonShare = closedDeals ? data.wonCount / closedDeals : 0;
-  al.innerHTML = `${bg(GR.graph)}<div class="in-c"><div class="row" style="justify-content:space-between"><div class="ttl">Win rate</div><span class="chip" style="background:rgba(255,255,255,.12)">${deals} deals</span></div>
+  al.innerHTML = `${bg()}<div class="in-c"><div class="row" style="justify-content:space-between"><div class="ttl">Win rate</div><span class="chip" style="background:var(--t-border-color-medium)">${deals} deals</span></div>
     <svg width="300" height="168" viewBox="-150 -150 300 168" style="position:absolute;left:50%;margin-left:-150px;top:70px" aria-hidden="true">${(() => {
       let s = '<style>@keyframes tk{to{opacity:1}}</style>';
       const n = 56;
@@ -389,25 +355,30 @@ function mount(root, data) {
       }
       return (
         s +
-        `<text y="-22" text-anchor="middle" font-weight="200" font-size="52" fill="#fff" letter-spacing="-2">${closedDeals ? Math.round(wonShare * 100) : '—'}<tspan font-size="17" dy="-24" fill="${T2}">${closedDeals ? '%' : ''}</tspan></text><text y="0" text-anchor="middle" font-size="12" font-weight="500" fill="${T3}">of closed deals won</text>`
+        `<text y="-22" text-anchor="middle" font-weight="200" font-size="52" fill="var(--t-font-color-primary)" letter-spacing="-2">${closedDeals ? Math.round(wonShare * 100) : '—'}<tspan font-size="17" dy="-24" fill="${T2}">${closedDeals ? '%' : ''}</tspan></text><text y="0" text-anchor="middle" font-size="12" font-weight="500" fill="${T3}">of closed deals won</text>`
       );
     })()}</svg>
     <div style="position:absolute;left:24px;right:24px;bottom:20px">${[
       ['Won', data.wonCount, money(data.wonAmount), WON],
       ['Open', data.openCount, money(data.openPipeline), COL.late],
-      ['Lost', data.lostCount, money(data.lostAmount), '#FF6AA8'],
+      [
+        'Lost',
+        data.lostCount,
+        money(data.lostAmount),
+        'var(--t-color-red9, #b54735)',
+      ],
     ]
       .map(
         ([k, c, v, col], i) =>
-          `<div class="row" style="height:30px;${i ? 'border-top:1px solid rgba(255,255,255,.1)' : ''}"><i style="width:8px;height:8px;border-radius:50%;background:${col}"></i><span style="flex:1;font-size:13px;font-weight:600">${k}</span><span class="mono muted" style="width:44px;text-align:right">${c}</span><span class="mono" style="width:96px;text-align:right;font-size:13px">${v}</span></div>`,
+          `<div class="row" style="height:30px;${i ? 'border-top:1px solid var(--t-border-color-medium)' : ''}"><i style="width:8px;height:8px;border-radius:50%;background:${col}"></i><span style="flex:1;font-size:13px;font-weight:600">${k}</span><span class="mono muted" style="width:44px;text-align:right">${c}</span><span class="mono" style="width:96px;text-align:right;font-size:13px">${v}</span></div>`,
       )
       .join('')}</div></div><div class="rim"></div>`;
 
   /* ---- KPI: dials ---- */
   const dials = $id('dials');
-  dials.innerHTML = `${bg(GR.lime)}<div class="in-c"><div class="row" style="justify-content:space-between"><div class="cap">Dials today</div><span class="chip">${data.dialsThisWeek} this week</span></div>
+  dials.innerHTML = `${bg()}<div class="in-c"><div class="row" style="justify-content:space-between"><div class="cap">Dials today</div><span class="chip">${data.dialsThisWeek} this week</span></div>
     <div style="position:absolute;left:22px;bottom:32px"><span class="big dv" style="font-size:52px">0</span></div>
-    <div class="muted" style="position:absolute;left:24px;bottom:14px;font-size:11.5px;color:rgba(0,0,0,.55)">Calls recorded in the CRM</div></div><div class="rim"></div>`;
+    <div class="muted" style="position:absolute;left:24px;bottom:14px;font-size:11.5px;color:var(--t-font-color-secondary)">Calls recorded in the CRM</div></div><div class="rim"></div>`;
   tween(dials.querySelector('.dv'), data.dialsToday, (v) =>
     String(Math.round(v)),
   );
@@ -429,7 +400,7 @@ function mount(root, data) {
     for (let i = 0; i < n; i++) {
       const x = 1 + (i * (W - 2)) / (n - 1),
         on = i / (n - 1) < overdue;
-      s += `<line x1="${x}" x2="${x}" y1="${i % 6 === 0 ? 2 : 8}" y2="20" stroke="${on ? '#FF6AA8' : 'rgba(255,255,255,.28)'}" stroke-width="1.6" stroke-linecap="round"/>`;
+      s += `<line x1="${x}" x2="${x}" y1="${i % 6 === 0 ? 2 : 8}" y2="20" stroke="${on ? 'var(--t-color-red9, #b54735)' : 'var(--t-border-color-medium)'}" stroke-width="1.6" stroke-linecap="round"/>`;
     }
     svg.innerHTML = s;
   });
@@ -437,7 +408,7 @@ function mount(root, data) {
   /* ---- KPI: next tasks ---- */
   const next = $id('next');
   next.innerHTML = `<div class="in-c" style="padding-bottom:14px"><div class="row" style="justify-content:space-between"><div class="cap">Next up</div><span class="muted">${data.meetingsThisWeek} meetings this week</span></div>
-    <div style="margin-top:10px">${data.upcomingTasks.length ? data.upcomingTasks.map((t, i) => `<div class="row" style="height:34px;${i ? 'border-top:1px solid rgba(255,255,255,.08)' : ''}"><i style="width:24px;height:24px;border-radius:8px;background:rgba(255,255,255,.1);display:grid;place-items:center;font:600 11px inherit;font-style:normal">${esc(t.title.charAt(0))}</i><span style="flex:1;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.title)}</span><span class="mono" style="font-size:11.5px;color:${t.isOverdue ? '#FF6AA8' : T3}">${esc(t.due)}</span></div>`).join('') : '<div class="muted" style="margin-top:14px">No tasks with a due date.</div>'}</div></div>`;
+    <div style="margin-top:10px">${data.upcomingTasks.length ? data.upcomingTasks.map((t, i) => `<div class="row" style="height:34px;${i ? 'border-top:1px solid var(--t-border-color-medium)' : ''}"><i style="width:24px;height:24px;border-radius:8px;background:var(--t-border-color-medium);display:grid;place-items:center;font:600 11px inherit;font-style:normal">${esc(t.title.charAt(0))}</i><span style="flex:1;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.title)}</span><span class="mono" style="font-size:11.5px;color:${t.isOverdue ? 'var(--t-color-red9, #b54735)' : T3}">${esc(t.due)}</span></div>`).join('') : '<div class="muted" style="margin-top:14px">No tasks with a due date.</div>'}</div></div>`;
 
   /* ---- KPI: won this month ---- */
   const won = $id('won');
@@ -449,8 +420,8 @@ function mount(root, data) {
   /* ---- Deal flow: deals created above, deals won below ---- */
   const flow = $id('flow');
   const A = data.activity;
-  flow.innerHTML = `${bg(GR.pink)}<div class="in-c"><div class="row" style="justify-content:space-between"><div><div class="ttl">Deal flow</div><div class="muted" style="margin-top:4px">Last 6 months</div></div>
-    <div class="legend" style="flex-direction:column;gap:4px;align-items:flex-end"><span><i style="background:#fff"></i>Created</span><span><i style="background:#FFD0E6"></i>Won</span></div></div>
+  flow.innerHTML = `${bg()}<div class="in-c"><div class="row" style="justify-content:space-between"><div><div class="ttl">Deal flow</div><div class="muted" style="margin-top:4px">Last 6 months</div></div>
+    <div class="legend" style="flex-direction:column;gap:4px;align-items:flex-end"><span><i style="background:var(--bs-accent)"></i>Created</span><span><i style="background:var(--t-accent-accent7)"></i>Won</span></div></div>
     <svg class="fls" style="position:absolute;left:0;bottom:12px" aria-hidden="true"></svg></div><div class="rim"></div>`;
   function drawFlow() {
     const svg = flow.querySelector('.fls'),
@@ -478,10 +449,10 @@ function mount(root, data) {
     });
     A.months.forEach(
       (m, i) =>
-        (s += `<text x="${X(i)}" y="${mid + 4}" text-anchor="middle" font-size="10.5" fill="rgba(255,255,255,.75)" font-family="ui-monospace,monospace">${m}</text>`),
+        (s += `<text x="${X(i)}" y="${mid + 4}" text-anchor="middle" font-size="10.5" fill="var(--t-font-color-secondary)" font-family="ui-monospace,monospace">${m}</text>`),
     );
-    s += `<path d="${path(A.created, -1)}" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="${path(A.won, 1)}" fill="none" stroke="#FFD0E6" stroke-width="2.4" stroke-linecap="round"/>`;
-    s += `<line class="hl" y1="10" y2="${Hh - 10}" stroke="#fff" stroke-opacity=".5" opacity="0"/><rect class="hit" x="${L - 10}" width="${R - L + 20}" height="${Hh}" fill="transparent"/>`;
+    s += `<path d="${path(A.created, -1)}" fill="none" stroke="var(--bs-accent)" stroke-width="2.4" stroke-linecap="round"/><path d="${path(A.won, 1)}" fill="none" stroke="var(--t-accent-accent7)" stroke-width="2.4" stroke-linecap="round"/>`;
+    s += `<line class="hl" y1="10" y2="${Hh - 10}" stroke="var(--bs-accent)" stroke-opacity=".5" opacity="0"/><rect class="hit" x="${L - 10}" width="${R - L + 20}" height="${Hh}" fill="transparent"/>`;
     svg.innerHTML = s;
     const hit = svg.querySelector('.hit'),
       hl = svg.querySelector('.hl'),
@@ -499,8 +470,8 @@ function mount(root, data) {
         r.top + (mid - lab - (A.created[i] / max) * amp) * z,
         A.months[i],
         [
-          ['Created', String(A.created[i]), '#fff'],
-          ['Won', String(A.won[i]), '#FFD0E6'],
+          ['Created', String(A.created[i]), 'var(--bs-accent)'],
+          ['Won', String(A.won[i]), 'var(--t-accent-accent7)'],
         ],
       );
     };
@@ -514,9 +485,9 @@ function mount(root, data) {
   /* ---- Top open deals ---- */
   const dl = $id('deals');
   const topTotal = data.topDeals.reduce((t, d) => t + d.amount, 0) || 1;
-  dl.innerHTML = `${bg(GR.copper)}<div class="in-c"><div class="row" style="justify-content:space-between"><div class="ttl">Top open deals</div><span class="muted">by value</span></div>
+  dl.innerHTML = `${bg()}<div class="in-c"><div class="row" style="justify-content:space-between"><div class="ttl">Top open deals</div><span class="muted">by value</span></div>
     <div class="row" style="margin-top:14px;align-items:flex-end;justify-content:space-between"><span class="big dlv">$0</span><span class="muted" style="padding-bottom:4px">top ${data.topDeals.length}</span></div>
-    <div style="display:flex;gap:3px;height:6px;margin-top:16px">${data.topDeals.map((d, i) => `<div style="flex:0 0 calc(${(d.amount / topTotal) * 100}% - 2px);border-radius:3px;background:rgba(255,255,255,${[0.95, 0.6, 0.32][i]})"></div>`).join('')}</div>
+    <div style="display:flex;gap:3px;height:6px;margin-top:16px">${data.topDeals.map((d, i) => `<div style="flex:0 0 calc(${(d.amount / topTotal) * 100}% - 2px);border-radius:3px;background:var(--bs-accent);opacity:${[0.95, 0.6, 0.32][i]}"></div>`).join('')}</div>
     <div style="position:absolute;left:24px;right:24px;bottom:14px">${
       data.topDeals.length
         ? data.topDeals
@@ -524,7 +495,7 @@ function mount(root, data) {
               (
                 d,
                 i,
-              ) => `<div class="row" style="height:50px;${i ? 'border-top:1px solid rgba(255,255,255,.1)' : ''}">
+              ) => `<div class="row" style="height:50px;${i ? 'border-top:1px solid var(--t-border-color-medium)' : ''}">
       <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(d.name)}</div><div class="mono muted" style="font-size:11px">${esc(d.company || '—')}</div></div>
       <div style="width:96px;text-align:right"><div class="mono" style="font-size:13px">${money(d.amount)}</div><div class="mono" style="font-size:11px;color:${WON}">${esc(d.stage)}</div></div></div>`,
             )
@@ -539,7 +510,7 @@ function mount(root, data) {
 
   /* ---- Deals by stage: capsule columns ---- */
   const st = $id('stages');
-  st.innerHTML = `${bg(GR.green)}<div class="in-c"><div class="ttl">Deals by stage group</div>
+  st.innerHTML = `${bg()}<div class="in-c"><div class="ttl">Deals by stage group</div>
     <div style="margin-top:14px"><span class="big sv" style="font-size:34px">0</span></div><div class="muted" style="margin-top:6px">deals in pipeline</div>
     <svg class="sts" style="position:absolute;left:18px;bottom:14px" aria-hidden="true"></svg></div><div class="rim"></div>`;
   tween(
@@ -564,8 +535,8 @@ function mount(root, data) {
       const X = 4 + i * (bw + gap),
         last = i === S.length - 1;
       s += `<rect x="${X}" y="${Y(max)}" width="${bw}" height="${Hh - pb - Y(max)}" rx="${bw / 2}" fill="rgba(0,0,0,.28)"/>
-        <rect class="sb" x="${X}" y="${Hh - pb}" width="${bw}" height="0" rx="${bw / 2}" fill="${last ? WON : '#fff'}" data-y="${Y(x.count)}" data-h="${Hh - pb - Y(x.count)}" style="transition:y .8s var(--ease) ${i * 70}ms,height .8s var(--ease) ${i * 70}ms"/>
-        <text x="${X + bw / 2}" y="${Hh - 3}" text-anchor="middle" font-size="10" fill="${last ? '#fff' : T3}" font-family="ui-monospace,monospace">${esc(x.label)}</text>
+        <rect class="sb" x="${X}" y="${Hh - pb}" width="${bw}" height="0" rx="${bw / 2}" fill="${last ? WON : 'var(--bs-accent)'}" data-y="${Y(x.count)}" data-h="${Hh - pb - Y(x.count)}" style="transition:y .8s var(--ease) ${i * 70}ms,height .8s var(--ease) ${i * 70}ms"/>
+        <text x="${X + bw / 2}" y="${Hh - 3}" text-anchor="middle" font-size="10" fill="${last ? 'var(--bs-accent)' : T3}" font-family="ui-monospace,monospace">${esc(x.label)}</text>
         <rect class="hit" x="${X - 4}" y="0" width="${bw + 8}" height="${Hh}" fill="transparent" data-i="${i}"/>`;
     });
     svg.innerHTML = s;
@@ -581,7 +552,7 @@ function mount(root, data) {
       h.onpointermove = (e) => {
         const x = S[+h.dataset.i];
         showTip(e.clientX, e.clientY, x.label, [
-          ['Deals', String(x.count), '#fff'],
+          ['Deals', String(x.count), 'var(--bs-accent)'],
           ['Value', money(x.amount)],
         ]);
       };

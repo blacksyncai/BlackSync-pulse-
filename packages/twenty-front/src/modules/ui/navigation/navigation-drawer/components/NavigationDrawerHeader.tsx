@@ -95,20 +95,20 @@ const StyledWorkspaceSearch = styled.button`
   width: calc(100% - 28px);
   margin: 10px 14px 14px;
   padding: 10px 11px;
-  border: 1px solid #ffffff15;
+  border: 1px solid var(--t-border-color-medium);
   border-radius: 10px;
-  background: #ffffff08;
-  color: #bed2cb;
+  background: var(--t-background-primary);
+  color: var(--t-font-color-secondary);
   font: inherit;
   font-size: 12px;
   cursor: pointer;
   text-align: left;
   &:hover {
-    background: #ffffff10;
-    color: #f0fff8;
+    background: var(--t-background-tertiary);
+    color: var(--t-font-color-primary);
   }
   &:focus-visible {
-    outline: 2px solid #66e3bf;
+    outline: 2px solid var(--t-accent-accent9);
     outline-offset: 2px;
   }
 `;

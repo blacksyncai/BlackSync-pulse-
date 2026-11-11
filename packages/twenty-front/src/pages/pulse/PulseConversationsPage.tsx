@@ -96,7 +96,7 @@ const StyledOverview = styled.div`
     border: 1px solid var(--bs-edge, ${themeCssVariables.border.color.medium});
     border-radius: 18px;
     background: var(--bs-glass, ${themeCssVariables.background.primary});
-    box-shadow: 0 8px 24px -20px #12392d66;
+    box-shadow: 0 8px 24px -20px #3d392922;
   }
   > div:first-child {
     background: ${themeCssVariables.accent.quaternary};
@@ -295,9 +295,9 @@ const StyledDialog = styled.dialog`
   overflow: auto;
   background: var(--bs-panel, ${themeCssVariables.background.primary});
   color: ${themeCssVariables.font.color.primary};
-  box-shadow: 0 32px 100px #081d2850;
+  box-shadow: 0 32px 100px #30251c30;
   &::backdrop {
-    background: #08191c80;
+    background: #27231e80;
     backdrop-filter: blur(7px);
   }
   header {

@@ -32,8 +32,8 @@ const StyledAnimatedContainer = styled.div<{
 }>`
   height: 100%;
   max-height: 100%;
-  background: linear-gradient(165deg, #102a2d, #101c26 48%, #101b23);
-  border-right: 1px solid #ffffff0c;
+  background: var(--bs-nav-background, var(--t-background-secondary));
+  border-right: 1px solid var(--t-border-color-light);
   overflow: hidden;
   position: relative;
   transition: ${({ isResizing }) =>
