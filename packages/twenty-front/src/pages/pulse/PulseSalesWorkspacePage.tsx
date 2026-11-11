@@ -260,10 +260,7 @@ export const PulseSalesWorkspacePage = () => {
       <StyledPage>
         <StyledContent>
           <StyledHero>
-            <small>
-              <img src="/images/integrations/blacksync-pulse-logo.svg" alt="" />
-              BLACKSYNC CLOUD
-            </small>
+            <small>BLACKSYNC CLOUD</small>
             <h1>{t`Make your next move.`}</h1>
             <p>{t`Your follow-ups, closing deals, and conversations. One place to get to work.`}</p>
             <StyledActions>

@@ -46,6 +46,13 @@ const StyledSecondaryLogoContainer = styled.div`
   width: ${themeCssVariables.spacing[7]};
 `;
 
+const StyledWordmark = styled.span`
+  color: ${themeCssVariables.font.color.primary};
+  font-size: 18px;
+  font-weight: 650;
+  white-space: nowrap;
+`;
+
 const StyledPrimaryLogo = styled.div`
   background-size: cover;
   height: 100%;
@@ -77,12 +84,13 @@ export const Logo = ({
   const isUsingDefaultLogo = !isDefined(primaryLogo);
 
   return (
-    <StyledContainer onClick={() => onClick?.()}>
+    <StyledContainer
+      style={isUsingDefaultLogo ? { width: 'auto' } : undefined}
+      onClick={() => onClick?.()}
+    >
       {isUsingDefaultLogo ? (
         <UndecoratedLink to={to} onClick={() => redirectToDefaultDomain()}>
-          <StyledPrimaryLogo
-            style={{ backgroundImage: `url(${primaryLogoUrl})` }}
-          />
+          <StyledWordmark>BlackSync</StyledWordmark>
         </UndecoratedLink>
       ) : (
         <StyledPrimaryLogo

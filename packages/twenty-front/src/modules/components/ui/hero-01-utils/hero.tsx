@@ -100,14 +100,6 @@ export default function HeroSection({
           <div className="bs-landscape-shade" />
           <span>BLACKSYNC CLOUD</span>
         </div>
-        <div className="bs-orbit-mark">
-          <img
-            src="/images/integrations/blacksync-pulse-logo.svg"
-            width="68"
-            height="68"
-            alt="BlackSync"
-          />
-        </div>
         <div className="bs-call-card">
           <div className="bs-card-top">
             <span className="bs-icon-tile">

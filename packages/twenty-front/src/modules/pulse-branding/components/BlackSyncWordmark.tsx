@@ -8,17 +8,6 @@ const StyledBrand = styled(Link)`
   color: #effbf5;
   text-decoration: none;
   padding: 22px 16px 16px;
-  svg {
-    width: 30px;
-    height: 30px;
-    flex-shrink: 0;
-    color: #66e3bf;
-    background: #66e3bf12;
-    padding: 5px;
-    box-sizing: border-box;
-    border: 1px solid #66e3bf30;
-    border-radius: 9px;
-  }
   div {
     display: flex;
     flex-direction: column;
@@ -46,16 +35,6 @@ export const BlackSyncWordmark = () => {
   const { t } = useLingui();
   return (
     <StyledBrand to="/dashboard" aria-label={t`BlackSync Cloud dashboard`}>
-      <svg viewBox="0 0 96 96" aria-hidden="true">
-        <path
-          d="M8 52H29L39 30L50 73L61 20L70 52H88"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
       <div>
         <strong>BLACKSYNC</strong>
         <span>CLOUD WORKSPACE</span>

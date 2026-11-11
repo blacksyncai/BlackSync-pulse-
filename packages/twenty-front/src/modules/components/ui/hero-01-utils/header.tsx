@@ -25,12 +25,6 @@ export type NavigationSection = {
 };
 export const Brand = () => (
   <a href="/landing" className="bs-brand" aria-label="BlackSync Cloud home">
-    <img
-      src="/images/integrations/blacksync-pulse-logo.svg"
-      width="36"
-      height="36"
-      alt=""
-    />
     <span>
       BlackSync<span className="bs-brand-cloud">Cloud</span>
     </span>

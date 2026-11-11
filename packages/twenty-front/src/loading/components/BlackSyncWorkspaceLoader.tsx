@@ -54,7 +54,6 @@ export const BlackSyncWorkspaceLoader = () => {
   }, []);
   return (
     <StyledLoader>
-      <img src="/images/integrations/blacksync-pulse-logo.svg" alt="" />
       <strong>BlackSync Cloud</strong>
       <p role="status">
         {isTakingLonger
