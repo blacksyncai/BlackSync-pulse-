@@ -1,6 +1,5 @@
 import { NavigationButton } from '@/ui/input/components/NavigationButton';
 
-import { SettingsDiscoveryHeroCard } from '@/settings/components/SettingsDiscoveryHeroCard';
 import { SettingsPageContainer } from '@/settings/components/SettingsPageContainer';
 import { SettingsPageLayout } from '@/settings/components/layout/SettingsPageLayout';
 import { SettingsTabBar } from '@/settings/components/layout/SettingsTabBar';
@@ -9,14 +8,13 @@ import { SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
 
 import { t } from '@lingui/core/macro';
-import { Section } from 'twenty-ui/components';
+
 import {
   IconBook,
   IconChartBar,
   IconCpu,
   IconLayoutDashboard,
   IconPlus,
-  IconSparkle2,
   IconTool,
 } from 'twenty-ui/icon';
 import { Button } from 'twenty-ui/primitives/input';
@@ -28,11 +26,6 @@ import { SettingsAiOverviewTab } from '~/pages/settings/ai/components/SettingsAi
 import { SettingsAiUsageTab } from '~/pages/settings/ai/components/SettingsAiUsageTab';
 import { SETTINGS_AI_TABS } from '~/pages/settings/ai/constants/SettingsAiTabs';
 import { useCreateTool } from '~/pages/settings/ai/hooks/useCreateTool';
-
-const AI_HERO_LIGHT = '/images/ai/ai-tools-cover-light.png';
-const AI_HERO_DARK = '/images/ai/ai-tools-cover-dark.png';
-
-const SETTINGS_AI_HERO_INSTANCE_ID_PREFIX = 'settings-ai-hero';
 
 export const SettingsAI = () => {
   const { handleCreateTool, isCreatingTool } = useCreateTool();
@@ -115,25 +108,6 @@ export const SettingsAI = () => {
       ]}
     >
       <SettingsPageContainer>
-        {!isModelsTab && (
-          <Section.Root>
-            <SettingsDiscoveryHeroCard
-              lightSrc={AI_HERO_LIGHT}
-              darkSrc={AI_HERO_DARK}
-              instanceIdPrefix={SETTINGS_AI_HERO_INSTANCE_ID_PREFIX}
-              tabs={[
-                {
-                  id: 'ai_walkthrough',
-                  title: t`Walkthrough`,
-                  Icon: IconSparkle2,
-                  vimeoId: '1217964358',
-                  hasSound: true,
-                },
-              ]}
-              playButtonAriaLabel={t`Watch AI demo`}
-            />
-          </Section.Root>
-        )}
         {isOverviewTab && (
           <>
             <SettingsAiOverviewTab />

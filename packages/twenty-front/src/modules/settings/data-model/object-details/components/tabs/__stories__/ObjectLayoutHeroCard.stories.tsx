@@ -1,7 +1,5 @@
-import { SettingsDiscoveryHeroCard } from '@/settings/components/SettingsDiscoveryHeroCard';
+import { SettingsActionCard } from '@/settings/components/SettingsActionCard';
 import { SettingsDiscoveryHeroCardFooter } from '@/settings/components/SettingsDiscoveryHeroCardFooter';
-import recordPageLayoutCoverDark from '@/settings/data-model/object-details/assets/record-page-layout-cover-dark.png';
-import recordPageLayoutCoverLight from '@/settings/data-model/object-details/assets/record-page-layout-cover-light.png';
 import { styled } from '@linaria/react';
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 import { expect, within } from 'storybook/test';
@@ -27,30 +25,23 @@ type Story = StoryObj;
 const renderCard = (colorScheme: 'light' | 'dark') => (
   <ThemeProvider colorScheme={colorScheme} applyToRoot={false}>
     <StyledCanvas>
-      <SettingsDiscoveryHeroCard
-        lightSrc={recordPageLayoutCoverLight}
-        darkSrc={recordPageLayoutCoverDark}
-        coverHeight={153}
-        instanceIdPrefix={`object-layout-${colorScheme}`}
-        tabs={[]}
-        footer={
-          <SettingsDiscoveryHeroCardFooter
-            Icon={IconAddressBook}
-            title="Customize record page"
-            description="Customize how your record page looks."
-            action={
-              <Button
-                size="sm"
-                startIcon={<IconPencil />}
-                variant="solid"
-                color="accent"
-              >
-                {'Customize'}
-              </Button>
-            }
-          />
-        }
-      />
+      <SettingsActionCard>
+        <SettingsDiscoveryHeroCardFooter
+          Icon={IconAddressBook}
+          title="Customize record page"
+          description="Customize how your record page looks."
+          action={
+            <Button
+              size="sm"
+              startIcon={<IconPencil />}
+              variant="solid"
+              color="accent"
+            >
+              {'Customize'}
+            </Button>
+          }
+        />
+      </SettingsActionCard>
     </StyledCanvas>
   </ThemeProvider>
 );

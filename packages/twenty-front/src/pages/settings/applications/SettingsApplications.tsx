@@ -1,4 +1,3 @@
-import { SettingsDiscoveryHeroCard } from '@/settings/components/SettingsDiscoveryHeroCard';
 import { SettingsPageContainer } from '@/settings/components/SettingsPageContainer';
 import { SettingsPageLayout } from '@/settings/components/layout/SettingsPageLayout';
 import { SettingsTabBar } from '@/settings/components/layout/SettingsTabBar';
@@ -7,23 +6,15 @@ import { useHasPermissionFlag } from '@/settings/roles/hooks/useHasPermissionFla
 import { useLingui } from '@lingui/react/macro';
 import { SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
-import { Section } from 'twenty-ui/components';
-import {
-  IconApps,
-  IconCode,
-  IconShoppingBag,
-  IconSparkle2,
-} from 'twenty-ui/icon';
+
+import { IconApps, IconCode, IconShoppingBag } from 'twenty-ui/icon';
 import { PermissionFlagType } from '~/generated-metadata/graphql';
-import coverDark from '~/pages/settings/applications/assets/cover-dark.png';
-import coverLight from '~/pages/settings/applications/assets/cover-light.png';
 import { SettingsApplicationsClaimErrorTabEffect } from '~/pages/settings/applications/components/SettingsApplicationsClaimErrorTabEffect';
 import { SettingsApplicationsAvailableTab } from '~/pages/settings/applications/tabs/SettingsApplicationsAvailableTab';
 import { SettingsApplicationsDeveloperTab } from '~/pages/settings/applications/tabs/SettingsApplicationsDeveloperTab';
 import { SettingsApplicationsInstalledTab } from '~/pages/settings/applications/tabs/SettingsApplicationsInstalledTab';
 
 const APPLICATIONS_TAB_LIST_ID = 'applications-tab-list';
-const APPLICATIONS_HERO_INSTANCE_ID_PREFIX = 'settings-applications-hero';
 const DEVELOPER_TAB_ID = 'developer';
 
 export const SettingsApplications = () => {
@@ -87,26 +78,7 @@ export const SettingsApplications = () => {
         developerTabId={DEVELOPER_TAB_ID}
         hasDeveloperAccess={hasDeveloperAccess}
       />
-      <SettingsPageContainer>
-        <Section.Root>
-          <SettingsDiscoveryHeroCard
-            lightSrc={coverLight}
-            darkSrc={coverDark}
-            instanceIdPrefix={APPLICATIONS_HERO_INSTANCE_ID_PREFIX}
-            tabs={[
-              {
-                id: 'app_marketplace_walkthrough',
-                title: t`Walkthrough`,
-                Icon: IconSparkle2,
-                vimeoId: '1217964666',
-                hasSound: true,
-              },
-            ]}
-            playButtonAriaLabel={t`Watch apps demo`}
-          />
-        </Section.Root>
-        {renderActiveTabContent()}
-      </SettingsPageContainer>
+      <SettingsPageContainer>{renderActiveTabContent()}</SettingsPageContainer>
     </SettingsPageLayout>
   );
 };

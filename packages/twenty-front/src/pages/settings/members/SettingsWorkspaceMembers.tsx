@@ -1,23 +1,15 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
-import { Section } from 'twenty-ui/components';
-import {
-  IconLock,
-  IconSparkle2,
-  IconUserPlus,
-  IconUsers,
-} from 'twenty-ui/icon';
 
-import { SettingsDiscoveryHeroCard } from '@/settings/components/SettingsDiscoveryHeroCard';
+import { IconLock, IconUserPlus, IconUsers } from 'twenty-ui/icon';
+
 import { SettingsPageContainer } from '@/settings/components/SettingsPageContainer';
 import { SettingsPageLayout } from '@/settings/components/layout/SettingsPageLayout';
 import { SettingsTabBar } from '@/settings/components/layout/SettingsTabBar';
 import { useSettingsActiveTabId } from '@/settings/components/layout/useSettingsActiveTabId';
 import { useHasPermissionFlag } from '@/settings/roles/hooks/useHasPermissionFlag';
 import { PermissionFlagType } from '~/generated-metadata/graphql';
-import coverDark from '~/pages/settings/members/assets/cover-dark.png';
-import coverLight from '~/pages/settings/members/assets/cover-light.png';
 import { SettingsWorkspaceMembersInviteTab } from '~/pages/settings/members/tabs/SettingsWorkspaceMembersInviteTab';
 import { SettingsWorkspaceMembersRolesTab } from '~/pages/settings/members/tabs/SettingsWorkspaceMembersRolesTab';
 import { SettingsWorkspaceMembersTeamTab } from '~/pages/settings/members/tabs/SettingsWorkspaceMembersTeamTab';
@@ -27,8 +19,6 @@ const MEMBERS_TAB_LIST_ID = 'members-tab-list';
 const MEMBERS_TAB_TEAM_ID = 'team';
 const MEMBERS_TAB_INVITE_ID = 'invite';
 const MEMBERS_TAB_ROLES_ID = 'roles';
-
-const SETTINGS_MEMBERS_HERO_INSTANCE_ID_PREFIX = 'settings-members-hero';
 
 export const SettingsWorkspaceMembers = () => {
   const { t } = useLingui();
@@ -81,26 +71,7 @@ export const SettingsWorkspaceMembers = () => {
         { children: <Trans>Members</Trans> },
       ]}
     >
-      <SettingsPageContainer>
-        <Section.Root>
-          <SettingsDiscoveryHeroCard
-            lightSrc={coverLight}
-            darkSrc={coverDark}
-            instanceIdPrefix={SETTINGS_MEMBERS_HERO_INSTANCE_ID_PREFIX}
-            tabs={[
-              {
-                id: 'members_walkthrough',
-                title: t`Walkthrough`,
-                Icon: IconSparkle2,
-                vimeoId: '1217964364',
-                hasSound: true,
-              },
-            ]}
-            playButtonAriaLabel={t`Watch members demo`}
-          />
-        </Section.Root>
-        {renderActiveTabContent()}
-      </SettingsPageContainer>
+      <SettingsPageContainer>{renderActiveTabContent()}</SettingsPageContainer>
     </SettingsPageLayout>
   );
 };

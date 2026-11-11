@@ -1,3 +1,4 @@
+import { SettingsActionCard } from '@/settings/components/SettingsActionCard';
 import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
 import { AppPath } from 'twenty-shared/types';
@@ -12,10 +13,7 @@ import { type EnrichedObjectMetadataItem } from '@/object-metadata/types/Enriche
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
 import { useResetPageLayoutToDefault } from '@/page-layout/hooks/useResetPageLayoutToDefault';
 import { recordPageLayoutByObjectMetadataIdFamilySelector } from '@/page-layout/states/selectors/recordPageLayoutByObjectMetadataIdFamilySelector';
-import { SettingsDiscoveryHeroCard } from '@/settings/components/SettingsDiscoveryHeroCard';
 import { SettingsDiscoveryHeroCardFooter } from '@/settings/components/SettingsDiscoveryHeroCardFooter';
-import recordPageLayoutCoverDark from '@/settings/data-model/object-details/assets/record-page-layout-cover-dark.png';
-import recordPageLayoutCoverLight from '@/settings/data-model/object-details/assets/record-page-layout-cover-light.png';
 import { ObjectOpenRecordInPicker } from '@/settings/data-model/object-details/components/tabs/ObjectOpenRecordInPicker';
 import { useHasPermissionFlag } from '@/settings/roles/hooks/useHasPermissionFlag';
 import { ConfirmationDialog } from '@/ui/layout/dialog/components/ConfirmationDialog';
@@ -32,7 +30,6 @@ const StyledContentContainer = styled.div`
 `;
 
 const RESET_PAGE_LAYOUT_MODAL_ID = 'reset-page-layout-to-default-modal';
-const RECORD_PAGE_LAYOUT_HERO_INSTANCE_ID_PREFIX = 'record-page-layout-hero';
 
 type ObjectLayoutProps = {
   objectMetadataItem: EnrichedObjectMetadataItem;
@@ -101,30 +98,23 @@ export const ObjectLayout = ({ objectMetadataItem }: ObjectLayoutProps) => {
           title={t`Record page`}
           description={t`Customize the workspace record page`}
         />
-        <SettingsDiscoveryHeroCard
-          lightSrc={recordPageLayoutCoverLight}
-          darkSrc={recordPageLayoutCoverDark}
-          coverHeight={153}
-          instanceIdPrefix={RECORD_PAGE_LAYOUT_HERO_INSTANCE_ID_PREFIX}
-          tabs={[]}
-          footer={
-            <SettingsDiscoveryHeroCardFooter
-              Icon={IconAddressBook}
-              title={t`Customize record page`}
-              description={t`Customize how your record page looks.`}
-              action={
-                <Button
-                  size="sm"
-                  startIcon={<IconPencil />}
-                  onClick={handleCustomizeRecordPage}
-                  disabled={!hasLayoutsPermission || !isDefined(firstRecord)}
-                  variant="solid"
-                  color="accent"
-                >{t`Customize`}</Button>
-              }
-            />
-          }
-        />
+        <SettingsActionCard>
+          <SettingsDiscoveryHeroCardFooter
+            Icon={IconAddressBook}
+            title={t`Customize record page`}
+            description={t`Customize how your record page looks.`}
+            action={
+              <Button
+                size="sm"
+                startIcon={<IconPencil />}
+                onClick={handleCustomizeRecordPage}
+                disabled={!hasLayoutsPermission || !isDefined(firstRecord)}
+                variant="solid"
+                color="accent"
+              >{t`Customize`}</Button>
+            }
+          />
+        </SettingsActionCard>
       </Section.Root>
       <Section.Root>
         <Section.Header

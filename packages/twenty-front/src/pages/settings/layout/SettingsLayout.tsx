@@ -1,6 +1,6 @@
+import { SettingsActionCard } from '@/settings/components/SettingsActionCard';
 import { useEnterLayoutCustomizationMode } from '@/layout-customization/hooks/useEnterLayoutCustomizationMode';
 import { SettingsPageLayout } from '@/settings/components/layout/SettingsPageLayout';
-import { SettingsDiscoveryHeroCard } from '@/settings/components/SettingsDiscoveryHeroCard';
 import { SettingsDiscoveryHeroCardFooter } from '@/settings/components/SettingsDiscoveryHeroCardFooter';
 import { SettingsPageContainer } from '@/settings/components/SettingsPageContainer';
 import { SettingsLayoutItemsStats } from '@/settings/layout/components/SettingsLayoutItemsStats';
@@ -9,12 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { AppPath, SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
 import { Section } from 'twenty-ui/components';
-import { IconLayoutDashboard, IconPencil, IconSparkle2 } from 'twenty-ui/icon';
+import { IconLayoutDashboard, IconPencil } from 'twenty-ui/icon';
 import { Button } from 'twenty-ui/primitives/input';
-import coverDark from '~/pages/settings/layout/assets/cover-dark.png';
-import coverLight from '~/pages/settings/layout/assets/cover-light.png';
-
-const SETTINGS_LAYOUT_HERO_INSTANCE_ID_PREFIX = 'settings-layout-hero';
 
 export const SettingsLayout = () => {
   const { t } = useLingui();
@@ -26,16 +22,6 @@ export const SettingsLayout = () => {
       navigate(AppPath.Index);
     }
   };
-
-  const heroTabs = [
-    {
-      id: 'layout_walkthrough',
-      title: t`Walkthrough`,
-      Icon: IconSparkle2,
-      vimeoId: '1217964357',
-      hasSound: true,
-    },
-  ];
 
   return (
     <SettingsPageLayout
@@ -50,29 +36,22 @@ export const SettingsLayout = () => {
     >
       <SettingsPageContainer>
         <Section.Root>
-          <SettingsDiscoveryHeroCard
-            lightSrc={coverLight}
-            darkSrc={coverDark}
-            instanceIdPrefix={SETTINGS_LAYOUT_HERO_INSTANCE_ID_PREFIX}
-            tabs={heroTabs}
-            playButtonAriaLabel={t`Watch customization demo`}
-            footer={
-              <SettingsDiscoveryHeroCardFooter
-                Icon={IconLayoutDashboard}
-                title={t`Customize layout`}
-                description={t`Customize how your workspace looks.`}
-                action={
-                  <Button
-                    size="sm"
-                    startIcon={<IconPencil />}
-                    onClick={handleCustomize}
-                    variant="solid"
-                    color="accent"
-                  >{t`Customize`}</Button>
-                }
-              />
-            }
-          />
+          <SettingsActionCard>
+            <SettingsDiscoveryHeroCardFooter
+              Icon={IconLayoutDashboard}
+              title={t`Customize layout`}
+              description={t`Customize how your workspace looks.`}
+              action={
+                <Button
+                  size="sm"
+                  startIcon={<IconPencil />}
+                  onClick={handleCustomize}
+                  variant="solid"
+                  color="accent"
+                >{t`Customize`}</Button>
+              }
+            />
+          </SettingsActionCard>
         </Section.Root>
         <Section.Root>
           <Section.Header

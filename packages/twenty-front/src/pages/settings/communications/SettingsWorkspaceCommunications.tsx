@@ -2,7 +2,6 @@ import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
 
 import { SettingsPageContainer } from '@/settings/components/SettingsPageContainer';
-import { SettingsDiscoveryHeroCard } from '@/settings/components/SettingsDiscoveryHeroCard';
 import { ClickTrackingSwitch } from '@/settings/workspace/components/ClickTrackingSwitch';
 import { SettingsWorkspaceBlocklistSection } from '@/settings/workspace/components/SettingsWorkspaceBlocklistSection';
 import { SettingsWorkspaceEmailGroupSection } from '@/settings/workspace/components/SettingsWorkspaceEmailGroupSection';
@@ -19,8 +18,6 @@ import {
   IconMailX,
   IconPhone,
 } from 'twenty-ui/icon';
-import coverDark from '~/pages/settings/communications/assets/cover-dark.png';
-import coverLight from '~/pages/settings/communications/assets/cover-light.png';
 import { SettingsCard } from '@/settings/components/SettingsCard';
 import { useTheme, themeCssVariables } from 'twenty-ui/theme';
 import { useNavigateSettings } from '~/hooks/useNavigateSettings';
@@ -81,14 +78,6 @@ export const SettingsWorkspaceCommunications = () => {
       ]}
     >
       <SettingsPageContainer>
-        <Section.Root>
-          <SettingsDiscoveryHeroCard
-            lightSrc={coverLight}
-            darkSrc={coverDark}
-            instanceIdPrefix="settings-communications-hero"
-            tabs={[]}
-          />
-        </Section.Root>
         <SettingsWorkspaceEmailGroupSection />
         {isMessageCampaignFeatureEnabled && (
           <Section.Root>
