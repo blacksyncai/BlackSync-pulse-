@@ -25,15 +25,15 @@ import {
   IconPhone,
   IconTargetArrow,
 } from 'twenty-ui/icon';
-import { themeCssVariables } from 'twenty-ui/theme';
 
 const StyledSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${themeCssVariables.betweenSiblingsGap};
+  gap: 16px;
 `;
 
 const StyledGroup = styled.div`
+  gap: 3px;
   display: flex;
   flex-direction: column;
 `;
@@ -55,7 +55,7 @@ export const PulseNavigationSection = () => {
   return (
     <StyledSection>
       <StyledGroup>
-        <NavigationDrawerSectionTitle label={t`Sell`} />
+        <NavigationDrawerSectionTitle label={t`Workspace`} />
         <NavigationDrawerItem
           label={t`Dashboard`}
           to={AppPath.PulseDashboard}

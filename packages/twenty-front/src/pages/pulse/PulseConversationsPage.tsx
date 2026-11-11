@@ -15,113 +15,214 @@ import { PulseCallCardBody } from '@/pulse-record/components/PulseCallCardBody';
 import { useOpenRecordInSidePanel } from '@/side-panel/hooks/useOpenRecordInSidePanel';
 
 const StyledPage = styled.div`
-  padding: 24px;
+  padding: 28px 32px;
   flex: 1;
   min-height: 0;
   overflow: auto;
   color: ${themeCssVariables.font.color.primary};
   h1 {
-    margin: 0;
-    font-size: 26px;
+    margin: 8px 0 12px;
+    font-size: clamp(26px, 3vw, 36px);
+    font-weight: 700;
+    letter-spacing: -0.055em;
+    line-height: 1.15;
   }
   p {
     color: ${themeCssVariables.font.color.secondary};
-    line-height: 1.5;
+    line-height: 1.6;
+    font-size: 13px;
   }
   button,
   input,
   select {
     font: inherit;
     color: inherit;
-    border: 1px solid ${themeCssVariables.border.color.strong};
-    border-radius: 8px;
-    background: ${themeCssVariables.background.primary};
-    padding: 9px 12px;
+    border: 1px solid ${themeCssVariables.border.color.medium};
+    border-radius: 10px;
+    background: var(--bs-panel, ${themeCssVariables.background.primary});
+    padding: 10px 13px;
   }
   button {
     cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
   }
   button:disabled {
     opacity: 0.5;
     cursor: wait;
+  }
+  button:hover:not(:disabled) {
+    border-color: ${themeCssVariables.accent.accent7};
   }
   button:focus-visible,
   input:focus-visible,
   select:focus-visible,
   tr:focus-visible {
     outline: 2px solid ${themeCssVariables.accent.accent9};
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
   [role='alert'] {
     color: ${themeCssVariables.font.color.danger};
   }
   @media (max-width: 760px) {
-    padding: 16px;
+    padding: 20px 16px;
+  }
+`;
+const StyledEyebrow = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: ${themeCssVariables.accent.accent11};
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+`;
+const StyledOverview = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 24px 0;
+  > div {
+    position: relative;
+    padding: 20px 22px;
+    border: 1px solid var(--bs-edge, ${themeCssVariables.border.color.medium});
+    border-radius: 18px;
+    background: var(--bs-glass, ${themeCssVariables.background.primary});
+    box-shadow: 0 8px 24px -20px #12392d66;
+  }
+  > div:first-child {
+    background: ${themeCssVariables.accent.quaternary};
+    border-color: ${themeCssVariables.accent.accent5};
+  }
+  span {
+    display: block;
+    color: ${themeCssVariables.font.color.secondary};
+    font-size: 11px;
+    font-weight: 500;
+  }
+  strong {
+    display: block;
+    margin-top: 12px;
+    font-size: 28px;
+    letter-spacing: -0.05em;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 600px) {
+    gap: 8px;
+    > div {
+      padding: 15px 12px;
+    }
+    strong {
+      font-size: 24px;
+    }
+    span {
+      font-size: 10px;
+    }
   }
 `;
 const StyledFilters = styled.div`
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
   align-items: center;
-  margin: 20px 0 12px;
+  padding: 12px;
+  margin: 16px 0 12px;
+  border: 1px solid ${themeCssVariables.border.color.light};
+  border-radius: 16px;
+  background: var(--bs-glass, ${themeCssVariables.background.secondary});
   input[type='search'] {
     flex: 1;
     min-width: min(260px, 100%);
+    font-size: 12px;
+    border-color: transparent;
+    background: transparent;
   }
   label {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
+    font-size: 12px;
+    padding: 0 6px;
   }
 `;
 const StyledTableWrap = styled.div`
   overflow: auto;
-  border: 1px solid ${themeCssVariables.border.color.medium};
-  border-radius: 12px;
+  border: 1px solid ${themeCssVariables.border.color.light};
+  border-radius: 18px;
+  background: var(--bs-panel, ${themeCssVariables.background.primary});
   table {
     border-collapse: collapse;
     width: 100%;
-    min-width: 1000px;
+    min-width: 980px;
     font-size: 13px;
   }
   th {
     text-align: left;
     background: ${themeCssVariables.background.secondary};
-    font-size: 12px;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: ${themeCssVariables.font.color.secondary};
     font-weight: 600;
-    padding: 14px 16px;
+    padding: 16px 18px;
   }
   td {
-    padding: 16px;
-    border-top: 1px solid ${themeCssVariables.border.color.medium};
+    padding: 20px 18px;
+    border-top: 1px solid ${themeCssVariables.border.color.light};
     vertical-align: middle;
     max-width: 240px;
     overflow-wrap: anywhere;
   }
   strong {
     display: block;
-    font-size: 14px;
-    margin-bottom: 5px;
+    font-size: 13px;
+    font-weight: 650;
+    margin-bottom: 6px;
+    letter-spacing: -0.015em;
   }
   small {
     display: block;
     color: ${themeCssVariables.font.color.secondary};
-    line-height: 1.5;
+    line-height: 1.6;
+    font-size: 11px;
   }
   tr:hover td {
-    background: ${themeCssVariables.background.secondary};
+    background: ${themeCssVariables.accent.tertiary};
   }
   audio {
-    width: 230px;
-    height: 34px;
+    width: 220px;
+    height: 32px;
     display: block;
+    margin-bottom: 7px;
+    accent-color: ${themeCssVariables.accent.accent9};
+  }
+  td:last-child button {
+    background: ${themeCssVariables.accent.quaternary};
+    color: ${themeCssVariables.accent.accent11};
+    border-color: transparent;
+  }
+  .bs-direction {
+    display: inline-flex;
+    border-radius: 6px;
+    padding: 4px 7px;
     margin-bottom: 5px;
+    font-size: 10px;
+    font-weight: 650;
+    background: ${themeCssVariables.accent.quaternary};
+    color: ${themeCssVariables.accent.accent11};
   }
   @media (max-width: 760px) {
     border: none;
+    background: transparent;
     overflow: visible;
     table,
     tbody,
@@ -136,10 +237,11 @@ const StyledTableWrap = styled.div`
       display: none;
     }
     tr {
-      border: 1px solid ${themeCssVariables.border.color.medium};
-      border-radius: 12px;
+      background: var(--bs-panel, ${themeCssVariables.background.primary});
+      border: 1px solid ${themeCssVariables.border.color.light};
+      border-radius: 18px;
       padding: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
     td {
       border: 0;
@@ -148,9 +250,11 @@ const StyledTableWrap = styled.div`
     td::before {
       content: attr(data-label);
       display: block;
-      font-size: 11px;
-      color: ${themeCssVariables.font.color.secondary};
-      margin-bottom: 5px;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: ${themeCssVariables.font.color.tertiary};
+      margin-bottom: 7px;
     }
     audio {
       width: 100%;
@@ -160,48 +264,71 @@ const StyledTableWrap = styled.div`
     }
   }
 `;
+const StyledContact = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  > span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    border-radius: 12px;
+    color: ${themeCssVariables.accent.accent11};
+    background: ${themeCssVariables.accent.quaternary};
+    font-size: 13px;
+    font-weight: 700;
+  }
+  > div {
+    min-width: 0;
+  }
+`;
 const StyledDialog = styled.dialog`
   width: min(1080px, calc(100vw - 32px));
   max-width: calc(100vw - 32px);
   max-height: calc(100dvh - 32px);
   padding: 0;
-  border: 1px solid ${themeCssVariables.border.color.medium};
-  border-radius: 16px;
+  border: 1px solid var(--bs-edge, ${themeCssVariables.border.color.medium});
+  border-radius: 24px;
   overflow: auto;
-  background: ${themeCssVariables.background.primary};
+  background: var(--bs-panel, ${themeCssVariables.background.primary});
   color: ${themeCssVariables.font.color.primary};
-  box-shadow: 0 24px 100px #0005;
+  box-shadow: 0 32px 100px #081d2850;
   &::backdrop {
-    background: #08091299;
-    backdrop-filter: blur(4px);
+    background: #08191c80;
+    backdrop-filter: blur(7px);
   }
   header {
     position: sticky;
     top: 0;
     z-index: 1;
     background: ${themeCssVariables.background.primary};
-    border-bottom: 1px solid ${themeCssVariables.border.color.medium};
-    padding: 20px 24px;
+    border-bottom: 1px solid ${themeCssVariables.border.color.light};
+    padding: 26px 28px;
     display: flex;
     align-items: flex-start;
     gap: 16px;
     justify-content: space-between;
   }
   h2 {
-    font-size: 22px;
-    margin: 0 0 6px;
+    font-size: 24px;
+    letter-spacing: -0.04em;
+    margin: 0 0 8px;
   }
   p {
     margin: 6px 0;
     line-height: 1.5;
     color: ${themeCssVariables.font.color.secondary};
-    font-size: 13px;
+    font-size: 12px;
   }
   button {
     font: inherit;
-    border: 1px solid ${themeCssVariables.border.color.strong};
-    padding: 8px 12px;
-    border-radius: 8px;
+    font-size: 12px;
+    border: 1px solid ${themeCssVariables.border.color.medium};
+    padding: 9px 13px;
+    border-radius: 10px;
     background: ${themeCssVariables.background.secondary};
     color: inherit;
     cursor: pointer;
@@ -212,7 +339,7 @@ const StyledDialog = styled.dialog`
   }
 `;
 const StyledDetailBody = styled.div`
-  padding: 24px;
+  padding: 28px;
   min-width: 0;
 `;
 const ConversationDetail = ({
@@ -332,8 +459,31 @@ export const PulseConversationsPage = () => {
       header={<PageHeader title={t`Conversations`} Icon={IconMessageCircle} />}
     >
       <StyledPage>
-        <h1>{t`Every call, easy to find.`}</h1>
+        <StyledEyebrow>{t`BlackSync workspace / Client relationships`}</StyledEyebrow>
+        <h1>{t`Conversations`}</h1>
         <p>{t`See who was called, the client and location, and listen to available recordings. Double-click a row or choose Open for the transcript, summary, and full call details.`}</p>
+        <StyledOverview aria-label={t`Loaded call overview`}>
+          <div>
+            <span>{t`Loaded calls`}</span>
+            <strong>{notes.loading ? '—' : conversations.length}</strong>
+          </div>
+          <div>
+            <span>{t`Recordings ready`}</span>
+            <strong>
+              {attachments.loading
+                ? '—'
+                : conversations.filter((call) => call.recordingUrl).length}
+            </strong>
+          </div>
+          <div>
+            <span>{t`Transcripts ready`}</span>
+            <strong>
+              {notes.loading
+                ? '—'
+                : conversations.filter((call) => call.hasTranscript).length}
+            </strong>
+          </div>
+        </StyledOverview>
         <StyledFilters>
           <input
             type="search"
@@ -417,14 +567,24 @@ export const PulseConversationsPage = () => {
                     }}
                   >
                     <td data-label={t`Contact / number`}>
-                      <strong>
-                        {call.contactName || call.phone || t`Unknown contact`}
-                      </strong>
-                      <small>
-                        {call.contactName
-                          ? call.phone || t`Number not recorded`
-                          : call.title}
-                      </small>
+                      <StyledContact>
+                        <span aria-hidden="true">
+                          {call.contactName?.trim().charAt(0).toUpperCase() ||
+                            '#'}
+                        </span>
+                        <div>
+                          <strong>
+                            {call.contactName ||
+                              call.phone ||
+                              t`Unknown contact`}
+                          </strong>
+                          <small>
+                            {call.contactName
+                              ? call.phone || t`Number not recorded`
+                              : call.title}
+                          </small>
+                        </div>
+                      </StyledContact>
                     </td>
                     <td data-label={t`Client / location`}>
                       <strong>

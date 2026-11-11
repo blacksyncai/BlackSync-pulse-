@@ -7,19 +7,12 @@ import { LogConsole } from '@/log-console/components/LogConsole';
 import { SidePanelForDesktop } from '@/side-panel/components/SidePanelForDesktop';
 import { SidePanelPathUrlSyncEffect } from '@/side-panel/routing/components/SidePanelPathUrlSyncEffect';
 import { useIsMobile } from 'twenty-ui/utilities';
-import { themeCssVariables } from 'twenty-ui/theme';
 import { styled } from '@linaria/react';
 import { Outlet } from 'react-router-dom';
 
 const StyledRow = styled.div`
   position: relative;
-  background:
-    radial-gradient(
-      ellipse at top left,
-      ${themeCssVariables.accent.quaternary},
-      transparent 70%
-    ),
-    ${themeCssVariables.background.secondary};
+  background: transparent;
   display: flex;
   flex: 1;
   flex-direction: row;

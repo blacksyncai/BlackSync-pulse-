@@ -77,10 +77,10 @@ const StyledItem = styled.button<StyledItemProps>`
     isDragging ? 'grabbing' : isSoon ? 'default' : 'pointer'};
   display: flex;
   font-family: ${themeCssVariables.font.family};
-  font-size: ${themeCssVariables.font.size.md};
+  font-size: 13px;
   height: ${({ isNavigationDrawerExpanded }) =>
     isNavigationDrawerExpanded
-      ? themeCssVariables.spacing[7]
+      ? '36px'
       : `${NAVIGATION_DRAWER_COLLAPSED_BUTTON_SIZE}px`};
   margin-top: ${({ indentationLevel }) =>
     indentationLevel === 2 ? '2px' : '0'};
@@ -98,6 +98,12 @@ const StyledItem = styled.button<StyledItemProps>`
   pointer-events: ${({ isSoon, variant }) =>
     isSoon || variant === 'placeholder' ? 'none' : 'auto'};
   text-decoration: none;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
   user-select: none;
   width: ${({ isNavigationDrawerExpanded, hasRightOptions }) =>
     !isNavigationDrawerExpanded

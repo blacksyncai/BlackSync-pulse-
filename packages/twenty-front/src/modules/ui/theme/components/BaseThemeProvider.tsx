@@ -1,3 +1,4 @@
+import '@/pulse-branding/styles/blacksync.css';
 import { type JSX, createContext } from 'react';
 
 import { UI_SCALE_MULTIPLIERS } from '@/ui/theme/constants/UiScaleMultipliers';

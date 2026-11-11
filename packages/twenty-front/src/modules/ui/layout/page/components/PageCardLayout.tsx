@@ -41,7 +41,7 @@ const StyledMainCardWrapper = styled.div`
 `;
 
 const StyledCard = styled(CrmGlassSurface)`
-  margin: 8px;
+  margin: 16px 16px 16px 8px;
   min-width: 0;
   box-sizing: border-box;
   display: flex;

@@ -2,22 +2,15 @@ import { styled } from '@linaria/react';
 import { themeCssVariables } from 'twenty-ui/theme';
 
 export const CrmGlassSurface = styled.div`
-  background: ${themeCssVariables.background.primary};
-  border: 1px solid ${themeCssVariables.border.color.medium};
-  border-radius: 16px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.045);
-
-  @supports (backdrop-filter: blur(12px)) {
-    background: color-mix(
-      in srgb,
-      ${themeCssVariables.background.primary} 96%,
-      transparent
-    );
-    backdrop-filter: blur(12px) saturate(1.08);
+  background: var(--bs-glass, ${themeCssVariables.background.primary});
+  border: 1px solid var(--bs-edge, ${themeCssVariables.border.color.medium});
+  border-radius: 24px;
+  box-shadow: var(--bs-shadow, 0 16px 48px -32px #123a3140);
+  @supports (backdrop-filter: blur(16px)) {
+    backdrop-filter: blur(16px) saturate(1.12);
   }
-
   @media (prefers-reduced-transparency: reduce) {
-    background: ${themeCssVariables.background.primary};
     backdrop-filter: none;
+    background: ${themeCssVariables.background.primary};
   }
 `;

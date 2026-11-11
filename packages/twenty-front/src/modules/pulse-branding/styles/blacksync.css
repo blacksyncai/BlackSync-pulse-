@@ -1,0 +1,118 @@
+/* BlackSync's product palette overrides inherited tokens, including portaled menus. */
+html.light {
+  --bs-canvas: #eaf0ef;
+  --bs-ambient:
+    radial-gradient(ellipse at 96% 2%, #c0e5da 0, transparent 44%),
+    radial-gradient(ellipse at 16% 100%, #c9d8ea 0, transparent 54%), #edf2f1;
+  --bs-glass: rgba(255, 255, 255, 0.82);
+  --bs-panel: rgba(255, 255, 255, 0.9);
+  --bs-edge: rgba(255, 255, 255, 0.96);
+  --bs-shadow:
+    0 20px 60px -36px rgba(22, 48, 43, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --bs-ink: #162b2a;
+  --bs-muted: #607573;
+  --bs-accent: #0f766e;
+  --bs-accent-soft: #e5f3ef;
+  --t-background-primary: #fff;
+  --t-background-secondary: #f4f7f6;
+  --t-background-tertiary: #e8eeeb;
+  --t-background-quaternary: #dee7e3;
+  --t-background-noisy: transparent;
+  --t-font-color-primary: #162b2a;
+  --t-font-color-secondary: #526765;
+  --t-font-color-tertiary: #6c807c;
+  --t-font-color-light: #8d9d99;
+  --t-border-color-medium: #dce6e2;
+  --t-border-color-light: #e9efec;
+  --t-border-color-strong: #c6d6d0;
+  --t-accent-primary: #d5ebe4;
+  --t-accent-secondary: #d5ebe4;
+  --t-accent-tertiary: #f0f8f4;
+  --t-accent-quaternary: #e7f4ee;
+  --t-accent-accent1: #fbfefd;
+  --t-accent-accent2: #f3fbf7;
+  --t-accent-accent3: #e7f4ee;
+  --t-accent-accent4: #daeee6;
+  --t-accent-accent5: #c7e6da;
+  --t-accent-accent6: #abdbcb;
+  --t-accent-accent7: #83c7b2;
+  --t-accent-accent8: #48a78d;
+  --t-accent-accent9: #0f766e;
+  --t-accent-accent10: #0a655e;
+  --t-accent-accent11: #09695e;
+  --t-accent-accent12: #123d34;
+  --t-buttons-secondary-text-color: #09695e;
+}
+html.dark {
+  --bs-canvas: #0b151b;
+  --bs-ambient:
+    radial-gradient(ellipse at 96% 2%, #173c38 0, transparent 45%),
+    radial-gradient(ellipse at 15% 100%, #182a40 0, transparent 52%), #0b151b;
+  --bs-glass: rgba(19, 34, 40, 0.86);
+  --bs-panel: rgba(23, 39, 45, 0.95);
+  --bs-edge: rgba(191, 229, 218, 0.11);
+  --bs-shadow: 0 20px 60px -30px #0008, inset 0 1px 0 rgba(220, 255, 243, 0.06);
+  --bs-ink: #e8f4ef;
+  --bs-muted: #a0b8b0;
+  --bs-accent: #5ee0bf;
+  --bs-accent-soft: #183a34;
+  --t-background-primary: #132228;
+  --t-background-secondary: #192b31;
+  --t-background-tertiary: #263b40;
+  --t-background-quaternary: #30494c;
+  --t-background-noisy: transparent;
+  --t-font-color-primary: #e8f4ef;
+  --t-font-color-secondary: #b1c8c0;
+  --t-font-color-tertiary: #89a69c;
+  --t-font-color-light: #728e85;
+  --t-border-color-medium: #2a4244;
+  --t-border-color-light: #23383c;
+  --t-border-color-strong: #3e5c5b;
+  --t-accent-primary: #26574b;
+  --t-accent-secondary: #26574b;
+  --t-accent-tertiary: #152f29;
+  --t-accent-quaternary: #193d32;
+  --t-accent-accent1: #0c1d19;
+  --t-accent-accent2: #102820;
+  --t-accent-accent3: #193d32;
+  --t-accent-accent4: #204d3f;
+  --t-accent-accent5: #285e4e;
+  --t-accent-accent6: #327360;
+  --t-accent-accent7: #448f78;
+  --t-accent-accent8: #50b693;
+  --t-accent-accent9: #5ee0bf;
+  --t-accent-accent10: #80ebce;
+  --t-accent-accent11: #8aebce;
+  --t-accent-accent12: #c8f8e8;
+  --t-buttons-secondary-text-color: #8aebce;
+}
+html.light,
+html.dark {
+  --t-border-radius-sm: 7px;
+  --t-border-radius-md: 11px;
+  --t-border-radius-lg: 18px;
+  --t-border-radius-xl: 24px;
+  --t-font-family: 'Plus Jakarta Sans', Inter, system-ui, sans-serif;
+  accent-color: var(--bs-accent);
+}
+@media (prefers-reduced-transparency: reduce) {
+  html.light {
+    --bs-glass: #fff;
+    --bs-panel: #fff;
+  }
+  html.dark {
+    --bs-glass: #132228;
+    --bs-panel: #192b31;
+  }
+}
+@media print {
+  html.light,
+  html.dark {
+    --bs-canvas: #fff;
+    --bs-ambient: #fff;
+    --bs-glass: #fff;
+    --bs-panel: #fff;
+    --bs-shadow: none;
+  }
+}

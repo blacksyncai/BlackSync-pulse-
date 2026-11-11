@@ -1,3 +1,4 @@
+import { BlackSyncWordmark } from '@/pulse-branding/components/BlackSyncWordmark';
 import { PulsePhoneWidget } from '@/pulse-calling/components/PulsePhoneWidget';
 import { PulseNotificationBell } from '@/pulse-notifications/components/PulseNotificationBell';
 import { FrontComponentMediaSessionIndicator } from '@/front-components/media-session/components/FrontComponentMediaSessionIndicator';
@@ -87,6 +88,31 @@ const StyledWorkspaceDropdownContainer = styled.div`
   min-width: 0;
 `;
 
+const StyledWorkspaceSearch = styled.button`
+  align-items: center;
+  display: flex;
+  gap: 9px;
+  width: calc(100% - 28px);
+  margin: 10px 14px 14px;
+  padding: 10px 11px;
+  border: 1px solid #ffffff15;
+  border-radius: 10px;
+  background: #ffffff08;
+  color: #bed2cb;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  &:hover {
+    background: #ffffff10;
+    color: #f0fff8;
+  }
+  &:focus-visible {
+    outline: 2px solid #66e3bf;
+    outline-offset: 2px;
+  }
+`;
+
 export const NavigationDrawerHeader = () => {
   const isMobile = useIsMobile();
   const { openRecordsSearchPage } = useOpenRecordsSearchPageInSidePanel();
@@ -107,6 +133,7 @@ export const NavigationDrawerHeader = () => {
 
   return (
     <StyledContainer>
+      {isExpanded && !isMobile && <BlackSyncWordmark />}
       <StyledHeaderRow>
         <StyledWorkspaceDropdownContainer>
           <MultiWorkspaceDropdownButton />
@@ -116,13 +143,18 @@ export const NavigationDrawerHeader = () => {
             <FrontComponentMediaSessionIndicator />
             <PulseNotificationBell />
             <PulsePhoneWidget />
-            {searchButton}
             <StyledNavigationDrawerCollapseButtonContainer>
               <NavigationDrawerCollapseButton direction="left" />
             </StyledNavigationDrawerCollapseButtonContainer>
           </StyledRightActions>
         )}
       </StyledHeaderRow>
+      {isExpanded && !isMobile && (
+        <StyledWorkspaceSearch onClick={openRecordsSearchPage} type="button">
+          <IconSearch size={15} />
+          <span>{t`Search workspace…`}</span>
+        </StyledWorkspaceSearch>
+      )}
       {!isExpanded && !isMobile && (
         <StyledCollapsedSearch>
           <FrontComponentMediaSessionIndicator />

@@ -32,6 +32,8 @@ const StyledAnimatedContainer = styled.div<{
 }>`
   height: 100%;
   max-height: 100%;
+  background: linear-gradient(165deg, #102a2d, #101c26 48%, #101b23);
+  border-right: 1px solid #ffffff0c;
   overflow: hidden;
   position: relative;
   transition: ${({ isResizing }) =>
@@ -70,7 +72,8 @@ const StyledContent = styled.div`
   flex-direction: column;
   gap: ${themeCssVariables.spacing[2]};
   min-height: 0;
-  padding-left: ${themeCssVariables.spacing[2]};
+  padding-left: 12px;
+  padding-right: 12px;
 
   @media (max-width: ${MOBILE_VIEWPORT}px) {
     gap: ${themeCssVariables.spacing[4]};

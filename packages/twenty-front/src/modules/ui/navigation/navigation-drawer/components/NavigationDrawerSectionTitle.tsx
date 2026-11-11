@@ -30,6 +30,12 @@ const StyledTitle = styled.div`
 `;
 
 const StyledLabelContainer = styled.div`
+  .section-title-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 650;
+  }
   align-items: center;
   display: flex;
   flex-grow: 1;

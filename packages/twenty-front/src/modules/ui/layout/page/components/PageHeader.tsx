@@ -8,7 +8,6 @@ import { NavigationDrawerCollapseButton } from '@/ui/navigation/navigation-drawe
 import { useIsSettingsPage } from '@/navigation/hooks/useIsSettingsPage';
 import { useNavigationDrawerExpanded } from '@/navigation/hooks/useNavigationDrawerExpanded';
 import { PAGE_ACTION_CONTAINER_CLICK_OUTSIDE_ID } from '@/ui/layout/page/constants/PageActionContainerClickOutsideId';
-import { PAGE_BAR_MIN_HEIGHT } from '@/ui/layout/page/constants/PageBarMinHeight';
 import { useIsMobile } from 'twenty-ui/utilities';
 import { AnimatePresence } from 'framer-motion';
 import { isDefined } from 'twenty-shared/utils';
@@ -19,14 +18,16 @@ import { MOBILE_VIEWPORT, useTheme, themeCssVariables } from 'twenty-ui/theme';
 
 const StyledTopBarContainer = styled.div<{ isMobile: boolean }>`
   align-items: center;
-  background: ${themeCssVariables.background.noisy};
+  background: transparent;
+  border-bottom: 1px solid ${themeCssVariables.border.color.light};
   color: ${themeCssVariables.font.color.primary};
   display: flex;
   flex-direction: row;
   font-size: ${themeCssVariables.font.size.lg};
   gap: ${themeCssVariables.spacing[2]};
   justify-content: space-between;
-  min-height: ${PAGE_BAR_MIN_HEIGHT}px;
+  min-height: 64px;
+  box-sizing: border-box;
   padding-bottom: ${themeCssVariables.spacing[3]};
   padding-left: ${({ isMobile }) =>
     isMobile ? themeCssVariables.spacing[3] : themeCssVariables.spacing[4]};
@@ -50,8 +51,9 @@ const StyledLeftContainer = styled.div`
 const StyledTitleContainer = styled.div`
   align-items: center;
   display: flex;
-  font-size: ${themeCssVariables.font.size.md};
-  font-weight: ${themeCssVariables.font.weight.medium};
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
   margin-right: ${themeCssVariables.spacing[1]};
   overflow: hidden;
   width: 100%;
@@ -77,6 +79,11 @@ const StyledPageActionContainer = styled.div`
 `;
 
 const StyledIconContainer = styled.div`
+  background: ${themeCssVariables.accent.quaternary};
+  color: ${themeCssVariables.accent.accent11};
+  border-radius: 10px;
+  padding: 7px;
+  margin-right: 8px;
   align-items: center;
   display: flex;
   flex-direction: row;
