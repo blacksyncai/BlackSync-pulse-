@@ -7,6 +7,11 @@ export type BlackSyncCompletedCall = {
     'answered' | 'no-answer' | 'busy' | 'failed' | 'voicemail' | 'canceled';
   personId?: string;
   companyId?: string;
+  opportunityId?: string;
+  assigneeId?: string;
+  interest?: 'high' | 'medium' | 'low' | 'none';
+  nextStep?: string;
+  nextStepDueAt?: string;
   summary?: string;
   transcript?: string;
   recordingUrl?: string;
@@ -25,7 +30,14 @@ export const pushCompletedCall = async ({
   apiKey,
   call,
   fetcher = fetch,
-}: PushCompletedCallOptions): Promise<{ noteId: string; created: boolean }> => {
+}: PushCompletedCallOptions): Promise<{
+  noteId: string;
+  created: boolean;
+  personId: string | null;
+  companyId: string | null;
+  opportunityId: string | null;
+  followUpTaskId: string | null;
+}> => {
   const base = new URL(crmBaseUrl);
   if (
     base.protocol !== 'https:' ||
@@ -39,8 +51,8 @@ export const pushCompletedCall = async ({
     );
   }
   if (!apiKey.trim()) throw new Error('Configure a BlackSync CRM API key.');
-  if (!call.personId && !call.companyId)
-    throw new Error('Map the call to a CRM contact or lead before pushing it.');
+  // personId/companyId are optional: when omitted the CRM matches the contact by
+  // the call's phone number.
 
   const response = await fetcher(
     `${base.toString().replace(/\/+$/, '')}/rest/pulse/calls`,
@@ -71,5 +83,17 @@ export const pushCompletedCall = async ({
   ) {
     throw new Error('BlackSync CRM returned an unexpected call response.');
   }
-  return { noteId: result.noteId, created: result.created };
+  const nullableId = (value: unknown) =>
+    typeof value === 'string' ? value : null;
+
+  return {
+    noteId: result.noteId,
+    created: result.created,
+    personId: 'personId' in result ? nullableId(result.personId) : null,
+    companyId: 'companyId' in result ? nullableId(result.companyId) : null,
+    opportunityId:
+      'opportunityId' in result ? nullableId(result.opportunityId) : null,
+    followUpTaskId:
+      'followUpTaskId' in result ? nullableId(result.followUpTaskId) : null,
+  };
 };
