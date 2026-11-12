@@ -30,18 +30,18 @@ export default function HeroSection({
       <div className="bs-hero-copy">
         <a className="bs-announcement" href="#workspace">
           <span className="bs-live-dot" />
-          <Trans id="Meet your connected workspace" />
+          <Trans id="AI voice agents, built into your CRM" />
           <ChevronRight size={14} />
         </a>
         <h1 id="bs-hero-title">
-          <Trans id="Less busywork." />
+          <Trans id="Human-sounding AI agents" />
           <br />
           <span>
-            <Trans id="More momentum." />
+            <Trans id="that know how to sell." />
           </span>
         </h1>
         <p className="bs-hero-description">
-          <Trans id="Your people, pipeline, and conversations. Finally in sync. Move from the first hello to the next big win with BlackSync Cloud." />
+          <Trans id="Turn more leads into conversations and appointments. BlackSync Cloud's AI agents follow up, qualify prospects, and book meetings straight into your calendar — every call logged in your CRM." />
         </p>
         <div className="bs-hero-actions">
           <Button asChild size="lg" className="bs-button">
@@ -92,11 +92,7 @@ export default function HeroSection({
           <Trans id="EVERYTHING. CONNECTED." />
         </div>
         <div className="bs-landscape">
-          <img
-            src="/images/landing/violet-sky.jpg"
-            alt="City lights at night"
-            fetchPriority="high"
-          />
+          <div className="bs-landscape-sky" />
           <div className="bs-landscape-shade" />
           <span>BLACKSYNC CLOUD</span>
         </div>
