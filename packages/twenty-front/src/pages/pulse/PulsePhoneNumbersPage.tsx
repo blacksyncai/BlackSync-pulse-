@@ -232,10 +232,14 @@ export const PulsePhoneNumbersPage = () => {
         </section>
         <section>
           <h2>{t`Get a dedicated number`}</h2>
-          {settings &&
-            (!settings.checkoutConfigured || !settings.carrierConfigured) && (
-              <p role="alert">{t`Number purchasing needs a billing or carrier configuration update. Existing campaign numbers will not be shared as a fallback.`}</p>
-            )}
+          {settings && !settings.checkoutConfigured && (
+            <p role="alert">
+              {t`Number purchasing is off because the CRM services have no live Stripe key. Add a live key as the BILLING_STRIPE_API_KEY repository secret (Settings → Secrets and variables → Actions), make sure the PULSE_RAILWAY_IMAGE_DEPLOYS variable is true, then re-run the Pulse deploy workflow so the key is copied to the server and worker. Never paste the key into the repo or chat — rotate it in the Stripe Dashboard if it was ever shared.`}
+            </p>
+          )}
+          {settings && !settings.carrierConfigured && (
+            <p role="alert">{t`Number purchasing needs Plivo credentials (PLIVO_AUTH_ID and PLIVO_AUTH_TOKEN) on the CRM services. Existing campaign numbers will not be shared as a fallback.`}</p>
+          )}
           <form
             onSubmit={async (event) => {
               event.preventDefault();

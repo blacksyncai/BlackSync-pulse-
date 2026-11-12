@@ -16,9 +16,10 @@ import {
   formatRelativeTime,
 } from '@/pulse-leads/utils/formatRelativeTime';
 import { usePulseContactActions } from '@/pulse-record/hooks/usePulseContactActions';
+import { TooltipDelay } from '@/ui/layout/tooltip/constants/TooltipDelay';
 import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { isDefined } from 'twenty-shared/utils';
 import {
   IconArrowDown,
@@ -26,11 +27,38 @@ import {
   IconMail,
   IconPhone,
 } from 'twenty-ui/icon';
+import { Tooltip } from 'twenty-ui/primitives/surfaces';
 import { themeCssVariables } from 'twenty-ui/theme';
 
 const PAGE_SIZE = 200;
 const GRID_COLUMNS =
   '36px minmax(220px, 2.2fr) 150px minmax(180px, 1.6fr) 110px 110px 70px 130px 110px';
+
+// Hovering a lead row's contact area reveals the actual phone/email instead of
+// making the user open the record.
+const HoverDetails = ({
+  lines,
+  children,
+}: {
+  lines: string[];
+  children: ReactNode;
+}) => (
+  <Tooltip.Root>
+    <Tooltip.Trigger
+      delay={TooltipDelay.shortDelay}
+      render={<span style={{ display: 'inline-flex', minWidth: 0 }} />}
+    >
+      {children}
+    </Tooltip.Trigger>
+    <Tooltip.Popup side="top" positionMethod="fixed">
+      <Tooltip.Content>
+        {lines.map((line) => (
+          <div key={line}>{line}</div>
+        ))}
+      </Tooltip.Content>
+    </Tooltip.Popup>
+  </Tooltip.Root>
+);
 
 const StyledTable = styled.div`
   background: ${themeCssVariables.background.primary};
@@ -310,23 +338,32 @@ export const PulseLeadsTable = ({
             />
             <StyledLeadCell>
               <PulseLeadLogo name={lead.name} domain={lead.domain} />
-              <StyledStack>
-                <StyledPrimary>{lead.name ?? t`Untitled lead`}</StyledPrimary>
-                <StyledSecondary>
-                  {memberNames.get(lead.ownerId ?? '') ??
-                    (lead.ownerId ? t`Unavailable member` : t`Unassigned`)}
-                  {lead.assignmentTeam
-                    ? ' · ' +
-                      (teamNames.get(lead.assignmentTeam) ??
-                        t`Unavailable team`)
-                    : ''}
-                </StyledSecondary>
-                {isDefined(lead.domain) && (
+              <HoverDetails
+                lines={[
+                  contactName.length > 0 ? contactName : (lead.name ?? ''),
+                  ...(isDefined(contact?.phone) ? [contact.phone] : []),
+                  ...(isDefined(contact?.email) ? [contact.email] : []),
+                  ...(isDefined(lead.domain) ? [lead.domain] : []),
+                ].filter((line) => line.length > 0)}
+              >
+                <StyledStack>
+                  <StyledPrimary>{lead.name ?? t`Untitled lead`}</StyledPrimary>
                   <StyledSecondary>
-                    {lead.domain.replace(/^https?:\/\/(www\.)?/, '')}
+                    {memberNames.get(lead.ownerId ?? '') ??
+                      (lead.ownerId ? t`Unavailable member` : t`Unassigned`)}
+                    {lead.assignmentTeam
+                      ? ' · ' +
+                        (teamNames.get(lead.assignmentTeam) ??
+                          t`Unavailable team`)
+                      : ''}
                   </StyledSecondary>
-                )}
-              </StyledStack>
+                  {isDefined(lead.domain) && (
+                    <StyledSecondary>
+                      {lead.domain.replace(/^https?:\/\/(www\.)?/, '')}
+                    </StyledSecondary>
+                  )}
+                </StyledStack>
+              </HoverDetails>
             </StyledLeadCell>
             <div>
               {statusOptions.length > 0 && (
@@ -349,31 +386,51 @@ export const PulseLeadsTable = ({
                 )}
               </StyledStack>
               {isDefined(contact?.phone) && (
-                <StyledIconButton
-                  type="button"
-                  aria-label={t`Call ${contactName}`}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    void call(contact.phone, {
-                      personId: contact.id,
-                      companyId: lead.id,
-                    });
-                  }}
-                >
-                  <IconPhone size={16} />
-                </StyledIconButton>
+                <Tooltip.Root>
+                  <Tooltip.Trigger
+                    delay={TooltipDelay.shortDelay}
+                    render={
+                      <StyledIconButton
+                        type="button"
+                        aria-label={t`Call ${contactName}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void call(contact.phone, {
+                            personId: contact.id,
+                            companyId: lead.id,
+                          });
+                        }}
+                      />
+                    }
+                  >
+                    <IconPhone size={16} />
+                  </Tooltip.Trigger>
+                  <Tooltip.Popup side="top" positionMethod="fixed">
+                    <Tooltip.Content>{contact.phone}</Tooltip.Content>
+                  </Tooltip.Popup>
+                </Tooltip.Root>
               )}
               {isDefined(contact?.email) && (
-                <StyledIconButton
-                  type="button"
-                  aria-label={t`Email ${contactName}`}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    email(contact.email);
-                  }}
-                >
-                  <IconMail size={16} />
-                </StyledIconButton>
+                <Tooltip.Root>
+                  <Tooltip.Trigger
+                    delay={TooltipDelay.shortDelay}
+                    render={
+                      <StyledIconButton
+                        type="button"
+                        aria-label={t`Email ${contactName}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          email(contact.email);
+                        }}
+                      />
+                    }
+                  >
+                    <IconMail size={16} />
+                  </Tooltip.Trigger>
+                  <Tooltip.Popup side="top" positionMethod="fixed">
+                    <Tooltip.Content>{contact.email}</Tooltip.Content>
+                  </Tooltip.Popup>
+                </Tooltip.Root>
               )}
             </StyledContactCell>
             <PulseLastContact lead={lead} now={now} isCompact />
