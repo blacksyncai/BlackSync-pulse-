@@ -41,11 +41,10 @@ Review generated styles before replacing the scoped setup. No new global context
 
 ## Images
 
-Unsplash images are downloaded into `public/images/landing/` so visitors do not rely on a third-party image host. Stock portraits are decorative, not customer endorsements. The capability strip replaces unidentified brand logos with Lucide icons, avoiding unsupported customer or integration claims.
+Unsplash images are downloaded into `public/images/landing/` so visitors do not rely on a third-party image host. Stock portraits are decorative, not customer endorsements. The capability strip replaces unidentified brand logos with Lucide icons, avoiding unsupported customer or integration claims. The hero panel is a pure CSS warm gradient in the blacksync.ai palette (warm-white canvas, near-black type, terracotta accent) — no stock photo.
 
 Original image sources:
 
-- https://images.unsplash.com/photo-1519608487953-e999c86e7455
 - https://images.unsplash.com/photo-1472099645785-5658abf4ff4e
 - https://images.unsplash.com/photo-1494790108377-be9c29b29330
 - https://images.unsplash.com/photo-1500648767791-00dcc994a43e

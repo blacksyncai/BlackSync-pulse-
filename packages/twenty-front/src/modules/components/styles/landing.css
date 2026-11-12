@@ -1,23 +1,24 @@
 @tailwind utilities;
 
 .bs-landing {
-  --background: 240 15% 5%;
-  --foreground: 240 15% 96%;
-  --primary: 255 100% 75%;
-  --primary-foreground: 240 30% 8%;
-  --secondary: 240 9% 15%;
-  --secondary-foreground: 240 15% 96%;
-  --muted: 240 9% 13%;
-  --muted-foreground: 240 5% 62%;
-  --accent: 250 20% 18%;
-  --accent-foreground: 240 15% 96%;
-  --border: 240 7% 19%;
-  --input: 240 7% 23%;
-  --ring: 255 100% 78%;
-  --destructive: 0 70% 50%;
+  /* blacksync.ai brand palette: warm-white canvas, warm near-black type, terracotta accent */
+  --background: 40 33% 99%;
+  --foreground: 22 16% 11%;
+  --primary: 14 76% 49%;
+  --primary-foreground: 40 33% 99%;
+  --secondary: 34 22% 95%;
+  --secondary-foreground: 22 16% 16%;
+  --muted: 36 18% 96%;
+  --muted-foreground: 24 8% 42%;
+  --accent: 18 78% 95%;
+  --accent-foreground: 14 60% 34%;
+  --border: 30 14% 89%;
+  --input: 30 14% 88%;
+  --ring: 14 76% 49%;
+  --destructive: 0 65% 48%;
   --destructive-foreground: 0 0% 100%;
-  background: #0b0b0f;
-  color: #f4f3f8;
+  background: #fdfcf9;
+  color: #201b18;
   font-family:
     'Inter',
     -apple-system,
@@ -28,7 +29,7 @@
   min-height: 100%;
   width: 100%;
   overflow-x: clip;
-  color-scheme: dark;
+  color-scheme: light;
   -webkit-font-smoothing: antialiased;
 }
 .bs-landing *,
@@ -62,22 +63,22 @@
   max-width: 100%;
 }
 .bs-landing :where(a, button, summary):focus-visible {
-  outline: 2px solid #a68bff;
+  outline: 2px solid #dc4a1e;
   outline-offset: 5px;
 }
 .bs-landing :where(section) {
   scroll-margin-top: 28px;
 }
 .bs-landing ::selection {
-  background: #a68bff;
-  color: #0b0b0f;
+  background: #dc4a1e;
+  color: #fdfcf9;
 }
 .bs-landing .bs-shell {
   width: min(1240px, calc(100% - 96px));
   margin-inline: auto;
 }
 .bs-landing .bs-header {
-  border-bottom: 1px solid #ffffff0d;
+  border-bottom: 1px solid #201b180d;
   position: relative;
   z-index: 10;
 }
@@ -101,11 +102,11 @@
   display: inline-block;
   margin-left: 5px;
   font-weight: 400;
-  color: #8d8b99;
+  color: #8a8378;
 }
 .bs-landing .bs-nav-link {
   font-size: 13px;
-  color: #94929f;
+  color: #7a736a;
   padding: 12px 15px;
   display: inline-flex;
   align-items: center;
@@ -114,23 +115,23 @@
 }
 .bs-landing .bs-nav-link:hover,
 .bs-landing .bs-nav-active {
-  color: #f4f3f8;
+  color: #201b18;
 }
 .bs-landing .bs-nav-active::before {
   content: '';
   width: 4px;
   height: 4px;
-  background: #a68bff;
+  background: #dc4a1e;
   border-radius: 50%;
 }
 .bs-landing .bs-login {
   font-size: 13px;
-  color: #b3b0bf;
+  color: #55504a;
 }
 .bs-landing .bs-button {
-  background: #b7a0ff !important;
-  color: #171024 !important;
-  border: 1px solid #d4c6ff55;
+  background: #c2410c !important;
+  color: #fdfcf9 !important;
+  border: 1px solid #dc4a1e40;
   border-radius: 8px;
   padding: 0 24px;
   height: 52px;
@@ -138,14 +139,14 @@
   font-weight: 650;
   gap: 20px;
   box-shadow:
-    0 0 22px #a68bff12,
-    inset 0 1px #ffffff35;
+    0 0 22px #dc4a1e12,
+    inset 0 1px #201b1835;
   transition:
     background 0.2s,
     transform 0.2s;
 }
 .bs-landing .bs-button:hover {
-  background: #ccbaff !important;
+  background: #dc4a1e !important;
   transform: translateY(-2px);
 }
 .bs-landing .bs-button-small {
@@ -168,13 +169,13 @@
   padding-bottom: 12px;
 }
 .bs-landing .bs-announcement {
-  border: 1px solid #ffffff13;
-  background: #ffffff03;
+  border: 1px solid #201b1813;
+  background: #201b1803;
   padding: 7px 11px;
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  color: #c5bddb;
+  color: #6f6960;
   font-size: 10px;
   border-radius: 100px;
   margin-bottom: 30px;
@@ -182,8 +183,8 @@
 .bs-landing .bs-live-dot {
   width: 5px;
   height: 5px;
-  background: #b49aff;
-  box-shadow: 0 0 10px #aa85ff80;
+  background: #fae9e2;
+  box-shadow: 0 0 10px #dc4a1e66;
   display: inline-block;
   border-radius: 50%;
   flex-shrink: 0;
@@ -195,11 +196,11 @@
   font-weight: 500;
 }
 .bs-landing h1 > span {
-  color: #ad92f4;
+  color: #c2410c;
 }
 .bs-landing .bs-hero-description {
   max-width: 420px;
-  color: #96929f;
+  color: #7a736a;
   font-size: 15px;
   line-height: 1.85;
   margin-top: 26px;
@@ -215,12 +216,12 @@
   display: inline-flex;
   gap: 9px;
   align-items: center;
-  color: #c4bfce;
+  color: #6f6960;
 }
 .bs-landing .bs-play {
   width: 29px;
   height: 29px;
-  border: 1px solid #ffffff26;
+  border: 1px solid #201b1826;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -238,7 +239,7 @@
 .bs-landing .bs-avatars img {
   width: 33px;
   height: 33px;
-  border: 3px solid #0b0b0f;
+  border: 3px solid #fdfcf9;
   border-radius: 50%;
   object-fit: cover;
   margin-left: -6px;
@@ -247,10 +248,10 @@
 .bs-landing .bs-people p {
   font-size: 10px;
   line-height: 1.65;
-  color: #bbb5c9;
+  color: #55504a;
 }
 .bs-landing .bs-people p span {
-  color: #78717f;
+  color: #6f6960;
 }
 .bs-landing .bs-hero-art {
   height: 540px;
@@ -261,8 +262,8 @@
   position: absolute;
   inset: 10px -10px;
   background-image:
-    linear-gradient(#ffffff05 1px, transparent 1px),
-    linear-gradient(90deg, #ffffff05 1px, transparent 1px);
+    linear-gradient(#201b1805 1px, transparent 1px),
+    linear-gradient(90deg, #201b1805 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse, black 20%, transparent 70%);
 }
@@ -274,14 +275,14 @@
   top: 15%;
   z-index: -1;
   border-radius: 50%;
-  background: radial-gradient(ellipse, #6e4bff23, transparent 65%);
+  background: radial-gradient(ellipse, #dc4a1e1f, transparent 65%);
   filter: blur(20px);
 }
 .bs-landing .bs-orbit {
   position: absolute;
   width: 470px;
   height: 470px;
-  border: 1px solid #9473d71c;
+  border: 1px solid #dc4a1e14;
   border-radius: 50%;
   top: 36px;
   left: 38px;
@@ -300,11 +301,11 @@
   position: absolute;
   width: 6px;
   height: 6px;
-  background: #ba9af3;
+  background: #e2582a;
   border-radius: 50%;
   right: 65px;
   top: 47px;
-  box-shadow: 0 0 16px #a68bff;
+  box-shadow: 0 0 16px #dc4a1e;
 }
 .bs-landing .bs-art-label {
   position: absolute;
@@ -315,7 +316,7 @@
   gap: 8px;
   font-size: 8px;
   letter-spacing: 2px;
-  color: #81758e;
+  color: #7a736a;
 }
 .bs-landing .bs-landscape {
   width: 282px;
@@ -325,29 +326,29 @@
   top: 34px;
   right: 27px;
   overflow: hidden;
-  border: 1px solid #d6b7ff25;
+  border: 1px solid #dc4a1e26;
   transform: rotate(8deg);
-  background: #211435;
-  box-shadow: 0 30px 100px #000;
+  background: #faf7f2;
+  box-shadow: 0 30px 100px #201b18;
 }
-.bs-landing .bs-landscape img {
+.bs-landing .bs-landscape-sky {
   height: 100%;
   width: 100%;
-  object-fit: cover;
-  opacity: 0.7;
-  filter: saturate(0.6);
+  background:
+    radial-gradient(ellipse at 70% 20%, #f6c9ae 0%, transparent 55%),
+    linear-gradient(160deg, #fff8f1 0%, #fbe4d3 55%, #f5d2ba 100%);
 }
 .bs-landing .bs-landscape-shade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(20deg, #1c102d 5%, #5d38934d, transparent);
+  background: linear-gradient(20deg, #fdfcf9cc 5%, transparent 60%);
 }
 .bs-landing .bs-landscape > span {
   position: absolute;
   bottom: 27px;
   left: 28px;
   font-size: 8px;
-  color: #c1a9de;
+  color: #8a6a55;
   letter-spacing: 3px;
 }
 .bs-landing .bs-orbit-mark {
@@ -355,12 +356,12 @@
   top: 95px;
   left: 66px;
   padding: 10px;
-  border: 1px solid #a68bff2b;
+  border: 1px solid #dc4a1e2b;
   border-radius: 24px;
-  background: linear-gradient(145deg, #1a1426, #101015);
+  background: linear-gradient(145deg, #ffffff, #ffffff);
   box-shadow:
-    0 20px 60px #0009,
-    inset 0 1px #ffffff10;
+    0 20px 60px #2a211899,
+    inset 0 1px #201b1810;
   transform: rotate(-10deg);
 }
 .bs-landing .bs-call-card {
@@ -368,12 +369,12 @@
   position: absolute;
   left: 20px;
   top: 213px;
-  border: 1px solid #b8a0ef26;
-  background: linear-gradient(130deg, #211a2cef, #141119fa);
+  border: 1px solid #dc4a1e26;
+  background: linear-gradient(130deg, #ffffffee, #faf7f2fa);
   border-radius: 13px;
   padding: 18px;
   transform: rotate(-5deg);
-  box-shadow: 0 22px 55px #0009;
+  box-shadow: 0 22px 55px #2a211899;
   backdrop-filter: blur(12px);
 }
 .bs-landing .bs-card-top {
@@ -389,7 +390,7 @@
 .bs-landing .bs-card-top small {
   display: block;
   font-size: 9px;
-  color: #8d829b;
+  color: #8a8378;
   margin-top: 3px;
 }
 .bs-landing .bs-card-top > :last-child {
@@ -398,16 +399,16 @@
 .bs-landing .bs-icon-tile {
   width: 33px;
   height: 33px;
-  border: 1px solid #b095e523;
+  border: 1px solid #dc4a1e23;
   border-radius: 9px;
-  color: #ba9df7;
-  background: #9876da15;
+  color: #e2582a;
+  background: #9a341215;
   display: grid;
   place-items: center;
   flex-shrink: 0;
 }
 .bs-landing .bs-dim {
-  color: #81728c;
+  color: #7a736a;
 }
 .bs-landing .bs-waveform {
   display: flex;
@@ -421,19 +422,19 @@
   display: block;
   width: 3px;
   border-radius: 3px;
-  background: linear-gradient(#d7b1fd, #7850bb);
+  background: linear-gradient(#f0a276, #c2410c);
   opacity: 0.8;
 }
 .bs-landing .bs-waveform i:nth-child(n + 30) {
-  background: #55435d;
+  background: #e7dfd4;
 }
 .bs-landing .bs-card-bottom {
   display: flex;
   justify-content: space-between;
   padding-top: 9px;
-  border-top: 1px solid #ffffff0c;
+  border-top: 1px solid #201b180c;
   font-size: 8px;
-  color: #a497b3;
+  color: #9a9184;
 }
 .bs-landing .bs-card-bottom > span:first-child {
   display: flex;
@@ -445,23 +446,23 @@
   position: absolute;
   right: 3px;
   top: 350px;
-  background: linear-gradient(120deg, #19161f, #101015);
-  border: 1px solid #c9c0e023;
+  background: linear-gradient(120deg, #f6f1ea, #ffffff);
+  border: 1px solid #201b1823;
   border-radius: 12px;
   padding: 16px;
   transform: rotate(4deg);
-  box-shadow: 0 24px 40px #0008;
+  box-shadow: 0 24px 40px #2a211880;
 }
 .bs-landing .bs-icon-green {
-  color: #a5c4ad;
-  background: #83ad8d10;
-  border-color: #83ad8d23;
+  color: #dcefe0;
+  background: #2f7d4f10;
+  border-color: #2f7d4f23;
   width: 27px;
   height: 27px;
 }
 .bs-landing .bs-demo-tag {
   font-size: 6px;
-  color: #887e96;
+  color: #857b6e;
   letter-spacing: 1px;
 }
 .bs-landing .bs-deal-row {
@@ -476,8 +477,8 @@
   display: grid;
   place-items: center;
   border-radius: 7px;
-  border: 1px solid #ffffff15;
-  color: #ccc3dd;
+  border: 1px solid #201b1815;
+  color: #8a8378;
   font-size: 12px;
 }
 .bs-landing .bs-deal-row strong {
@@ -487,7 +488,7 @@
 }
 .bs-landing .bs-deal-row small {
   font-size: 8px;
-  color: #83788e;
+  color: #7a736a;
   display: block;
 }
 .bs-landing .bs-deal-status {
@@ -496,8 +497,8 @@
   align-items: center;
   gap: 3px;
   margin-left: auto;
-  color: #a6bfa7;
-  background: #76ad8810;
+  color: #dcefe0;
+  background: #2f7d4f10;
   padding: 3px 5px;
   border-radius: 4px;
 }
@@ -508,17 +509,17 @@
 .bs-landing .bs-stage-line i {
   height: 3px;
   width: 25%;
-  background: #a68bff;
+  background: #dc4a1e;
   border-radius: 3px;
 }
 .bs-landing .bs-stage-line i:last-child {
-  background: #39313f;
+  background: #efe9e1;
 }
 .bs-landing .bs-pipeline-footer {
   display: flex;
   justify-content: space-between;
   font-size: 8px;
-  color: #9b8eaa;
+  color: #958a7c;
   margin-top: 10px;
 }
 .bs-landing .bs-pipeline-footer > span {
@@ -530,26 +531,26 @@
   position: absolute;
   top: 400px;
   left: 0;
-  border: 1px solid #ad91cc25;
-  background: #17131d;
+  border: 1px solid #dc4a1e25;
+  background: #f6f1ea;
   padding: 11px 13px;
   border-radius: 9px;
-  color: #b8a8cb;
+  color: #e9dfd6;
   font-size: 9px;
   display: flex;
   align-items: center;
   gap: 8px;
   transform: rotate(-5deg);
-  box-shadow: 0 10px 35px #0008;
+  box-shadow: 0 10px 35px #2a211880;
 }
 .bs-landing .bs-chip-check {
   display: grid;
   place-items: center;
   width: 16px;
   height: 16px;
-  background: #263329;
+  background: #e6f2e9;
   border-radius: 50%;
-  color: #b7d2b9;
+  color: #dcefe0;
 }
 .bs-landing .bs-art-caption {
   position: absolute;
@@ -561,18 +562,18 @@
   gap: 8px;
   font-size: 7px;
   letter-spacing: 1.7px;
-  color: #65596f;
+  color: #635c54;
 }
 .bs-landing .bs-art-caption > :last-child {
   margin-left: auto;
 }
 .bs-landing .bs-integrations {
-  border-top: 1px solid #ffffff0d;
-  border-bottom: 1px solid #ffffff0d;
+  border-top: 1px solid #201b180d;
+  border-bottom: 1px solid #201b180d;
   padding: 31px 0 38px;
 }
 .bs-landing .bs-integrations > p {
-  color: #726b80;
+  color: #6f6960;
   letter-spacing: 2px;
   font-size: 8px;
   text-align: center;
@@ -583,7 +584,7 @@
   flex-wrap: wrap;
   gap: 24px;
   margin-top: 26px;
-  color: #9e97ab;
+  color: #9a9184;
 }
 .bs-landing .bs-brand-list > div {
   display: flex;
@@ -599,7 +600,7 @@
 .bs-landing .bs-eyebrow {
   font-size: 8px;
   font-weight: 500;
-  color: #9b85bf;
+  color: #a98a76;
   letter-spacing: 1.8px;
   display: flex;
   align-items: center;
@@ -608,7 +609,7 @@
 .bs-landing .bs-eyebrow > span {
   width: 4px;
   height: 4px;
-  background: #b197dd;
+  background: #c2410c;
   border-radius: 50%;
 }
 .bs-landing .bs-section-heading {
@@ -625,11 +626,11 @@
   margin-top: 20px;
 }
 .bs-landing h2 > span {
-  color: #7e748e;
+  color: #756c60;
 }
 .bs-landing .bs-section-heading > p {
   max-width: 320px;
-  color: #8d8598;
+  color: #8a8378;
   font-size: 12px;
   line-height: 1.9;
   padding-bottom: 4px;
@@ -641,16 +642,16 @@
   margin-top: 38px;
 }
 .bs-landing .bs-feature-card {
-  border: 1px solid #ffffff0f;
+  border: 1px solid #201b180f;
   border-radius: 12px;
-  background: linear-gradient(150deg, #17131e70, #0f0e13);
+  background: linear-gradient(150deg, #efe9e180, #ffffff);
   padding: 23px;
   position: relative;
   overflow: hidden;
 }
 .bs-landing .bs-feature-number {
   font-size: 9px;
-  color: #655c72;
+  color: #635c54;
   font-family: monospace;
 }
 .bs-landing .bs-feature-card h3 {
@@ -663,10 +664,10 @@
   margin-top: 28px;
 }
 .bs-landing .bs-feature-card h3 svg {
-  color: #aa8fd7;
+  color: #c2410c;
 }
 .bs-landing .bs-feature-card > p {
-  color: #81798d;
+  color: #7a736a;
   font-size: 11px;
   line-height: 1.9;
   margin-top: 12px;
@@ -690,27 +691,27 @@
 }
 .bs-landing .bs-mini-contacts small {
   display: block;
-  color: #6f647e;
+  color: #6f6960;
   font-size: 8px;
 }
 .bs-landing .bs-contact-avatar {
   width: 29px;
   height: 29px;
   border-radius: 50%;
-  background: #33253c;
-  color: #bda0d9;
+  background: #f6f1ea;
+  color: #d97a4e;
   display: grid;
   place-items: center;
   font-size: 8px;
 }
 .bs-landing .bs-avatar-peach {
-  background: #342b27;
-  color: #c2ab91;
+  background: #f0e9e0;
+  color: #b08d6a;
 }
 .bs-landing .bs-status-pill {
   border-radius: 20px;
-  background: #94c9aa0b;
-  color: #8dbaa0;
+  background: #2f7d4f0b;
+  color: #2f7d4f;
   font-size: 7px;
   padding: 3px 7px;
 }
@@ -729,16 +730,16 @@
 .bs-landing .bs-mini-call small {
   display: block;
   font-size: 8px;
-  color: #7a6b8b;
+  color: #6f6960;
   margin-top: 4px;
 }
 .bs-landing .bs-record-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #b282d5;
+  background: #c2410c;
   margin-left: auto;
-  box-shadow: 0 0 10px #b282d544;
+  box-shadow: 0 0 10px #dc4a1e44;
 }
 .bs-landing .bs-mini-flow {
   height: 91px;
@@ -752,15 +753,15 @@
   height: 40px;
   display: grid;
   place-items: center;
-  border: 1px solid #a589d429;
+  border: 1px solid #dc4a1e29;
   border-radius: 9px;
-  background: #9b7db30a;
-  color: #aa90c7;
+  background: #dc4a1e0d;
+  color: #c9b3a5;
 }
 .bs-landing .bs-mini-flow i {
   height: 1px;
   width: 25px;
-  background: #6d5184;
+  background: #8a6a55;
   position: relative;
 }
 .bs-landing .bs-mini-flow i::after {
@@ -770,12 +771,12 @@
   top: -2px;
   width: 5px;
   height: 5px;
-  border-top: 1px solid #6d5184;
-  border-right: 1px solid #6d5184;
+  border-top: 1px solid #8a6a55;
+  border-right: 1px solid #8a6a55;
   transform: rotate(45deg);
 }
 .bs-landing .bs-workflow {
-  border-block: 1px solid #ffffff0d;
+  border-block: 1px solid #201b180d;
   padding-block: 68px;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -785,9 +786,9 @@
   margin-top: 28px;
   font-size: 11px;
   gap: 20px;
-  border-color: #ffffff24;
+  border-color: #201b1824;
   background: transparent;
-  color: #cdc3db;
+  color: #8a8378;
 }
 .bs-landing .bs-steps {
   display: flex;
@@ -797,13 +798,13 @@
   display: flex;
   gap: 22px;
   padding: 18px 0;
-  border-bottom: 1px solid #ffffff0c;
+  border-bottom: 1px solid #201b180c;
 }
 .bs-landing .bs-steps li:last-child {
   border: 0;
 }
 .bs-landing .bs-steps li > span {
-  color: #a48ac5;
+  color: #cbb4a4;
   font-size: 10px;
   padding-top: 3px;
   font-family: monospace;
@@ -814,7 +815,7 @@
 }
 .bs-landing .bs-steps p {
   font-size: 11px;
-  color: #82778f;
+  color: #7a736a;
   margin-top: 8px;
   line-height: 1.8;
 }
@@ -825,7 +826,7 @@
   padding-block: 80px;
 }
 .bs-landing .bs-faq details {
-  border-bottom: 1px solid #ffffff14;
+  border-bottom: 1px solid #201b1814;
 }
 .bs-landing .bs-faq summary {
   display: flex;
@@ -841,27 +842,27 @@
   display: none;
 }
 .bs-landing .bs-faq summary > span {
-  color: #9580b3;
+  color: #8a7a6a;
   font-size: 18px;
 }
 .bs-landing .bs-faq details[open] summary > span {
   transform: rotate(45deg);
 }
 .bs-landing .bs-faq details p {
-  color: #8d819d;
+  color: #7a736a;
   font-size: 11px;
   line-height: 1.9;
   padding-bottom: 22px;
 }
 .bs-landing .bs-final-cta {
   text-align: center;
-  border: 1px solid #b38ce626;
+  border: 1px solid #dc4a1e26;
   border-radius: 14px;
   padding: 65px 24px;
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(ellipse at 50% 160%, #53347955, transparent 65%), #111015;
+    radial-gradient(ellipse at 50% 160%, #9a341255, transparent 65%), #faf7f2;
 }
 .bs-landing .bs-final-cta .bs-eyebrow {
   justify-content: center;
@@ -872,13 +873,13 @@
   margin-block: 24px 30px;
 }
 .bs-landing .bs-final-cta h2 > span {
-  color: #b29acf;
+  color: #d9c8bd;
 }
 .bs-landing .bs-cta-orbit {
   position: absolute;
   width: 1100px;
   height: 600px;
-  border: 1px solid #a780d317;
+  border: 1px solid #dc4a1e17;
   border-radius: 50%;
   left: 50%;
   transform: translateX(-50%);
@@ -899,14 +900,14 @@
   height: 27px;
 }
 .bs-landing .bs-footer p {
-  color: #6c6278;
+  color: #6a635a;
   font-size: 10px;
 }
 .bs-landing .bs-footer > a:last-child {
   display: flex;
   gap: 14px;
   align-items: center;
-  color: #a698b8;
+  color: #c4b8ae;
   font-size: 10px;
 }
 @media (min-width: 1440px) {
