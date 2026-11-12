@@ -12,6 +12,7 @@ import { MessageQueue } from 'src/engine/core-modules/message-queue/message-queu
 import { MessageQueueService } from 'src/engine/core-modules/message-queue/services/message-queue.service';
 import { type LogPulseCallInput } from 'src/engine/core-modules/pulse-calls/dtos/log-pulse-call.input';
 import { type PulseCallRecordingJobData } from 'src/engine/core-modules/pulse-calls/jobs/pulse-call-recording.job';
+import { toPhoneCandidates } from 'src/engine/core-modules/pulse-calls/utils/phone-candidates.util';
 import { transformRichTextValue } from 'src/engine/core-modules/record-transformer/utils/transform-rich-text.util';
 import { WorkspaceOrmManager } from 'src/engine/twenty-orm/workspace-orm.manager';
 import { buildSystemAuthContext } from 'src/engine/twenty-orm/utils/build-system-auth-context.util';
@@ -24,13 +25,6 @@ const OUTCOME_LABELS: Record<string, string> = {
   'no-answer': 'No answer',
   busy: 'Busy',
   failed: 'Failed',
-};
-
-// Matches how phone numbers are stored on people: national number without the calling code.
-const toPhoneCandidates = (phoneNumber: string) => {
-  const digits = phoneNumber.replace(/\D/g, '');
-
-  return [...new Set([digits, digits.slice(-10)].filter(isNonEmptyString))];
 };
 
 @Injectable()

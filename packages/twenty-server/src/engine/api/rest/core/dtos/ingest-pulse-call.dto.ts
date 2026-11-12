@@ -1,4 +1,5 @@
 import {
+  IsDateString,
   IsIn,
   IsInt,
   IsOptional,
@@ -39,6 +40,22 @@ export class IngestPulseCallDto {
   @IsOptional()
   @IsUUID()
   companyId?: string;
+  @IsOptional()
+  @IsUUID()
+  opportunityId?: string;
+  @IsOptional()
+  @IsUUID()
+  assigneeId?: string;
+  @IsOptional()
+  @IsIn(['high', 'medium', 'low', 'none'])
+  interest?: string;
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  nextStep?: string;
+  @IsOptional()
+  @IsDateString()
+  nextStepDueAt?: string;
   @IsOptional()
   @IsString()
   @MaxLength(20000)

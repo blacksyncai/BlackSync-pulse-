@@ -5,6 +5,7 @@ import { ApplicationEntity } from 'src/engine/core-modules/application/applicati
 import { FileStorageModule } from 'src/engine/core-modules/file-storage/file-storage.module';
 import { PlivoModule } from 'src/engine/core-modules/plivo/plivo.module';
 import { PulseCallRecordingJob } from 'src/engine/core-modules/pulse-calls/jobs/pulse-call-recording.job';
+import { PulseExternalCallSyncJob } from 'src/engine/core-modules/pulse-calls/jobs/pulse-external-call-sync.job';
 import { PulseCallsResolver } from 'src/engine/core-modules/pulse-calls/pulse-calls.resolver';
 import { PulseCallLogService } from 'src/engine/core-modules/pulse-calls/services/pulse-call-log.service';
 import { PulseCallSummaryService } from 'src/engine/core-modules/pulse-calls/services/pulse-call-summary.service';
@@ -24,6 +25,7 @@ import { provideWorkspaceScopedRepository } from 'src/engine/twenty-orm/workspac
     PulseCallLogService,
     PulseCallsResolver,
     PulseCallRecordingJob,
+    PulseExternalCallSyncJob,
     provideWorkspaceScopedRepository(FieldMetadataEntity),
     provideWorkspaceScopedRepository(ApplicationEntity),
   ],
