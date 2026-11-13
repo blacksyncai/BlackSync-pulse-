@@ -125,7 +125,9 @@ export class PulseTaskReminderService {
             task,
           })),
         ...(preferences.emailDueReminders ? dueTasks : []).map((task) => ({
-          key: `due:${task.id}:${new Date(task.dueAt ?? 0).getTime()}`,
+          // One due reminder per task: keying on dueAt would re-email every time
+          // the due date is edited.
+          key: `due:${task.id}`,
           kind: 'due' as const,
           task,
         })),
@@ -150,48 +152,58 @@ export class PulseTaskReminderService {
         .buildWorkspaceURL({ workspace, pathname: '/todo' })
         .toString();
 
+      let sentCount = 0;
+
       for (const reminder of pending) {
         const assignee = assigneeById.get(reminder.task.assigneeId ?? '');
 
-        sent[reminder.key] = now;
+        // Mark as sent even when the email fails, and persist after each send:
+        // one bad recipient must never make the next cron run re-email everyone.
+        try {
+          if (isNonEmptyString(assignee?.userEmail)) {
+            const email = buildTaskReminderEmail({
+              kind: reminder.kind,
+              taskTitle: reminder.task.title ?? '',
+              dueAt: isDefined(reminder.task.dueAt)
+                ? new Date(reminder.task.dueAt)
+                : null,
+              isUrgent:
+                (reminder.task as TaskWorkspaceEntity & { priority?: string })
+                  .priority === URGENT_PRIORITY,
+              timeZone: assignee.timeZone,
+              link,
+            });
 
-        if (!isNonEmptyString(assignee?.userEmail)) {
-          continue;
+            await this.emailService.send({
+              from: `${this.twentyConfigService.get('EMAIL_FROM_NAME')} <${this.twentyConfigService.get('EMAIL_FROM_ADDRESS')}>`,
+              to: assignee.userEmail,
+              ...email,
+            });
+            sentCount++;
+          }
+        } catch (error) {
+          this.logger.warn(
+            `Task reminder email failed for task ${reminder.task.id} in workspace ${workspace.id}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        } finally {
+          sent[reminder.key] = now;
+          await this.writeSent(
+            workspace.id,
+            Object.fromEntries(
+              Object.entries(sent).filter(
+                ([, sentAt]) => now - sentAt < SENT_RETENTION_MS,
+              ),
+            ),
+          );
         }
-
-        const email = buildTaskReminderEmail({
-          kind: reminder.kind,
-          taskTitle: reminder.task.title ?? '',
-          dueAt: isDefined(reminder.task.dueAt)
-            ? new Date(reminder.task.dueAt)
-            : null,
-          isUrgent:
-            (reminder.task as TaskWorkspaceEntity & { priority?: string })
-              .priority === URGENT_PRIORITY,
-          timeZone: assignee.timeZone,
-          link,
-        });
-
-        await this.emailService.send({
-          from: `${this.twentyConfigService.get('EMAIL_FROM_NAME')} <${this.twentyConfigService.get('EMAIL_FROM_ADDRESS')}>`,
-          to: assignee.userEmail,
-          ...email,
-        });
       }
 
       this.logger.log(
-        `Sent ${pending.length} task reminder(s) for workspace ${workspace.id}`,
+        `Sent ${sentCount} task reminder(s) for workspace ${workspace.id}`,
       );
     }, buildSystemAuthContext(workspace.id));
-
-    await this.writeSent(
-      workspace.id,
-      Object.fromEntries(
-        Object.entries(sent).filter(
-          ([, sentAt]) => now - sentAt < SENT_RETENTION_MS,
-        ),
-      ),
-    );
   }
 
   // Every workspace gets a task Priority field so the to-do list can flag urgent work.
