@@ -22,7 +22,8 @@ export const useIsCurrentLocationOnAWorkspace = () => {
 
   const isOnAWorkspace = !isMultiWorkspaceEnabled
     ? true
-    : window.location.hostname !== defaultDomain;
+    : window.location.hostname !== defaultDomain &&
+      window.location.hostname !== domainConfiguration.frontDomain;
 
   return {
     isOnAWorkspace,
