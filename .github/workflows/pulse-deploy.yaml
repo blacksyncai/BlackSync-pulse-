@@ -1,4 +1,5 @@
 name: Pulse deploy
+# Re-runnable via push: the crm-phone-billing-config job re-syncs Stripe/Google/Resend secrets from repo secrets into Railway on every run.
 
 # Builds the production image on GitHub (with layer caching) and has Railway
 # pull it, instead of Railway rebuilding the whole monorepo on every push.
