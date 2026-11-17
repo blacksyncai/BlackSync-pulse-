@@ -1,3 +1,4 @@
+import { PulseWorkspaceSearchBar } from '@/pulse-navigation/components/PulseWorkspaceSearchBar';
 import { PulseAssignmentProvider } from '@/pulse-assignment/contexts/PulseAssignmentContext';
 import { WorkspaceSetupChatSidePanelEffect } from '@/onboarding/effect-components/WorkspaceSetupChatSidePanelEffect';
 import { CommandMenuForMobile } from '@/command-menu/components/CommandMenuForMobile';
@@ -71,6 +72,7 @@ export const MainAppLayoutWithSidePanel = () => {
         <SidePanelPathUrlSyncEffect />
         <WorkspaceSetupChatSidePanelEffect />
         <StyledMainColumn>
+          <PulseWorkspaceSearchBar />
           <StyledContent>
             <Outlet />
           </StyledContent>

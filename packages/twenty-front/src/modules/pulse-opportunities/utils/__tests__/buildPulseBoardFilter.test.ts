@@ -77,3 +77,28 @@ describe('pipeline search boundaries', () => {
     });
   });
 });
+
+it('keeps owner and inclusive close dates inside the pipeline when searching', () => {
+  expect(
+    buildPulseBoardFilter(pipeline, true, 'Sarah', {
+      ownerId: 'member-1',
+      closeFrom: '2026-11-01',
+      closeTo: '2026-11-30',
+    }),
+  ).toEqual({
+    and: [
+      { pipeline: { in: ['SMB'] } },
+      { ownerId: { eq: 'member-1' } },
+      { closeDate: { gte: '2026-11-01T00:00:00.000Z' } },
+      { closeDate: { lte: '2026-11-30T23:59:59.999Z' } },
+      expect.objectContaining({ or: expect.any(Array) }),
+    ],
+  });
+});
+it('can filter unassigned deals without dropping pipeline membership', () => {
+  expect(
+    buildPulseBoardFilter(pipeline, true, '', { ownerId: '__UNASSIGNED__' }),
+  ).toEqual({
+    and: [{ pipeline: { in: ['SMB'] } }, { ownerId: { is: 'NULL' } }],
+  });
+});

@@ -1,3 +1,4 @@
+import { Tooltip } from 'twenty-ui/primitives/surfaces';
 import { PulseLastContact } from '@/pulse-leads/components/PulseLastContact';
 import { type PulseLead } from '@/pulse-leads/types/PulseLead';
 import { type PulseBoardDeal } from '@/pulse-opportunities/hooks/usePulseBoardDeals';
@@ -462,32 +463,53 @@ export const PulseDealCard = ({
               <StyledContactName>{contactName || t`Contact`}</StyledContactName>
               <StyledRow>
                 <IconUser size={15} />
-                <StyledIconButton
-                  type="button"
-                  aria-label={t`Email`}
-                  onClick={() => email(contact.emails?.primaryEmail)}
+                <Tooltip
+                  content={contact.emails?.primaryEmail || t`No email address`}
+                  delay={200}
+                  side="top"
+                  positionMethod="fixed"
                 >
-                  <IconMail size={15} />
-                </StyledIconButton>
-                <StyledIconButton
-                  type="button"
-                  aria-label={t`Call`}
-                  onClick={() =>
-                    call(phone, {
-                      personId: contact.id,
-                      companyId: deal.company?.id,
-                    })
-                  }
+                  <StyledIconButton
+                    type="button"
+                    aria-label={t`Email`}
+                    onClick={() => email(contact.emails?.primaryEmail)}
+                  >
+                    <IconMail size={15} />
+                  </StyledIconButton>
+                </Tooltip>
+                <Tooltip
+                  content={phone || t`No phone number`}
+                  delay={200}
+                  side="top"
+                  positionMethod="fixed"
                 >
-                  <IconPhone size={15} />
-                </StyledIconButton>
-                <StyledIconButton
-                  type="button"
-                  aria-label={t`Text`}
-                  onClick={() => text(phone)}
+                  <StyledIconButton
+                    type="button"
+                    aria-label={t`Call`}
+                    onClick={() =>
+                      call(phone, {
+                        personId: contact.id,
+                        companyId: deal.company?.id,
+                      })
+                    }
+                  >
+                    <IconPhone size={15} />
+                  </StyledIconButton>
+                </Tooltip>
+                <Tooltip
+                  content={phone || t`No phone number`}
+                  delay={200}
+                  side="top"
+                  positionMethod="fixed"
                 >
-                  <IconMessage size={15} />
-                </StyledIconButton>
+                  <StyledIconButton
+                    type="button"
+                    aria-label={t`Text`}
+                    onClick={() => text(phone)}
+                  >
+                    <IconMessage size={15} />
+                  </StyledIconButton>
+                </Tooltip>
               </StyledRow>
             </StyledContact>
           )}

@@ -127,11 +127,23 @@ export const filterConversations = (
   search: string,
   direction: string,
   recordedOnly: boolean,
+  options: {
+    match?: 'all' | 'any';
+    rep?: string;
+    from?: string;
+    to?: string;
+  } = {},
 ) => {
   const words = search.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
   return calls.filter(
     (call) =>
-      words.every((word) => call.searchText.includes(word)) &&
+      (words.length === 0 ||
+        (options.match === 'any'
+          ? words.some((word) => call.searchText.includes(word))
+          : words.every((word) => call.searchText.includes(word)))) &&
+      (!options.rep || call.repName === options.rep) &&
+      (!options.from || call.date >= new Date(`${options.from}T00:00:00`)) &&
+      (!options.to || call.date <= new Date(`${options.to}T23:59:59.999`)) &&
       (direction === 'all' || call.direction === direction) &&
       (!recordedOnly || Boolean(call.recordingUrl)),
   );

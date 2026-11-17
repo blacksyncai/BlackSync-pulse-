@@ -107,7 +107,9 @@ export const PulsePipelineSearch = ({
   hasPipelineField,
   onSelect,
   onClear,
+  scope,
 }: {
+  scope?: { ownerId?: string; closeFrom?: string; closeTo?: string };
   pipeline: PulsePipeline;
   hasPipelineField: boolean;
   onSelect: (deal: PulseBoardDeal) => void;
@@ -120,6 +122,7 @@ export const PulsePipelineSearch = ({
   const [debouncedQuery] = useDebounce(query.trim(), 200);
   const results = usePulseBoardDeals(pipeline, hasPipelineField, {
     search: debouncedQuery,
+    ...scope,
     skip: !open || !debouncedQuery,
     limit: 20,
   });

@@ -38,7 +38,14 @@ export type PulseBoardDeal = ObjectRecord & {
 export const usePulseBoardDeals = (
   pipeline: PulsePipeline | undefined,
   hasPipelineField: boolean,
-  options: { search?: string; skip?: boolean; limit?: number } = {},
+  options: {
+    search?: string;
+    skip?: boolean;
+    limit?: number;
+    ownerId?: string;
+    closeFrom?: string;
+    closeTo?: string;
+  } = {},
 ) => {
   const { objectMetadataItem: companyMetadata } = useObjectMetadataItem({
     objectNameSingular: CoreObjectNameSingular.Company,
@@ -65,7 +72,12 @@ export const usePulseBoardDeals = (
     fetchMoreRecords,
   } = useFindManyRecords<PulseBoardDeal>({
     objectNameSingular: CoreObjectNameSingular.Opportunity,
-    filter: buildPulseBoardFilter(pipeline, hasPipelineField, options.search),
+    filter: buildPulseBoardFilter(
+      pipeline,
+      hasPipelineField,
+      options.search,
+      options,
+    ),
     recordGqlFields: {
       id: true,
       name: true,

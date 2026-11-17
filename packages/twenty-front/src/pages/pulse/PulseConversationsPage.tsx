@@ -1,3 +1,4 @@
+import { parsePulseCallBody } from '@/pulse-record/utils/parsePulseCallBody';
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { styled } from '@linaria/react';
@@ -22,7 +23,7 @@ const StyledPage = styled.div`
   color: ${themeCssVariables.font.color.primary};
   h1 {
     margin: 8px 0 12px;
-    font-size: clamp(26px, 3vw, 36px);
+    font-size: 28px;
     font-weight: 700;
     letter-spacing: -0.055em;
     line-height: 1.15;
@@ -68,67 +69,6 @@ const StyledPage = styled.div`
     padding: 20px 16px;
   }
 `;
-const StyledEyebrow = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: ${themeCssVariables.accent.accent11};
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  &::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: currentColor;
-  }
-`;
-const StyledOverview = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin: 24px 0;
-  > div {
-    position: relative;
-    padding: 20px 22px;
-    border: 1px solid var(--bs-edge, ${themeCssVariables.border.color.medium});
-    border-radius: 18px;
-    background: var(--bs-glass, ${themeCssVariables.background.primary});
-    box-shadow: 0 8px 24px -20px #3d392922;
-  }
-  > div:first-child {
-    background: ${themeCssVariables.accent.quaternary};
-    border-color: ${themeCssVariables.accent.accent5};
-  }
-  span {
-    display: block;
-    color: ${themeCssVariables.font.color.secondary};
-    font-size: 11px;
-    font-weight: 500;
-  }
-  strong {
-    display: block;
-    margin-top: 12px;
-    font-size: 28px;
-    letter-spacing: -0.05em;
-    font-weight: 650;
-    font-variant-numeric: tabular-nums;
-  }
-  @media (max-width: 600px) {
-    gap: 8px;
-    > div {
-      padding: 15px 12px;
-    }
-    strong {
-      font-size: 24px;
-    }
-    span {
-      font-size: 10px;
-    }
-  }
-`;
 const StyledFilters = styled.div`
   display: flex;
   gap: 10px;
@@ -137,8 +77,8 @@ const StyledFilters = styled.div`
   padding: 12px;
   margin: 16px 0 12px;
   border: 1px solid ${themeCssVariables.border.color.light};
-  border-radius: 16px;
-  background: var(--bs-glass, ${themeCssVariables.background.secondary});
+  border-radius: 8px;
+  background: ${themeCssVariables.background.secondary};
   input[type='search'] {
     flex: 1;
     min-width: min(260px, 100%);
@@ -285,6 +225,88 @@ const StyledContact = styled.div`
     min-width: 0;
   }
 `;
+const StyledHistory = styled.div`
+  max-width: 1180px;
+  margin: 24px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+`;
+const StyledCallEntry = styled.article`
+  border: 1px solid ${themeCssVariables.border.color.medium};
+  border-radius: 10px;
+  background: ${themeCssVariables.background.primary};
+  overflow: hidden;
+  box-shadow: 0 1px 2px #00000005;
+  &:focus-visible {
+    outline: 2px solid ${themeCssVariables.accent.accent9};
+    outline-offset: 3px;
+  }
+  > header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 18px 20px;
+    border-bottom: 1px solid ${themeCssVariables.border.color.light};
+  }
+  strong {
+    font-size: 15px;
+    font-weight: 650;
+  }
+  .call-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    color: ${themeCssVariables.font.color.secondary};
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  time {
+    font-size: 12px;
+    color: ${themeCssVariables.font.color.secondary};
+  }
+  .call-context {
+    padding: 14px 20px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: ${themeCssVariables.font.color.secondary};
+  }
+  .call-player {
+    border-top: 1px solid ${themeCssVariables.border.color.light};
+    padding: 12px 20px;
+  }
+  audio {
+    display: block;
+    width: 100%;
+    height: 42px;
+  }
+  footer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 20px;
+    border-top: 1px solid ${themeCssVariables.border.color.light};
+  }
+  footer > span {
+    flex: 1;
+    font-size: 12px;
+    color: ${themeCssVariables.font.color.secondary};
+  }
+  @media (max-width: 600px) {
+    > header,
+    .call-context,
+    .call-player,
+    footer {
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+  }
+`;
+
 const StyledDialog = styled.dialog`
   width: min(1080px, calc(100vw - 32px));
   max-width: calc(100vw - 32px);
@@ -428,6 +450,12 @@ export const PulseConversationsPage = () => {
   const [search, setSearch] = useState('');
   const [direction, setDirection] = useState('all');
   const [recordedOnly, setRecordedOnly] = useState(false);
+  const [view, setView] = useState<'history' | 'table'>('history');
+  const [match, setMatch] = useState<'all' | 'any'>('all');
+  const [rep, setRep] = useState('');
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const { openRecordInSidePanel } = useOpenRecordInSidePanel();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [actionError, setActionError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -437,6 +465,7 @@ export const PulseConversationsPage = () => {
     deferredSearch,
     direction,
     recordedOnly,
+    { match, rep, from, to },
   );
   const selected = conversations.find((call) => call.id === selectedId);
   const run = async (work: () => Promise<unknown>) => {
@@ -459,31 +488,8 @@ export const PulseConversationsPage = () => {
       header={<PageHeader title={t`Conversations`} Icon={IconMessageCircle} />}
     >
       <StyledPage>
-        <StyledEyebrow>{t`BlackSync workspace / Client relationships`}</StyledEyebrow>
-        <h1>{t`Conversations`}</h1>
-        <p>{t`See who was called, the client and location, and listen to available recordings. Double-click a row or choose Open for the transcript, summary, and full call details.`}</p>
-        <StyledOverview aria-label={t`Loaded call overview`}>
-          <div>
-            <span>{t`Loaded calls`}</span>
-            <strong>{notes.loading ? '—' : conversations.length}</strong>
-          </div>
-          <div>
-            <span>{t`Recordings ready`}</span>
-            <strong>
-              {attachments.loading
-                ? '—'
-                : conversations.filter((call) => call.recordingUrl).length}
-            </strong>
-          </div>
-          <div>
-            <span>{t`Transcripts ready`}</span>
-            <strong>
-              {notes.loading
-                ? '—'
-                : conversations.filter((call) => call.hasTranscript).length}
-            </strong>
-          </div>
-        </StyledOverview>
+        <h1>{t`History`}</h1>
+        <p>{t`Listen to calls, review context, and open a conversation for its transcript and full details.`}</p>
         <StyledFilters>
           <input
             type="search"
@@ -492,6 +498,34 @@ export const PulseConversationsPage = () => {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
+          <select
+            aria-label={t`Search matching`}
+            value={match}
+            onChange={(event) => setMatch(event.target.value as 'all' | 'any')}
+          >
+            <option value="all">{t`Match all words`}</option>
+            <option value="any">{t`Match any word`}</option>
+          </select>
+          <select
+            aria-label={t`Logged by`}
+            value={rep}
+            onChange={(event) => setRep(event.target.value)}
+          >
+            <option value="">{t`Everyone`}</option>
+            {[
+              ...new Set(
+                conversations
+                  .map((call) => call.repName)
+                  .filter((name): name is string => Boolean(name)),
+              ),
+            ]
+              .sort()
+              .map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+          </select>
           <select
             aria-label={t`Call direction`}
             value={direction}
@@ -514,6 +548,54 @@ export const PulseConversationsPage = () => {
             onClick={() => void run(refresh)}
           >{t`Refresh`}</button>
         </StyledFilters>
+        <StyledFilters>
+          <label>
+            {t`From`}
+            <input
+              type="date"
+              value={from}
+              max={to || undefined}
+              onChange={(event) => setFrom(event.target.value)}
+            />
+          </label>
+          <label>
+            {t`Through`}
+            <input
+              type="date"
+              value={to}
+              min={from || undefined}
+              onChange={(event) => setTo(event.target.value)}
+            />
+          </label>
+          <select
+            aria-label={t`Conversation layout`}
+            value={view}
+            onChange={(event) =>
+              setView(event.target.value as 'history' | 'table')
+            }
+          >
+            <option value="history">{t`History feed`}</option>
+            <option value="table">{t`Table`}</option>
+          </select>
+          {(search ||
+            rep ||
+            from ||
+            to ||
+            recordedOnly ||
+            direction !== 'all') && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearch('');
+                setRep('');
+                setFrom('');
+                setTo('');
+                setRecordedOnly(false);
+                setDirection('all');
+              }}
+            >{t`Clear filters`}</button>
+          )}
+        </StyledFilters>
         <p role="status">
           {loading
             ? t`Loading conversations…`
@@ -531,7 +613,108 @@ export const PulseConversationsPage = () => {
         {!loading && conversations.length > 0 && calls.length === 0 && (
           <p>{t`No loaded calls match your filters. Clear the search or load older calls.`}</p>
         )}
-        {calls.length > 0 && (
+        {calls.length > 0 && view === 'history' && (
+          <StyledHistory aria-label={t`Call history`}>
+            {calls.map((call) => {
+              const parsed = parsePulseCallBody(call.body);
+              const summary = parsed.aiSummary.join(' ') || parsed.summary;
+              return (
+                <StyledCallEntry
+                  key={call.id}
+                  tabIndex={0}
+                  aria-label={t`Call with ${call.title}`}
+                  onDoubleClick={(event) => {
+                    if (
+                      !(event.target as HTMLElement).closest(
+                        'audio, button, a, input',
+                      )
+                    )
+                      setSelectedId(call.id);
+                  }}
+                  onKeyDown={(event) => {
+                    if (
+                      event.target === event.currentTarget &&
+                      event.key === 'Enter'
+                    )
+                      setSelectedId(call.id);
+                  }}
+                >
+                  <header>
+                    <div>
+                      <strong>
+                        {call.direction === 'inbound'
+                          ? t`Incoming call`
+                          : t`Called`}{' '}
+                        {call.contactName || call.phone || call.title}
+                      </strong>
+                      <div className="call-meta">
+                        <span>{call.companyName || t`Client not linked`}</span>
+                        {call.phone && <span>{call.phone}</span>}
+                        {call.duration && <span>{call.duration}</span>}
+                        {call.repName && <span>{call.repName}</span>}
+                      </div>
+                    </div>
+                    <time dateTime={call.date.toISOString()}>
+                      {call.date.toLocaleString()}
+                    </time>
+                  </header>
+                  <div className="call-context">
+                    {call.outcome && <strong>{call.outcome} · </strong>}
+                    {summary
+                      ? summary.slice(0, 300) +
+                        (summary.length > 300 ? '…' : '')
+                      : t`Open the conversation to review its available notes and details.`}
+                    {call.location && <div>{call.location}</div>}
+                  </div>
+                  <div className="call-player">
+                    {call.recordingUrl ? (
+                      <audio
+                        controls
+                        data-conversation-recording="true"
+                        preload="none"
+                        aria-label={t`Recording for ${call.title}`}
+                        src={call.recordingUrl}
+                        onPlay={(event) => {
+                          const playing = event.currentTarget;
+                          document
+                            .querySelectorAll<HTMLAudioElement>(
+                              'audio[data-conversation-recording]',
+                            )
+                            .forEach((audio) => {
+                              if (audio !== playing) audio.pause();
+                            });
+                        }}
+                      />
+                    ) : (
+                      <span>{t`No recording available`}</span>
+                    )}
+                  </div>
+                  <footer>
+                    <span>
+                      {call.hasTranscript
+                        ? t`Transcript available`
+                        : t`Transcript not available`}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openRecordInSidePanel({
+                          objectNameSingular: 'note',
+                          recordId: call.id,
+                        })
+                      }
+                    >{t`Open call record`}</button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedId(call.id)}
+                    >{t`Open`}</button>
+                  </footer>
+                </StyledCallEntry>
+              );
+            })}
+          </StyledHistory>
+        )}
+        {calls.length > 0 && view === 'table' && (
           <StyledTableWrap>
             <table>
               <thead>

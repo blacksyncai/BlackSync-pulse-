@@ -6,6 +6,7 @@ export const buildPulseBoardFilter = (
   pipeline: PulsePipeline | undefined,
   hasPipelineField: boolean,
   search = '',
+  scope: { ownerId?: string; closeFrom?: string; closeTo?: string } = {},
 ): RecordGqlOperationFilter | undefined => {
   if (!isDefined(pipeline)) return undefined;
   const membership: RecordGqlOperationFilter | undefined = isDefined(
@@ -23,10 +24,25 @@ export const buildPulseBoardFilter = (
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 8);
-  if (!tokens.length) return membership;
+  const scopeFilters: RecordGqlOperationFilter[] = [];
+  if (scope.ownerId === '__UNASSIGNED__')
+    scopeFilters.push({ ownerId: { is: 'NULL' } });
+  else if (scope.ownerId) scopeFilters.push({ ownerId: { eq: scope.ownerId } });
+  if (scope.closeFrom && /^\d{4}-\d{2}-\d{2}$/.test(scope.closeFrom))
+    scopeFilters.push({
+      closeDate: { gte: new Date(`${scope.closeFrom}T00:00:00`).toISOString() },
+    });
+  if (scope.closeTo && /^\d{4}-\d{2}-\d{2}$/.test(scope.closeTo))
+    scopeFilters.push({
+      closeDate: {
+        lte: new Date(`${scope.closeTo}T23:59:59.999`).toISOString(),
+      },
+    });
+  if (!tokens.length && !scopeFilters.length) return membership;
   const filter = {
     and: [
       ...(membership ? [membership] : []),
+      ...scopeFilters,
       ...tokens.map((token) => {
         const ilike = `%${escapeForIlike(token)}%`;
         return {

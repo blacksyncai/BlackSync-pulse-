@@ -1,3 +1,7 @@
+import {
+  usePulseAssignment,
+  assignmentMemberName,
+} from '@/pulse-assignment/contexts/PulseAssignmentContext';
 import { PulsePipelineSearch } from '@/pulse-opportunities/components/PulsePipelineSearch';
 import { useCreateOneRecord } from '@/object-record/hooks/useCreateOneRecord';
 import { useDeleteOneRecord } from '@/object-record/hooks/useDeleteOneRecord';
@@ -46,31 +50,31 @@ const StyledBar = styled.div`
   padding: ${themeCssVariables.spacing[3]} ${themeCssVariables.spacing[4]};
 `;
 
-const StyledPipelineTabs = styled.div`
-  background: ${themeCssVariables.background.transparent.light};
-  border-radius: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  padding: 3px;
-`;
-
-const StyledPipelineTab = styled.button`
-  background: transparent;
-  border: 0;
+const StyledPipelinePicker = styled.select`
+  background: ${themeCssVariables.background.primary};
+  border: 1px solid ${themeCssVariables.border.color.strong};
   border-radius: 8px;
-  color: ${themeCssVariables.font.color.secondary};
+  color: ${themeCssVariables.font.color.primary};
+  font: inherit;
+  font-size: 13px;
+  padding: 9px 12px;
+  max-width: 260px;
   cursor: pointer;
-  font-family: inherit;
-  font-size: ${themeCssVariables.font.size.md};
-  font-weight: ${themeCssVariables.font.weight.medium};
-  padding: 6px 12px;
-  white-space: nowrap;
-
-  &[aria-pressed='true'] {
+`;
+const StyledFilterLabel = styled.label`
+  align-items: center;
+  display: inline-flex;
+  gap: 7px;
+  color: ${themeCssVariables.font.color.secondary};
+  font-size: 12px;
+  input {
     background: ${themeCssVariables.background.primary};
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-    color: ${themeCssVariables.font.color.primary};
+    color: inherit;
+    border: 1px solid ${themeCssVariables.border.color.medium};
+    border-radius: 7px;
+    padding: 7px;
+    font: inherit;
+    min-width: 0;
   }
 `;
 
@@ -103,10 +107,11 @@ const StyledNewButton = styled.button`
 const StyledBoard = styled.div`
   display: flex;
   flex: 1;
-  gap: ${themeCssVariables.spacing[3]};
+  gap: 0;
   min-height: 0;
   overflow-x: auto;
-  padding: ${themeCssVariables.spacing[4]};
+  padding: 0;
+  background: ${themeCssVariables.background.secondary};
 `;
 
 const StyledCardAnchor = styled.div`
@@ -122,14 +127,16 @@ const StyledCardAnchor = styled.div`
 
 const StyledColumn = styled.section`
   background: ${themeCssVariables.background.secondary};
-  border: 1px solid ${themeCssVariables.border.color.light};
-  border-radius: 14px;
+  border: 0;
+  border-right: 1px solid ${themeCssVariables.border.color.medium};
+  border-radius: 0;
   display: flex;
   flex: none;
   flex-direction: column;
   min-height: 0;
   transition: background 0.15s;
-  width: 300px;
+  width: 340px;
+  max-width: calc(100vw - 24px);
 
   &[data-over='true'] {
     background: ${themeCssVariables.accent.quaternary};
@@ -161,10 +168,10 @@ const StyledCards = styled.div`
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: ${themeCssVariables.spacing[2]};
+  gap: 12px;
   min-height: 0;
   overflow-y: auto;
-  padding: ${themeCssVariables.spacing[2]};
+  padding: 14px;
 `;
 
 const StyledEmpty = styled.div`
@@ -188,6 +195,11 @@ const dealAmount = (deal: PulseBoardDeal) =>
 export const PulseOpportunitiesPage = () => {
   const { t } = useLingui();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { members } = usePulseAssignment();
+  const [ownerId, setOwnerId] = useState('');
+  const [closeFrom, setCloseFrom] = useState('');
+  const [closeTo, setCloseTo] = useState('');
+  const scope = { ownerId, closeFrom, closeTo };
   const { pipelines, opportunityMetadataItem } = usePulsePipelines();
   const hasPipelineField = opportunityMetadataItem.fields.some(
     (field) => field.name === 'pipeline',
@@ -210,7 +222,7 @@ export const PulseOpportunitiesPage = () => {
     totalCount,
     hasNextPage,
     fetchMoreRecords,
-  } = usePulseBoardDeals(selectedPipeline, hasPipelineField);
+  } = usePulseBoardDeals(selectedPipeline, hasPipelineField, scope);
   const [located, setLocated] = useState<{
     pipelineId: string;
     deal: PulseBoardDeal;
@@ -367,26 +379,29 @@ export const PulseOpportunitiesPage = () => {
 
   return (
     <PageCardLayout
-      header={<PageHeader title={t`Opportunities`} Icon={IconTargetArrow} />}
+      header={
+        <PageHeader title={selectedPipeline.name} Icon={IconTargetArrow} />
+      }
     >
       <StyledPage>
         <StyledBar>
-          <StyledPipelineTabs>
+          <StyledPipelinePicker
+            aria-label={t`Pipeline`}
+            value={selectedPipeline.viewId}
+            onChange={(event) => {
+              setLocated(null);
+              setSearchParams({ [PIPELINE_PARAM]: event.target.value });
+            }}
+          >
             {orderedPipelines.map((pipeline) => (
-              <StyledPipelineTab
-                key={pipeline.viewId}
-                type="button"
-                aria-pressed={pipeline.viewId === selectedPipeline.viewId}
-                onClick={() =>
-                  setSearchParams({ [PIPELINE_PARAM]: pipeline.viewId })
-                }
-              >
+              <option key={pipeline.viewId} value={pipeline.viewId}>
                 {pipeline.name}
-              </StyledPipelineTab>
+              </option>
             ))}
-          </StyledPipelineTabs>
+          </StyledPipelinePicker>
           <PulsePipelineSearch
-            key={selectedPipeline.viewId}
+            key={`${selectedPipeline.viewId}:${ownerId}:${closeFrom}:${closeTo}`}
+            scope={scope}
             pipeline={selectedPipeline}
             hasPipelineField={hasPipelineField}
             onSelect={(deal) =>
@@ -404,6 +419,59 @@ export const PulseOpportunitiesPage = () => {
             <IconPlus size={16} />
             {t`New deal`}
           </StyledNewButton>
+        </StyledBar>
+        <StyledBar>
+          <StyledPipelinePicker
+            aria-label={t`Deal owner`}
+            value={ownerId}
+            onChange={(event) => {
+              setLocated(null);
+              setOwnerId(event.target.value);
+            }}
+          >
+            <option value="">{t`All users`}</option>
+            <option value="__UNASSIGNED__">{t`Unassigned`}</option>
+            {members.map((member) => (
+              <option key={member.id} value={member.id}>
+                {assignmentMemberName(member)}
+              </option>
+            ))}
+          </StyledPipelinePicker>
+          <StyledFilterLabel>
+            {t`Close from`}
+            <input
+              type="date"
+              value={closeFrom}
+              max={closeTo || undefined}
+              onChange={(event) => {
+                setLocated(null);
+                setCloseFrom(event.target.value);
+              }}
+            />
+          </StyledFilterLabel>
+          <StyledFilterLabel>
+            {t`Close through`}
+            <input
+              type="date"
+              value={closeTo}
+              min={closeFrom || undefined}
+              onChange={(event) => {
+                setLocated(null);
+                setCloseTo(event.target.value);
+              }}
+            />
+          </StyledFilterLabel>
+          {(ownerId || closeFrom || closeTo) && (
+            <button
+              type="button"
+              onClick={() => {
+                setLocated(null);
+                setOwnerId('');
+                setCloseFrom('');
+                setCloseTo('');
+              }}
+            >{t`Clear filters`}</button>
+          )}
         </StyledBar>
         {loading && deals.length === 0 && (
           <StyledEmpty role="status">{t`Loading pipeline…`}</StyledEmpty>

@@ -117,3 +117,38 @@ describe('conversation history mapping', () => {
     ).toHaveLength(1);
   });
 });
+
+it('supports matching any word while retaining direction and recording filters', () => {
+  const call = buildConversation(note, targets, []);
+  expect(
+    filterConversations([call], 'missing Miami', 'all', false, {
+      match: 'any',
+    }),
+  ).toHaveLength(1);
+  expect(
+    filterConversations([call], 'missing Miami', 'all', false),
+  ).toHaveLength(0);
+  expect(
+    filterConversations([call], 'Miami', 'inbound', false, { match: 'any' }),
+  ).toHaveLength(0);
+});
+it('filters history by the actual logged-by name and inclusive local date boundaries', () => {
+  const call = {
+    ...buildConversation(note, targets, []),
+    repName: 'Sarah',
+    date: new Date(2026, 10, 17, 23, 59, 59),
+  };
+  expect(
+    filterConversations([call], '', 'all', false, {
+      rep: 'Sarah',
+      from: '2026-11-17',
+      to: '2026-11-17',
+    }),
+  ).toHaveLength(1);
+  expect(
+    filterConversations([call], '', 'all', false, { rep: 'Other' }),
+  ).toHaveLength(0);
+  expect(
+    filterConversations([call], '', 'all', false, { to: '2026-11-16' }),
+  ).toHaveLength(0);
+});

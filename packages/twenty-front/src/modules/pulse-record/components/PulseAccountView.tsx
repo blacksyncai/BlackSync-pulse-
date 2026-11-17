@@ -1,3 +1,4 @@
+import { Tooltip } from 'twenty-ui/primitives/surfaces';
 import { PulseLeadAssignment } from '@/pulse-assignment/components/PulseLeadAssignment';
 import { CrmGlassSurface } from '@/components/ui/crm-glass-surface';
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
@@ -639,38 +640,59 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
             <IconCheckbox size={16} />
             {t`Task`}
           </StyledActionButton>
-          <StyledActionButton
-            type="button"
-            aria-pressed={composer === 'email'}
-            onClick={() => openEmail(null)}
+          <Tooltip
+            content={emailRecipients[0]?.email || t`No email address`}
+            delay={200}
+            side="top"
+            positionMethod="fixed"
           >
-            <IconMail size={16} />
-            {t`Email`}
-          </StyledActionButton>
-          <StyledActionButton
-            type="button"
-            onClick={() => handleSms(primaryPhone)}
+            <StyledActionButton
+              type="button"
+              aria-pressed={composer === 'email'}
+              onClick={() => openEmail(null)}
+            >
+              <IconMail size={16} />
+              {t`Email`}
+            </StyledActionButton>
+          </Tooltip>
+          <Tooltip
+            content={primaryPhone || t`No phone number`}
+            delay={200}
+            side="top"
+            positionMethod="fixed"
           >
-            <IconMessage size={16} />
-            {t`SMS`}
-          </StyledActionButton>
-          <StyledActionButton
-            type="button"
-            data-primary
-            onClick={() =>
-              handleCall(primaryPhone, {
-                personId: contacts.find(
-                  (contact) => formatPhone(contact) === primaryPhone,
-                )?.id,
-                companyId,
-              })
-            }
+            <StyledActionButton
+              type="button"
+              onClick={() => handleSms(primaryPhone)}
+            >
+              <IconMessage size={16} />
+              {t`SMS`}
+            </StyledActionButton>
+          </Tooltip>
+          <Tooltip
+            content={primaryPhone || t`No phone number`}
+            delay={200}
+            side="top"
+            positionMethod="fixed"
           >
-            <IconPhone size={16} />
-            {primaryContact
-              ? t`Call ${formatFullName(primaryContact.name).split(' ')[0] ?? ''}`
-              : t`Call`}
-          </StyledActionButton>
+            <StyledActionButton
+              type="button"
+              data-primary
+              onClick={() =>
+                handleCall(primaryPhone, {
+                  personId: contacts.find(
+                    (contact) => formatPhone(contact) === primaryPhone,
+                  )?.id,
+                  companyId,
+                })
+              }
+            >
+              <IconPhone size={16} />
+              {primaryContact
+                ? t`Call ${formatFullName(primaryContact.name).split(' ')[0] ?? ''}`
+                : t`Call`}
+            </StyledActionButton>
+          </Tooltip>
         </StyledActions>
       </StyledHeader>
 
@@ -850,32 +872,56 @@ export const PulseAccountView = ({ companyId }: PulseAccountViewProps) => {
                                 <StyledMuted>{contact.jobTitle}</StyledMuted>
                               )}
                           </StyledLineText>
-                          <StyledIconButton
-                            type="button"
-                            aria-label={t`Email`}
-                            onClick={() => openEmail(contact.id)}
-                          >
-                            <IconMail size={16} />
-                          </StyledIconButton>
-                          <StyledIconButton
-                            type="button"
-                            aria-label={t`Text`}
-                            onClick={() => handleSms(phone)}
-                          >
-                            <IconMessage size={16} />
-                          </StyledIconButton>
-                          <StyledIconButton
-                            type="button"
-                            aria-label={t`Call`}
-                            onClick={() =>
-                              handleCall(phone, {
-                                personId: contact.id,
-                                companyId,
-                              })
+                          <Tooltip
+                            content={
+                              contact.emails?.primaryEmail ||
+                              t`No email address`
                             }
+                            delay={200}
+                            side="top"
+                            positionMethod="fixed"
                           >
-                            <IconPhone size={16} />
-                          </StyledIconButton>
+                            <StyledIconButton
+                              type="button"
+                              aria-label={t`Email`}
+                              onClick={() => openEmail(contact.id)}
+                            >
+                              <IconMail size={16} />
+                            </StyledIconButton>
+                          </Tooltip>
+                          <Tooltip
+                            content={phone || t`No phone number`}
+                            delay={200}
+                            side="top"
+                            positionMethod="fixed"
+                          >
+                            <StyledIconButton
+                              type="button"
+                              aria-label={t`Text`}
+                              onClick={() => handleSms(phone)}
+                            >
+                              <IconMessage size={16} />
+                            </StyledIconButton>
+                          </Tooltip>
+                          <Tooltip
+                            content={phone || t`No phone number`}
+                            delay={200}
+                            side="top"
+                            positionMethod="fixed"
+                          >
+                            <StyledIconButton
+                              type="button"
+                              aria-label={t`Call`}
+                              onClick={() =>
+                                handleCall(phone, {
+                                  personId: contact.id,
+                                  companyId,
+                                })
+                              }
+                            >
+                              <IconPhone size={16} />
+                            </StyledIconButton>
+                          </Tooltip>
                         </StyledLine>
                       );
                     })
